@@ -63,6 +63,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get privacyPolicy => 'Privacy Policy';
 
   @override
+  String get termsAndCondition => 'Terms and Conditions';
+
+  @override
   String get alreadyHaveAnAccount => 'Already have an account?';
 
   @override
@@ -211,6 +214,57 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get profileVisit => 'Profile Visit';
+
+  @override
+  String get cancel => 'Cancel';
+
+  @override
+  String get ok => 'Ok';
+
+  @override
+  String get sendRating => 'Send Rating';
+
+  @override
+  String get typeAMessage => 'Type a message...';
+
+  @override
+  String get update => 'Update';
+
+  @override
+  String get currentPasswordRequired => 'Current password is required';
+
+  @override
+  String get confirmPasswordRequired => 'Confirm password is required';
+
+  @override
+  String get passwordsDoNotMatch => 'Passwords do not match';
+
+  @override
+  String get passwordChanged => 'Password Changed';
+
+  @override
+  String get yourPasswordHasBeenSuccessfullyChanged => 'Your password has been successfully changed.';
+
+  @override
+  String get error => 'Error';
+
+  @override
+  String get somethingWentWrong => 'Something went wrong. Please try again..';
+
+  @override
+  String get updateYourPasswordForSecurity => 'Update your password for enhanced security.';
+
+  @override
+  String get currentPassword => 'Current Password';
+
+  @override
+  String get logout2 => 'Log Out?';
+
+  @override
+  String get areYouSureWantToLogOut => 'Are you sure want to log out?';
+
+  @override
+  String get logoutSpace => 'Log out';
 
   @override
   String get rateThisPost => 'Rate this Post';

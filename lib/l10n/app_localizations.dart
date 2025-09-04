@@ -203,6 +203,12 @@ abstract class AppLocalizations {
   /// **'Privacy Policy'**
   String get privacyPolicy;
 
+  /// No description provided for @termsAndCondition.
+  ///
+  /// In en, this message translates to:
+  /// **'Terms and Conditions'**
+  String get termsAndCondition;
+
   /// No description provided for @alreadyHaveAnAccount.
   ///
   /// In en, this message translates to:
@@ -502,6 +508,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Profile Visit'**
   String get profileVisit;
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
+  /// No description provided for @ok.
+  ///
+  /// In en, this message translates to:
+  /// **'Ok'**
+  String get ok;
+
+  /// No description provided for @sendRating.
+  ///
+  /// In en, this message translates to:
+  /// **'Send Rating'**
+  String get sendRating;
+
+  /// No description provided for @typeAMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Type a message...'**
+  String get typeAMessage;
+
+  /// No description provided for @update.
+  ///
+  /// In en, this message translates to:
+  /// **'Update'**
+  String get update;
+
+  /// No description provided for @currentPasswordRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Current password is required'**
+  String get currentPasswordRequired;
+
+  /// No description provided for @confirmPasswordRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm password is required'**
+  String get confirmPasswordRequired;
+
+  /// No description provided for @passwordsDoNotMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Passwords do not match'**
+  String get passwordsDoNotMatch;
+
+  /// No description provided for @passwordChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'Password Changed'**
+  String get passwordChanged;
+
+  /// No description provided for @yourPasswordHasBeenSuccessfullyChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'Your password has been successfully changed.'**
+  String get yourPasswordHasBeenSuccessfullyChanged;
+
+  /// No description provided for @error.
+  ///
+  /// In en, this message translates to:
+  /// **'Error'**
+  String get error;
+
+  /// No description provided for @somethingWentWrong.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong. Please try again..'**
+  String get somethingWentWrong;
+
+  /// No description provided for @updateYourPasswordForSecurity.
+  ///
+  /// In en, this message translates to:
+  /// **'Update your password for enhanced security.'**
+  String get updateYourPasswordForSecurity;
+
+  /// No description provided for @currentPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Current Password'**
+  String get currentPassword;
+
+  /// No description provided for @logout2.
+  ///
+  /// In en, this message translates to:
+  /// **'Log Out?'**
+  String get logout2;
+
+  /// No description provided for @areYouSureWantToLogOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure want to log out?'**
+  String get areYouSureWantToLogOut;
+
+  /// No description provided for @logoutSpace.
+  ///
+  /// In en, this message translates to:
+  /// **'Log out'**
+  String get logoutSpace;
 
   /// No description provided for @rateThisPost.
   ///

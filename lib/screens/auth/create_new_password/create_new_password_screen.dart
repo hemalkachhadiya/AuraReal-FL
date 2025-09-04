@@ -70,8 +70,8 @@ class CreateNewPasswordScreen extends StatelessWidget {
                     suffixIcon: SvgAsset(
                       imagePath:
                           provider.isNewPasswordVisible
-                              ? AssetRes.hideIcon
-                              : AssetRes.showIcon,
+                              ? AssetRes.showIcon
+                              : AssetRes.hideIcon,
                       width: 18,
                       height: 18,
                     ),
@@ -101,8 +101,8 @@ class CreateNewPasswordScreen extends StatelessWidget {
                     suffixIcon: SvgAsset(
                       imagePath:
                           provider.isConfirmPasswordVisible
-                              ? AssetRes.hideIcon
-                              : AssetRes.showIcon,
+                              ? AssetRes.showIcon
+                              : AssetRes.hideIcon,
                       width: 18,
                       height: 18,
                     ),

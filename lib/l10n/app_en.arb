@@ -17,6 +17,7 @@
   "termsOfService": "Terms of Service",
   "and": "and",
   "privacyPolicy": "Privacy Policy",
+  "termsAndCondition": "Terms and Conditions",
   "alreadyHaveAnAccount": "Already have an account?",
   "back": "Back",
   "passwordReset": "Password Reset",
@@ -67,8 +68,22 @@
   "map": "Map",
   "rate": "Rate",
   "profileVisit": "Profile Visit",
-
-
-
+  "cancel": "Cancel",
+  "ok": "Ok",
+  "sendRating": "Send Rating",
+  "typeAMessage": "Type a message...",
+  "update": "Update",
+  "currentPasswordRequired": "Current password is required",
+  "confirmPasswordRequired": "Confirm password is required",
+  "passwordsDoNotMatch": "Passwords do not match",
+  "passwordChanged": "Password Changed",
+  "yourPasswordHasBeenSuccessfullyChanged": "Your password has been successfully changed.",
+  "error": "Error",
+  "somethingWentWrong": "Something went wrong. Please try again..",
+  "updateYourPasswordForSecurity": "Update your password for enhanced security.",
+  "currentPassword": "Current Password",
+  "logout2": "Log Out?",
+  "areYouSureWantToLogOut": "Are you sure want to log out?",
+  "logoutSpace": "Log out",
   "rateThisPost": "Rate this Post"
 }

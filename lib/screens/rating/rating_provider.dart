@@ -1,15 +1,17 @@
 import 'dart:io';
+import 'package:aura_real/utils/color_res.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class RatingProvider extends ChangeNotifier {
-  final ImagePicker _picker = ImagePicker();
-
-  // Public fields (implicit getters, no setters)
+  // Public fields (no getters/setters)
   File? capturedImage;
   bool isLoading = false;
   String? errorMessage;
+  String currentMode = 'camera'; // Default mode
+
+  final ImagePicker _picker = ImagePicker();
 
   // Camera functionality
   Future<void> openCamera(BuildContext context) async {
@@ -18,7 +20,6 @@ class RatingProvider extends ChangeNotifier {
       errorMessage = null;
       notifyListeners();
 
-      // Check and request camera permission
       final hasPermission = await _checkCameraPermission(context);
       if (!hasPermission) {
         errorMessage = 'Camera permission denied';
@@ -26,7 +27,6 @@ class RatingProvider extends ChangeNotifier {
         return;
       }
 
-      // Open camera
       final XFile? image = await _picker.pickImage(
         source: ImageSource.camera,
         imageQuality: 80,
@@ -36,7 +36,6 @@ class RatingProvider extends ChangeNotifier {
       if (image != null) {
         capturedImage = File(image.path);
         notifyListeners();
-        _showCaptureSuccess(context);
       }
     } catch (e) {
       errorMessage = 'Failed to capture image: $e';
@@ -62,7 +61,6 @@ class RatingProvider extends ChangeNotifier {
       if (image != null) {
         capturedImage = File(image.path);
         notifyListeners();
-        _showCaptureSuccess(context);
       }
     } catch (e) {
       errorMessage = 'Failed to select image: $e';
@@ -87,7 +85,9 @@ class RatingProvider extends ChangeNotifier {
     }
 
     if (status.isPermanentlyDenied) {
-      _showPermissionDialog(context);
+      if (context.mounted) {
+        _showPermissionDialog(context);
+      }
       return false;
     }
 
@@ -98,35 +98,26 @@ class RatingProvider extends ChangeNotifier {
   void _showPermissionDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Camera Permission Required'),
-        content: const Text(
-            'Please enable camera permission in app settings to take photos.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+      builder:
+          (context) => AlertDialog(
+            title: Text('Camera Permission Required'),
+            content: Text(
+              'Please enable camera permission in app settings to take photos.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  openAppSettings();
+                },
+                child: Text('Settings'),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              openAppSettings();
-            },
-            child: const Text('Settings'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Show capture success message
-  void _showCaptureSuccess(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Photo captured successfully!'),
-        backgroundColor: Theme.of(context).primaryColor, // Replaced ColorRes
-        duration: const Duration(seconds: 2),
-      ),
     );
   }
 
@@ -142,14 +133,9 @@ class RatingProvider extends ChangeNotifier {
 
     try {
       isLoading = true;
-      errorMessage = null;
       notifyListeners();
 
-      // Simulate image upload
-      await Future.delayed(const Duration(seconds: 2));
-
-      // Add your upload logic here
-      // await uploadImageToServer(capturedImage!);
+      await Future.delayed(Duration(seconds: 2)); // Simulate upload
     } catch (e) {
       errorMessage = 'Failed to save image: $e';
       notifyListeners();
@@ -159,9 +145,34 @@ class RatingProvider extends ChangeNotifier {
     }
   }
 
-  @override
-  void dispose() {
-    // Add cleanup if needed (e.g., closing streams or releasing resources)
-    super.dispose();
+  // Switch mode
+  void setMode(String mode) {
+    currentMode = mode;
+    notifyListeners();
+  }
+  // Helper method to check if camera tab is selected
+  bool get isCameraSelected => currentMode == 'camera';
+
+  // Helper method to check if map tab is selected
+  bool get isMapSelected => currentMode == 'map';
+
+  // Get background color for camera tab
+  Color getCameraTabBgColor() {
+    return isCameraSelected ? ColorRes.primaryColor : ColorRes.lightBlue;
+  }
+
+  // Get text color for camera tab
+  Color getCameraTabTextColor() {
+    return isCameraSelected ? ColorRes.white : ColorRes.primaryColor;
+  }
+
+  // Get background color for map tab
+  Color getMapTabBgColor() {
+    return isMapSelected ? ColorRes.primaryColor : ColorRes.lightBlue;
+  }
+
+  // Get text color for map tab
+  Color getMapTabTextColor() {
+    return isMapSelected ? ColorRes.white : ColorRes.primaryColor;
   }
 }

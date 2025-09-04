@@ -56,4 +56,13 @@ export 'package:aura_real/screens/home/home/model/post_model.dart';
 export 'package:aura_real/screens/home/home/widget/post_card_widget.dart';
 export 'package:aura_real/screens/home/home/widget/star_rating_widget.dart';
 export 'package:aura_real/screens/home/upload/upload_provider.dart';
-
+export 'package:aura_real/screens/setting/change_password/change_password_provider.dart';
+export 'package:aura_real/screens/setting/profile/profile_provider.dart';
+export 'package:aura_real/screens/setting/change_password/change_password_screen.dart';
+export 'package:aura_real/screens/setting/launuage/language_screen.dart';
+export 'package:aura_real/screens/setting/profile/profile_screen.dart';
+export 'package:aura_real/screens/setting/setting/setting_provider.dart';
+export 'package:aura_real/common/methods.dart';
+export 'package:aura_real/common/widgets/app_open_custom_dialog.dart';
+export 'package:aura_real/screens/rating/rating_provider.dart';
+export 'package:image_picker/image_picker.dart';

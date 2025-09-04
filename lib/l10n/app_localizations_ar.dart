@@ -63,6 +63,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get privacyPolicy => 'سياسة الخصوصية';
 
   @override
+  String get termsAndCondition => 'الشروط والأحكام';
+
+  @override
   String get alreadyHaveAnAccount => 'هل لديك حساب بالفعل؟';
 
   @override
@@ -211,6 +214,57 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get profileVisit => 'زيارة الملف الشخصي';
+
+  @override
+  String get cancel => 'إلغاء';
+
+  @override
+  String get ok => 'موافق';
+
+  @override
+  String get sendRating => 'إرسال التقييم';
+
+  @override
+  String get typeAMessage => 'اكتب رسالة...';
+
+  @override
+  String get update => 'تحديث';
+
+  @override
+  String get currentPasswordRequired => 'كلمة المرور الحالية مطلوبة';
+
+  @override
+  String get confirmPasswordRequired => 'تأكيد كلمة المرور مطلوب';
+
+  @override
+  String get passwordsDoNotMatch => 'كلمتا المرور غير متطابقتين';
+
+  @override
+  String get passwordChanged => 'تم تغيير كلمة المرور';
+
+  @override
+  String get yourPasswordHasBeenSuccessfullyChanged => 'تم تغيير كلمة المرور الخاصة بك بنجاح.';
+
+  @override
+  String get error => 'خطأ';
+
+  @override
+  String get somethingWentWrong => 'حدث خطأ ما. يرجى المحاولة مرة أخرى..';
+
+  @override
+  String get updateYourPasswordForSecurity => 'قم بتحديث كلمة المرور الخاصة بك لتعزيز الأمان.';
+
+  @override
+  String get currentPassword => 'كلمة المرور الحالية';
+
+  @override
+  String get logout2 => 'تسجيل الخروج؟';
+
+  @override
+  String get areYouSureWantToLogOut => 'هل أنت متأكد أنك تريد تسجيل الخروج؟';
+
+  @override
+  String get logoutSpace => 'تسجيل الخروج';
 
   @override
   String get rateThisPost => 'قيم هذه المشاركة';

@@ -4,7 +4,6 @@ class SignUpProvider extends ChangeNotifier {
   SignUpProvider();
 
   bool loader = false;
-
   /// Controllers
   final TextEditingController fullNameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();

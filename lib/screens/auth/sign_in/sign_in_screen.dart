@@ -89,11 +89,20 @@ class SignInScreen extends StatelessWidget {
                                   height: 18,
                                 ),
                               ),
-                              suffixIcon: SvgAsset(
-                                imagePath: AssetRes.hideIcon,
-                                width: 18,
-                                height: 18,
+                              suffixIcon: InkWell(
+                                onTap: () {
+                                  provider.onPwdVisibilityChanged();
+                                },
+                                child: SvgAsset(
+                                  imagePath:
+                                      provider.isPwdVisible
+                                          ? AssetRes.showIcon
+                                          : AssetRes.hideIcon,
+                                  width: 18,
+                                  height: 18,
+                                ),
                               ),
+                              obscureText: provider.isPwdVisible,
                               isMandatory: true,
                               textInputType: TextInputType.text,
                               fillColor: ColorRes.lightGrey2,

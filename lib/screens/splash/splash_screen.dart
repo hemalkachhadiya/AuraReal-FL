@@ -22,9 +22,8 @@ class SplashScreen extends StatelessWidget {
         if (token.trim().isNotEmpty) {
           context.navigator.pushReplacementNamed(DashboardScreen.routeName);
         } else {
-          // context.navigator.pushReplacementNamed(SignInScreen.routeName);
-
-          context.navigator.pushReplacementNamed(DashboardScreen.routeName);
+          context.navigator.pushReplacementNamed(SignInScreen.routeName);
+          // context.navigator.pushReplacementNamed(DashboardScreen.routeName);
         }
       }
     } catch (e) {

@@ -1,8 +1,4 @@
-import 'dart:io';
-
 import 'package:aura_real/aura_real.dart';
-import 'package:aura_real/common/methods.dart';
-import 'package:image_picker/image_picker.dart';
 
 Future<File?> openMediaPicker(BuildContext context) async {
   final result = await showModalBottomSheet(

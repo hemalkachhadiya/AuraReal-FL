@@ -43,6 +43,16 @@ class AssetRes {
   static const globalIcon = "${_icons}global_icon.svg";
   static const blurBgIcon = "${_icons}blur_bg_icon.svg";
   static const msgIcon = "${_icons}msg_icon.svg";
+  static const voiceIcon = "${_icons}voice_icon.svg";
+  static const attachIcon = "${_icons}attech_icon.svg";
+  static const cameraIcon2 = "${_icons}camera_icon2.svg";
+  static const smileIcon = "${_icons}smile_icon.svg";
+  static const user4Icon = "${_icons}user_icon4.svg";
+  static const lock2Icon = "${_icons}lock2_icon.svg";
+  static const notificationIcon = "${_icons}notification_icon.svg";
+  static const informationIcon = "${_icons}information_icon.svg";
+  static const logoutIcon = "${_icons}logout_icon.svg";
+  static const editIcon = "${_icons}edit_icon.svg";
 
   ///__________________________________ temps __________________________________///
   static const post_1 = "${_temp}post_1.png";
@@ -54,6 +64,8 @@ class AssetRes {
   static const resetImg = "${_images}reset_img.png";
   static const checkMailImg = "${_images}check_mail_img.png";
   static const locationImg = "${_images}location_img.png";
+  static const enIcon = "${_images}en_icon.png";
+  static const arIcon = "${_images}ar_icon.png";
 
   ///__________________________________ fonts __________________________________///
   static const poppins = "Poppins";

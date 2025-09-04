@@ -29,12 +29,12 @@ class SubmitButton extends StatelessWidget {
       width: 100.w,
       height: height ?? 60,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(raduis??30.pw),
+        borderRadius: BorderRadius.circular(raduis ?? 30.pw),
         color:
-        enable
-            ? bgColor ?? ColorRes.primaryColor
-            : bgColor?.withValues(alpha: 0.6) ??
-            ColorRes.primaryColor.withValues(alpha: 0.6),
+            enable
+                ? bgColor ?? ColorRes.primaryColor
+                : bgColor?.withValues(alpha: 0.6) ??
+                    ColorRes.primaryColor.withValues(alpha: 0.6),
       ),
       child: AnimatedSwitcher(
         duration: 300.milliseconds,
@@ -57,12 +57,12 @@ class SubmitButton extends StatelessWidget {
               color: Colors.transparent,
               child: InkWell(
                 onTap: enable ? onTap : null,
-                borderRadius: BorderRadius.circular(8.pw),
+                borderRadius: BorderRadius.circular(raduis ?? 8.pw),
                 child: Center(
                   child: Text(
                     title ?? '',
                     style:
-                    style ?? styleW700S16.copyWith(color: ColorRes.white),
+                        style ?? styleW700S16.copyWith(color: ColorRes.white),
                   ),
                 ),
               ),
@@ -129,7 +129,7 @@ class EmptyButton extends StatelessWidget {
                   child: Text(
                     title ?? '',
                     style:
-                    style ??
+                        style ??
                         styleW700S16.copyWith(
                           color: enable ? null : ColorRes.black,
                         ),

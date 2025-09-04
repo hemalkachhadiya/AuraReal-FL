@@ -15,21 +15,27 @@ class PasswordRestScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Consumer<PasswordResetProvider>(
-        builder: (context, provider, child) {
+      builder: (context, provider, child) {
         return Scaffold(
           backgroundColor: ColorRes.white,
-          bottomNavigationBar:  Padding(
-            padding:  EdgeInsets.symmetric(horizontal: Constants.horizontalPadding,vertical: 20),
+          bottomNavigationBar: Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: Constants.horizontalPadding,
+              vertical: 20,
+            ),
             child: SizedBox(
               width: double.infinity,
               height: 52,
               child: SubmitButton(
                 loading: provider.loader,
-                bgColor: provider.selectedMethod != null?ColorRes.primaryColor:ColorRes.grey3,
+                bgColor:
+                    provider.selectedMethod != null
+                        ? ColorRes.primaryColor
+                        : ColorRes.grey3,
                 onTap:
-                provider.selectedMethod != null
-                    ? () => provider.onSendTap(context)
-                    : null,
+                    provider.selectedMethod != null
+                        ? () => provider.onSendTap(context)
+                        : null,
 
                 title: context.l10n?.send ?? "",
               ),
@@ -76,16 +82,16 @@ class PasswordRestScreen extends StatelessWidget {
                       decoration: BoxDecoration(
                         border: Border.all(
                           color:
-                          provider.selectedMethod == 'SMS'
-                              ? ColorRes.primaryColor
-                              : ColorRes.grey3,
+                              provider.selectedMethod == 'SMS'
+                                  ? ColorRes.primaryColor
+                                  : ColorRes.grey3,
                           width: provider.selectedMethod == 'SMS' ? 2 : 1,
                         ),
                         borderRadius: BorderRadius.circular(12),
                         color:
-                        provider.selectedMethod == 'SMS'
-                            ? ColorRes.primaryColor.withValues(alpha: 0.05)
-                            : ColorRes.white,
+                            provider.selectedMethod == 'SMS'
+                                ? ColorRes.primaryColor.withValues(alpha: 0.05)
+                                : ColorRes.white,
                       ),
                       child: Row(
                         children: [
@@ -110,7 +116,7 @@ class PasswordRestScreen extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'SMS',
+                                  context.l10n?.sms ?? "",
                                   style: styleW600S16.copyWith(
                                     color: ColorRes.black,
                                   ),
@@ -148,16 +154,16 @@ class PasswordRestScreen extends StatelessWidget {
                       decoration: BoxDecoration(
                         border: Border.all(
                           color:
-                          provider.selectedMethod == 'Email'
-                              ? ColorRes.primaryColor
-                              : ColorRes.grey3,
+                              provider.selectedMethod == 'Email'
+                                  ? ColorRes.primaryColor
+                                  : ColorRes.grey3,
                           width: provider.selectedMethod == 'Email' ? 2 : 1,
                         ),
                         borderRadius: BorderRadius.circular(12),
                         color:
-                        provider.selectedMethod == 'Email'
-                            ? ColorRes.primaryColor.withOpacity(0.05)
-                            : ColorRes.white,
+                            provider.selectedMethod == 'Email'
+                                ? ColorRes.primaryColor.withOpacity(0.05)
+                                : ColorRes.white,
                       ),
                       child: Row(
                         children: [
@@ -182,7 +188,7 @@ class PasswordRestScreen extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Email',
+                                  context.l10n?.email ?? "",
                                   style: styleW600S16.copyWith(
                                     color: ColorRes.black,
                                   ),
@@ -217,17 +223,14 @@ class PasswordRestScreen extends StatelessWidget {
                     ),
                   ),
 
-
-
                   // Send Button
-
                   32.ph.spaceVertical,
                 ],
               ),
             ),
           ),
         );
-      }
+      },
     );
   }
 }

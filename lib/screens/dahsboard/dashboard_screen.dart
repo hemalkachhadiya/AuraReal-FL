@@ -1,8 +1,9 @@
 import 'package:aura_real/aura_real.dart';
 import 'package:aura_real/screens/auth/your_location/your_location_provider.dart';
+import 'package:aura_real/screens/chat/chat_list/chat_screen.dart';
 import 'package:aura_real/screens/home/home/home_screen.dart';
 import 'package:aura_real/screens/rating/rating_screen.dart';
-import 'package:aura_real/screens/setting/setting_screen.dart';
+import 'package:aura_real/screens/setting/setting/setting_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -33,7 +34,7 @@ class DashboardScreen extends StatelessWidget {
         children: [
           HomeScreen(),
           RatingScreen(),
-          Center(child: Text('Chat Screen')),
+          ChatScreen(),
           SettingScreen(),
         ],
       ),

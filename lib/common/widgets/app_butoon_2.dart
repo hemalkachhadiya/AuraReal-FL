@@ -61,7 +61,7 @@ class SubmitButton2 extends StatelessWidget {
               color: Colors.transparent,
               child: InkWell(
                 onTap: enable ? onTap : null,
-                borderRadius: BorderRadius.circular(8.pw),
+                borderRadius: BorderRadius.circular(raduis??8.pw),
                 child: Center(
                   child: Row(
                     mainAxisSize: MainAxisSize.min,

@@ -1,5 +1,7 @@
 import 'package:aura_real/aura_real.dart';
+import 'package:aura_real/common/methods.dart';
 import 'package:aura_real/screens/auth/your_location/your_location_provider.dart';
+import 'package:aura_real/screens/dahsboard/dashboard_screen.dart';
 
 class YourLocationScreen extends StatelessWidget {
   const YourLocationScreen({super.key});
@@ -22,7 +24,7 @@ class YourLocationScreen extends StatelessWidget {
           body: Padding(
             padding: EdgeInsets.symmetric(
               horizontal: Constants.horizontalPadding,
-              vertical: 30
+              vertical: 30,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -44,7 +46,7 @@ class YourLocationScreen extends StatelessWidget {
                 56.ph.spaceVertical,
 
                 // Illustration
-                Container(
+                SizedBox(
                   height: 220,
                   width: double.infinity,
 
@@ -55,11 +57,14 @@ class YourLocationScreen extends StatelessWidget {
                 123.ph.spaceVertical,
                 // Allow location button
                 SubmitButton(
-                  onTap: () {
+                  onTap: () async {
                     provider.allowLocation();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Location access granted")),
-                    );
+                    await checkCameraPermission(context);
+                    if (context.mounted) {
+                      context.navigator.pushReplacementNamed(
+                        DashboardScreen.routeName,
+                      );
+                    }
                   },
 
                   title: context.l10n?.allowLocationAccess ?? "",
