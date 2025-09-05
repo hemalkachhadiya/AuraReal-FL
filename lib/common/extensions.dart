@@ -34,14 +34,14 @@ extension ValidationExt on String {
   /// Must contain: uppercase, lowercase, number, special char, min 8 length
   bool isValidPassword() {
     final hasMinLength = length >= 8;
-    final hasUppercase = contains(RegExp(r'[A-Z]'));
+    // final hasUppercase = contains(RegExp(r'[A-Z]'));
     final hasLowercase = contains(RegExp(r'[a-z]'));
     final hasNumber = contains(RegExp(r'[0-9]'));
     final hasSymbol =
     contains(RegExp(r'[!@#\$%^&*(),.?":{}|<>_\[\]\\/~`+=-]'));
 
     return hasMinLength &&
-        hasUppercase &&
+        // hasUppercase &&
         hasLowercase &&
         hasNumber &&
         hasSymbol;

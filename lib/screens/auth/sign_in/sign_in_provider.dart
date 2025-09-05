@@ -1,12 +1,21 @@
+import 'package:aura_real/apis/app_response.dart';
+import 'package:aura_real/apis/auth_apis.dart';
 import 'package:aura_real/aura_real.dart';
+import 'package:aura_real/screens/auth/sign_in/model/login_response_model.dart';
 import 'package:aura_real/screens/dahsboard/dashboard_screen.dart';
+import 'package:aura_real/services/api_services.dart';
+import 'package:aura_real/utils/end_points.dart';
 
 class SignInProvider extends ChangeNotifier {
   SignInProvider();
 
   bool loader = false;
-  TextEditingController emailController = TextEditingController();
-  TextEditingController passwordController = TextEditingController();
+  TextEditingController emailController = TextEditingController(
+    text: "nehal.smarttechnica@gmail.com",
+  );
+  TextEditingController passwordController = TextEditingController(
+    text: "Nehal@123",
+  );
 
   String emailError = "";
   String pwdError = "";
@@ -66,35 +75,88 @@ class SignInProvider extends ChangeNotifier {
   }
 
   /// Login Function
-  Future<void> onLoginTap(BuildContext context) async {
-    if (!validate(context)) return;
+  // Simulated login API call
+  // Future<void> onLoginTap(BuildContext context) async {
+  //   if (!isFormValid) return;
+  //
+  //   loader = true;
+  //   notifyListeners();
+  //
+  //   try {
+  //     final response = await ApiService.postApi(
+  //       url: EndPoints.login, // Replace with your login endpoint
+  //       body: {
+  //         "email": emailController.text,
+  //         "password": passwordController.text,
+  //       },
+  //     );
+  //
+  //     if (response == null) {
+  //       showCatchToast('No response from server', null);
+  //       loader = false;
+  //       notifyListeners();
+  //       return;
+  //     }
+  //
+  //     final model = appResponseFromJson<bool>(response.body);
+  //     if (model.success == true) {
+  //       showSuccessToast('Login Successful');
+  //       if(context.mounted){
+  //         context.navigator.pushReplacementNamed(
+  //           DashboardScreen.routeName,
+  //         ); // Replace with your home route
+  //       }
+  //
+  //     } else {
+  //       // Handle invalid login attempt
+  //       if (model.message?.toLowerCase().contains(
+  //             "invalid email or password",
+  //           ) ==
+  //           true) {
+  //         showErrorMsg('Email not registered, please sign up');
+  //         if (context.mounted) {
+  //           context.navigator.pushNamed(
+  //             SignUpScreen.routeName,
+  //             arguments: {
+  //               'email': emailController.text,
+  //               "password": passwordController.text,
+  //             },
+  //           );
+  //         }
+  //       } else {
+  //         showCatchToast(model.message ?? 'Login failed', null);
+  //       }
+  //     }
+  //   } catch (exception, stack) {
+  //     showCatchToast(exception, stack);
+  //   } finally {
+  //     loader = false;
+  //     notifyListeners();
+  //   }
+  // }
 
-    try {
+  LoginRes? userData;
+
+  Future<void> onLoginTap(BuildContext context) async {
+    if (!isFormValid) return;
+    if (isFormValid) {
       loader = true;
       notifyListeners();
+      final result = await AuthApis.loginAPI(
+        email: emailController.text,
+        password: passwordController.text,
+      );
+      userData = result;
+      if (userData != null) {
+        print("LOGIN USER DATA  $userData");
 
-      // Fake API delay
-      await Future.delayed(const Duration(seconds: 2));
-
-      if (context.mounted) {
-        context.navigator.pushReplacementNamed(DashboardScreen.routeName);
+        if (context.mounted) {
+          context.navigator.pushNamedAndRemoveUntil(
+            DashboardScreen.routeName,
+            (route) => false,
+          );
+        }
       }
-      // // TODO: replace with real API call
-      // if (emailController.text == "test0001" &&
-      //     passwordController.text == "123456789") {
-      //   // Success → navigate to home
-      //   context.navigator.pushReplacementNamed("/home");
-      // } else {
-      //   // Invalid credentials
-      //   ScaffoldMessenger.of(
-      //     context,
-      //   ).showSnackBar(const SnackBar(content: Text("Invalid credentials")));
-      // }
-    } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Error: $e")));
-    } finally {
       loader = false;
       notifyListeners();
     }

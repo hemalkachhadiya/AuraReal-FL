@@ -611,6 +611,12 @@ abstract class AppLocalizations {
   /// **'Log out'**
   String get logoutSpace;
 
+  /// No description provided for @sendOTP.
+  ///
+  /// In en, this message translates to:
+  /// **'Send OTP'**
+  String get sendOTP;
+
   /// No description provided for @rateThisPost.
   ///
   /// In en, this message translates to:

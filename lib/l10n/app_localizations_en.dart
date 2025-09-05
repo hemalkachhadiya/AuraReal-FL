@@ -267,5 +267,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get logoutSpace => 'Log out';
 
   @override
+  String get sendOTP => 'Send OTP';
+
+  @override
   String get rateThisPost => 'Rate this Post';
 }

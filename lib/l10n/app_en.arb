@@ -85,5 +85,6 @@
   "logout2": "Log Out?",
   "areYouSureWantToLogOut": "Are you sure want to log out?",
   "logoutSpace": "Log out",
+  "sendOTP": "Send OTP",
   "rateThisPost": "Rate this Post"
 }

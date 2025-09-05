@@ -124,14 +124,11 @@ class SettingScreen extends StatelessWidget {
                         padding: EdgeInsets.only(top: 15.ph),
                         child: SubmitButton(
                           height: 45.ph,
+                          loading: provider.loader,
                           title: context.l10n?.logout ?? "2",
                           raduis: 15,
-                          onTap: () {
-                            context.navigator.pop(context);
-                            context.navigator.pushNamedAndRemoveUntil(
-                              SignInScreen.routeName,
-                              (_) => false,
-                            );
+                          onTap: () async {
+                            await provider.logoutTap(context);
                           },
                           style: styleW600S12.copyWith(color: ColorRes.white),
                         ),

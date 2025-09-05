@@ -86,6 +86,7 @@
   "logout2": "تسجيل الخروج؟",
   "areYouSureWantToLogOut": "هل أنت متأكد أنك تريد تسجيل الخروج؟",
   "logoutSpace": "تسجيل الخروج",
+  "sendOTP": "إرسال رمز التحقق",
   "@cameraPermissionContent": {
     "description": "رسالة طلب إذن الكاميرا"
   }

@@ -1,29 +1,55 @@
+import 'package:aura_real/apis/auth_apis.dart';
 import 'package:aura_real/aura_real.dart';
 import 'package:aura_real/screens/auth/check_your_email/check_your_email_screen.dart';
+
 // Updated Provider
 class PasswordResetProvider extends ChangeNotifier {
-  PasswordResetProvider();
+  final bool isComeFromSignUp;
+  final String? email;
+  final String? fullName;
+  final String? phoneNumber;
+  final String? password;
+
+  PasswordResetProvider(
+    this.email,
+    this.fullName,
+    this.phoneNumber,
+    this.password, {
+    required this.isComeFromSignUp,
+  });
 
   bool loader = false;
   String? selectedMethod;
 
-  TextEditingController accountController = TextEditingController(
-    text: "test0001",
-  );
-  TextEditingController passwordController = TextEditingController(
-    text: "123456789",
-  );
-  String accountError = "";
-  String pwdError = "";
-  bool isPwdVisible = false;
-
-  void onPwdVisibilityChanged() {
-    isPwdVisible = !isPwdVisible;
+  void selectResetMethod(String method) {
+    selectedMethod = method;
     notifyListeners();
   }
 
-  void selectResetMethod(String method) {
-    selectedMethod = method;
+  /// Submit signup
+  Future<void> signUpAPI(BuildContext context) async {
+    print('on sgn up');
+
+    print(
+      'onSignUpTap =============${email} ${password} ${phoneNumber} ${fullName}',
+    );
+    loader = true;
+    notifyListeners();
+    final result = await AuthApis.registerAPI(
+      email: email ?? "",
+      fullName: fullName ?? "",
+      password: password ?? "",
+      phoneNumber: phoneNumber ?? "",
+    );
+    if (result) {
+      if (context.mounted) {
+        context.navigator.pushNamed(
+          CheckYourEmailScreen.routeName,
+          arguments: {'email': email},
+        );
+      }
+    }
+    loader = false;
     notifyListeners();
   }
 
@@ -37,32 +63,29 @@ class PasswordResetProvider extends ChangeNotifier {
       // Simulate API call
       await Future.delayed(Duration(seconds: 2));
 
-
-      showSuccessToast( selectedMethod == 'SMS'
-          ? 'Reset code sent to your mobile number'
-          : 'Reset link sent to your email',);
+      showSuccessToast(
+        selectedMethod == 'SMS'
+            ? 'Reset code sent to your mobile number'
+            : 'Reset link sent to your email',
+      );
 
       // Navigate to verification screen or back
-     context.navigator.pushNamed(CheckYourEmailScreen.routeName);
-
+      if (context.mounted) {
+        context.navigator.pushNamed(CheckYourEmailScreen.routeName);
+      }
     } catch (e) {
       // Handle error
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Something went wrong. Please try again.'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Something went wrong. Please try again.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     } finally {
       loader = false;
       notifyListeners();
     }
-  }
-
-  @override
-  void dispose() {
-    accountController.dispose();
-    passwordController.dispose();
-    super.dispose();
   }
 }

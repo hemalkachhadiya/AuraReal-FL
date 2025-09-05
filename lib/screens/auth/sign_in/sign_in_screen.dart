@@ -102,7 +102,7 @@ class SignInScreen extends StatelessWidget {
                                   height: 18,
                                 ),
                               ),
-                              obscureText: provider.isPwdVisible,
+                              obscureText: !provider.isPwdVisible,
                               isMandatory: true,
                               textInputType: TextInputType.text,
                               fillColor: ColorRes.lightGrey2,
@@ -114,8 +114,10 @@ class SignInScreen extends StatelessWidget {
                             14.ph.spaceVertical,
                             InkWell(
                               onTap: () {
+
                                 context.navigator.pushNamed(
                                   PasswordRestScreen.routeName,
+                                  arguments: {"isComeFromSignUp": false},
                                 );
                               },
                               child: Padding(

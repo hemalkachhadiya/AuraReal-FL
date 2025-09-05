@@ -1,9 +1,29 @@
+import 'package:aura_real/apis/auth_apis.dart';
 import 'package:aura_real/aura_real.dart';
+import 'package:aura_real/screens/auth/check_your_email/check_your_email_screen.dart';
+import 'package:aura_real/screens/auth/password_reset/password_reset_screen.dart';
 
 class SignUpProvider extends ChangeNotifier {
-  SignUpProvider();
+  SignUpProvider({Map<String, dynamic>? args}) {
+    // Prefill email and password if provided in args
+    if (args != null) {
+      final prefilledEmail = args['email'] as String? ?? '';
+      final prefilledPassword = args['password'] as String? ?? '';
+      if (prefilledEmail.isNotEmpty) {
+        emailController.text = prefilledEmail;
+        onEmailChanged(prefilledEmail); // Validate without context if null
+      }
+      if (prefilledPassword.isNotEmpty) {
+        passwordController.text = prefilledPassword;
+        onPasswordChanged(
+          prefilledPassword,
+        ); // Validate without context if null
+      }
+    }
+  }
 
   bool loader = false;
+
   /// Controllers
   final TextEditingController fullNameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
@@ -44,24 +64,24 @@ class SignUpProvider extends ChangeNotifier {
         isChecked; // ✅ Must check terms
   }
 
-  void onFullNameChanged(String value, BuildContext context) {
-    validate(context);
+  void onFullNameChanged(String value) {
+    validate();
   }
 
-  void onEmailChanged(String value, BuildContext context) {
-    validate(context);
+  void onEmailChanged(String value) {
+    validate();
   }
 
-  void onMobileChanged(String value, BuildContext context) {
-    validate(context);
+  void onMobileChanged(String value) {
+    validate();
   }
 
-  void onPasswordChanged(String value, BuildContext context) {
-    validate(context);
+  void onPasswordChanged(String value) {
+    validate();
   }
 
   /// Validate inputs
-  bool validate(BuildContext context) {
+  bool validate() {
     final fullName = fullNameController.text.trim();
     final email = emailController.text.trim();
     final mobile = mobileController.text.trim();
@@ -69,36 +89,51 @@ class SignUpProvider extends ChangeNotifier {
 
     // Full name validation
     if (fullName.isEmpty) {
-      fullNameError = context.l10n?.fullNameIsRequired ?? "Full name is required";
+      fullNameError =
+          navigatorKey.currentState?.context.l10n?.fullNameIsRequired ??
+          "Full name is required";
     } else {
       fullNameError = "";
     }
 
     // Email validation
     if (email.isEmpty) {
-      emailError = context.l10n?.emailIsRequired ?? "Email is required";
+      emailError =
+          navigatorKey.currentState?.context.l10n?.emailIsRequired ??
+          "Email is required";
     } else if (!email.isEmailValid()) {
-      emailError = context.l10n?.invalidEmail ?? "Enter a valid email address";
+      emailError =
+          navigatorKey.currentState?.context.l10n?.invalidEmail ??
+          "Enter a valid email address";
     } else {
       emailError = "";
     }
 
     // Mobile validation
     if (mobile.isEmpty) {
-      mobileError = context.l10n?.mobileIsRequired ?? "Mobile number is required";
+      mobileError =
+          navigatorKey.currentState?.context.l10n?.mobileIsRequired ??
+          "Mobile number is required";
     } else if (!mobile.isPhoneValid()) {
-      mobileError = context.l10n?.invalidMobile ?? "Enter a valid mobile number";
+      mobileError =
+          navigatorKey.currentState?.context.l10n?.invalidMobile ??
+          "Enter a valid mobile number";
     } else {
       mobileError = "";
     }
 
     // Password validation
     if (password.isEmpty) {
-      pwdError = context.l10n?.passwordIsRequired ?? "Password is required";
+      pwdError =
+          navigatorKey.currentState?.context.l10n?.passwordIsRequired ??
+          "Password is required";
     } else if (password.length < 8) {
-      pwdError = context.l10n?.passwordMinLength ?? "Password must be at least 8 characters";
+      pwdError =
+          navigatorKey.currentState?.context.l10n?.passwordMinLength ??
+          "Password must be at least 8 characters";
     } else if (!password.isValidPassword()) {
-      pwdError = context.l10n?.passwordInvalid ??
+      pwdError =
+          navigatorKey.currentState?.context.l10n?.passwordInvalid ??
           "Password must contain uppercase, lowercase, number & special character";
     } else {
       pwdError = "";
@@ -112,33 +147,49 @@ class SignUpProvider extends ChangeNotifier {
         isChecked; // ✅ must agree to terms
   }
 
-  /// Submit signup
-  Future<void> onSignUpTap(BuildContext context) async {
-    if (!validate(context)) return;
-
-    loader = true;
-    notifyListeners();
-
-    try {
-      // TODO: Call API here
-      await Future.delayed(const Duration(seconds: 2));
-
-      loader = false;
-      notifyListeners();
-
-      context.navigator.pushReplacementNamed(SignInScreen.routeName);
-    } catch (e) {
-      loader = false;
-      notifyListeners();
+  void onSignUpTap(BuildContext context) {
+    if (validate()) {
+      context.navigator.pushNamed(
+        PasswordRestScreen.routeName,
+        arguments: {"isComeFromSignUp": true,"email": emailController.text.trim(),
+          "fullName": fullNameController.text.trim(),
+          "phoneNumber": mobileController.text.trim(),
+          "password": passwordController.text.trim(),},
+      );
     }
   }
 
-  @override
-  void dispose() {
-    fullNameController.dispose();
-    emailController.dispose();
-    mobileController.dispose();
-    passwordController.dispose();
-    super.dispose();
+  /// Submit signup
+  Future<void> signUpAPI(BuildContext context) async {
+    print('on sgn up');
+
+    print('onSignUpTap =============');
+    loader = true;
+    notifyListeners();
+    final result = await AuthApis.registerAPI(
+      email: emailController.text,
+      fullName: fullNameController.text,
+      password: passwordController.text,
+      phoneNumber: mobileController.text,
+    );
+    if (result) {
+      if (context.mounted) {
+        context.navigator.pushNamed(
+          CheckYourEmailScreen.routeName,
+          arguments: {'email': emailController.text},
+        );
+      }
+    }
+    loader = false;
+    notifyListeners();
   }
+
+  // @override
+  // void dispose() {
+  //   fullNameController.dispose();
+  //   emailController.dispose();
+  //   mobileController.dispose();
+  //   passwordController.dispose();
+  //   super.dispose();
+  // }
 }

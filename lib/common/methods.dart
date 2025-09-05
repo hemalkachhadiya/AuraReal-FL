@@ -1,4 +1,11 @@
 import 'package:aura_real/aura_real.dart';
+import 'package:aura_real/screens/auth/sign_in/model/login_response_model.dart';
+
+
+Future<void> logoutUser() async {
+  await PrefService.removeKey(PrefKeys.token);
+  await PrefService.removeKey(PrefKeys.userData);
+}
 
 dynamic normalizeFalseToNull(dynamic input) {
   if (input is Map) {
@@ -28,18 +35,18 @@ void hideKeyboard({BuildContext? context}) {
   }
 }
 
-// LoginRes? get userData {
-//   try {
-//     final str = PrefService.getString(PrefKeys.userData);
-//
-//     if (str.isNotEmpty) {
-//       return LoginRes.fromJson(jsonDecode(str));
-//     }
-//   } catch (e) {
-//     debugPrint(e.toString());
-//   }
-//   return null;
-// }
+LoginRes? get userData {
+  try {
+    final str = PrefService.getString(PrefKeys.userData);
+
+    if (str.isNotEmpty) {
+      return LoginRes.fromJson(jsonDecode(str));
+    }
+  } catch (e) {
+    debugPrint(e.toString());
+  }
+  return null;
+}
 
 Future<bool> checkCameraPermission(BuildContext context) async {
   final permission = await Permission.camera.request();

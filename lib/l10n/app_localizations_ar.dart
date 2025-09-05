@@ -267,5 +267,8 @@ class AppLocalizationsAr extends AppLocalizations {
   String get logoutSpace => 'تسجيل الخروج';
 
   @override
+  String get sendOTP => 'إرسال رمز التحقق';
+
+  @override
   String get rateThisPost => 'قيم هذه المشاركة';
 }

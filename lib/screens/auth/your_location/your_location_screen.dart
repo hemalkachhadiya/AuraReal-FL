@@ -2,18 +2,31 @@ import 'package:aura_real/aura_real.dart';
 import 'package:aura_real/common/methods.dart';
 import 'package:aura_real/screens/auth/your_location/your_location_provider.dart';
 import 'package:aura_real/screens/dahsboard/dashboard_screen.dart';
+import 'package:aura_real/services/location_services.dart';
 
 class YourLocationScreen extends StatelessWidget {
-  const YourLocationScreen({super.key});
+  final bool isComeFromSplash;
+
+  const YourLocationScreen({super.key, this.isComeFromSplash = false});
 
   static const routeName = "your_location_screen";
 
-  static Widget builder(BuildContext context) {
+  static Widget builder(BuildContext context, {bool isComeFromSplash = false}) {
     return ChangeNotifierProvider<YourLocationProvider>(
-      create: (c) => YourLocationProvider(),
-      child: const YourLocationScreen(),
+      create: (c) => YourLocationProvider(isComeFromSplash: isComeFromSplash),
+      child: YourLocationScreen(isComeFromSplash: isComeFromSplash),
     );
   }
+
+  // static const routeName = "your_location_screen";
+  //
+  // static Widget builder(BuildContext context) {
+  //
+  //   return ChangeNotifierProvider<YourLocationProvider>(
+  //     create: (c) => YourLocationProvider(  ),
+  //     child: const YourLocationScreen(),
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +43,7 @@ class YourLocationScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 8.ph.spaceVertical,
-                AppBackIcon(),
+                if (!provider.isComeFromSplash) AppBackIcon(),
                 30.ph.spaceVertical,
                 Text(
                   context.l10n?.whatIsYOurLocation ?? "",
@@ -59,17 +72,55 @@ class YourLocationScreen extends StatelessWidget {
                 SubmitButton(
                   onTap: () async {
                     provider.allowLocation();
-                    await checkCameraPermission(context);
-                    if (context.mounted) {
-                      context.navigator.pushReplacementNamed(
-                        DashboardScreen.routeName,
-                      );
+                    final locationService = GetLocationService();
+                    final position = await locationService.getCurrentLocation(
+                      context,
+                    );
+                    if (position != null && context.mounted) {
+                      final address = await locationService
+                          .getAddressFromLatLng(position);
+                      provider.setManualLocation(address);
+                      await PrefService.set(PrefKeys.location, address);
+                      String token = PrefService.getString(PrefKeys.token);
+
+                      if (token.trim().isNotEmpty) {
+                        if (context.mounted) {
+                          context.navigator.pushReplacementNamed(
+                            DashboardScreen.routeName,
+                          );
+                        }
+                      } else {
+                        if (context.mounted) {
+                          context.navigator.pushReplacementNamed(
+                            SignInScreen.routeName,
+                          );
+                        }
+                      }
+                    } else if (context.mounted) {
+                      await openAppSettings();
                     }
                   },
-
-                  title: context.l10n?.allowLocationAccess ?? "",
+                  title:
+                      context.l10n?.allowLocationAccess ??
+                      "Allow Location Access",
                 ),
 
+                // SubmitButton(
+                //   onTap: () async {
+                //     // provider.allowLocation();
+                //     // await requestPermissions();
+                //     // if (context.mounted) {
+                //     //   await checkCameraPermission(context);
+                //     // }
+                //     // if (context.mounted) {
+                //     //   context.navigator.pushReplacementNamed(
+                //     //     DashboardScreen.routeName,
+                //     //   );
+                //     // }
+                //   },
+                //
+                //   title: context.l10n?.allowLocationAccess ?? "",
+                // ),
                 12.ph.spaceVertical,
 
                 // Enter manually

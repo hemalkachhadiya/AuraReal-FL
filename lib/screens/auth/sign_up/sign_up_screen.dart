@@ -1,4 +1,5 @@
 import 'package:aura_real/aura_real.dart';
+import 'package:aura_real/screens/auth/password_reset/password_reset_screen.dart';
 
 class SignUpScreen extends StatelessWidget {
   const SignUpScreen({super.key});
@@ -6,8 +7,14 @@ class SignUpScreen extends StatelessWidget {
   static const routeName = "sign_up";
 
   static Widget builder(BuildContext context) {
+    Map<String, dynamic>? args;
+
+    // Check if context.args is a Map and assign it
+    if (context.args is Map<String, dynamic>) {
+      args = context.args as Map<String, dynamic>;
+    }
     return ChangeNotifierProvider<SignUpProvider>(
-      create: (c) => SignUpProvider(),
+      create: (c) => SignUpProvider(args: args),
       child: const SignUpScreen(),
     );
   }
@@ -59,7 +66,7 @@ class SignUpScreen extends StatelessWidget {
                             fillColor: ColorRes.lightGrey2,
                             borderRadius: 40.pw,
                             onChanged: (value) {
-                              provider.onFullNameChanged(value, context);
+                              provider.onFullNameChanged(value);
                             },
                           ),
                           20.ph.spaceVertical,
@@ -83,7 +90,7 @@ class SignUpScreen extends StatelessWidget {
                             fillColor: ColorRes.lightGrey2,
                             borderRadius: 40.pw,
                             onChanged: (value) {
-                              provider.onEmailChanged(value, context);
+                              provider.onEmailChanged(value);
 
                               // Handle text change
                             },
@@ -108,7 +115,7 @@ class SignUpScreen extends StatelessWidget {
                             fillColor: ColorRes.lightGrey2,
                             borderRadius: 40.pw,
                             onChanged: (value) {
-                              provider.onMobileChanged(value, context);
+                              provider.onMobileChanged(value);
 
                               // Handle text change
                             },
@@ -134,20 +141,20 @@ class SignUpScreen extends StatelessWidget {
                               },
                               child: SvgAsset(
                                 imagePath:
-                                    provider.isPwdVisible
+                                    !provider.isPwdVisible
                                         ? AssetRes.showIcon
                                         : AssetRes.hideIcon,
                                 width: 18,
                                 height: 18,
                               ),
                             ),
-                            obscureText: provider.isPwdVisible,
+                            obscureText: !provider.isPwdVisible,
                             isMandatory: true,
                             textInputType: TextInputType.text,
                             fillColor: ColorRes.lightGrey2,
                             borderRadius: 40.pw,
                             onChanged: (value) {
-                              provider.onPasswordChanged(value, context);
+                              provider.onPasswordChanged(value);
 
                               // Handle text change
                             },

@@ -91,7 +91,10 @@ class CreateNewPasswordProvider extends ChangeNotifier {
 
       showSuccessToast('Password changed successfully');
       if (context.mounted) {
-        context.navigator.pushNamed(YourLocationScreen.routeName);
+        context.navigator.pushReplacementNamed(
+          YourLocationScreen.routeName,
+          arguments: {'isComeFromSplash': false}, // Pass the flag
+        );
       }
     } catch (e) {
 

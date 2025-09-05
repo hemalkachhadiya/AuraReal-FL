@@ -1,4 +1,5 @@
 import 'package:aura_real/aura_real.dart';
+import 'package:aura_real/common/widgets/common_widget.dart';
 
 class CheckYourEmailScreen extends StatelessWidget {
   const CheckYourEmailScreen({super.key});
@@ -6,8 +7,12 @@ class CheckYourEmailScreen extends StatelessWidget {
   static const routeName = "check_your_email";
 
   static Widget builder(BuildContext context) {
+    Map<String, dynamic>? args;
+    if (context.args is Map<String, dynamic>) {
+      args = context.args as Map<String, dynamic>;
+    }
     return ChangeNotifierProvider<CheckYourMailProvider>(
-      create: (c) => CheckYourMailProvider(),
+      create: (c) => CheckYourMailProvider(email: args?['email'] ?? ""),
       child: const CheckYourEmailScreen(),
     );
   }
@@ -33,7 +38,9 @@ class CheckYourEmailScreen extends StatelessWidget {
                 bgColor:
                     provider.loader ? ColorRes.primaryColor : ColorRes.grey3,
                 onTap:
-                    provider.loader ? null : () => provider.onSendTap(context),
+                    provider.loader
+                        ? null
+                        : () => provider.onVerifyOTPTap(context),
                 title: context.l10n?.submit ?? "",
               ),
             ),
@@ -71,8 +78,9 @@ class CheckYourEmailScreen extends StatelessWidget {
                   /// Pinput
                   Center(
                     child: Pinput(
-                      length: 4,
+                      length: 6,
                       onChanged: (val) => provider.setOtp(context, val),
+                      errorText: provider.otpError,
                       defaultPinTheme: PinTheme(
                         width: 56,
                         height: 56,
@@ -126,6 +134,7 @@ class CheckYourEmailScreen extends StatelessWidget {
                     ),
                   ),
 
+                  ErrorText(error: provider.otpError, topPadding: 5.ph),
                   87.ph.spaceVertical,
 
                   /// Illustration

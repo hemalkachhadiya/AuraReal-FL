@@ -69,7 +69,7 @@ class CreateNewPasswordScreen extends StatelessWidget {
                     ),
                     suffixIcon: SvgAsset(
                       imagePath:
-                          provider.isNewPasswordVisible
+                          !provider.isNewPasswordVisible
                               ? AssetRes.showIcon
                               : AssetRes.hideIcon,
                       width: 18,
@@ -78,7 +78,7 @@ class CreateNewPasswordScreen extends StatelessWidget {
                     onSuffixTap: provider.toggleNewPasswordVisibility,
                     isMandatory: true,
                     textInputType: TextInputType.text,
-                    obscureText: provider.isNewPasswordVisible,
+                    obscureText: !provider.isNewPasswordVisible,
                     fillColor: ColorRes.lightGrey2,
                     borderRadius: 40.pw,
                     onChanged: (val) => provider.setNewPassword(context, val),
@@ -100,7 +100,7 @@ class CreateNewPasswordScreen extends StatelessWidget {
                     ),
                     suffixIcon: SvgAsset(
                       imagePath:
-                          provider.isConfirmPasswordVisible
+                          !provider.isConfirmPasswordVisible
                               ? AssetRes.showIcon
                               : AssetRes.hideIcon,
                       width: 18,
@@ -109,7 +109,7 @@ class CreateNewPasswordScreen extends StatelessWidget {
                     onSuffixTap: provider.toggleConfirmPasswordVisibility,
                     isMandatory: true,
                     textInputType: TextInputType.text,
-                    obscureText: provider.isConfirmPasswordVisible,
+                    obscureText: !provider.isConfirmPasswordVisible,
                     fillColor: ColorRes.lightGrey2,
                     borderRadius: 40.pw,
                     onChanged:
