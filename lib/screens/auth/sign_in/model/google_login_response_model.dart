@@ -1,7 +1,7 @@
 class GoogleLoginRes {
   String? email;
   String? googleId;
-  Profile? profile;
+  Profile1? profile;
   bool? isVerified;
   int? status;
   String? token;
@@ -27,7 +27,7 @@ class GoogleLoginRes {
     email = json['email'];
     googleId = json['googleId'];
     profile =
-        json['profile'] != null ? new Profile.fromJson(json['profile']) : null;
+        json['profile'] != null ? new Profile1.fromJson(json['profile']) : null;
     isVerified = json['is_verified'];
     status = json['status'];
     token = json['token'];
@@ -55,15 +55,20 @@ class GoogleLoginRes {
   }
 }
 
-class Profile {
+class Profile1 {
   int? followersCount;
   int? totalPosts;
   int? ratingsAvg;
   int? gender;
 
-  Profile({this.followersCount, this.totalPosts, this.ratingsAvg, this.gender});
+  Profile1({
+    this.followersCount,
+    this.totalPosts,
+    this.ratingsAvg,
+    this.gender,
+  });
 
-  Profile.fromJson(Map<String, dynamic> json) {
+  Profile1.fromJson(Map<String, dynamic> json) {
     followersCount = json['followers_count'];
     totalPosts = json['total_posts'];
     ratingsAvg = json['ratings_avg'];

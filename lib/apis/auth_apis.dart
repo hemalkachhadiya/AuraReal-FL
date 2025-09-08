@@ -202,4 +202,28 @@ class AuthApis {
     }
     return false;
   }
+
+  static Future<Profile?> getUserProfile({required String userId}) async {
+    try {
+      final response = await ApiService.getApi(
+        url: "${EndPoints.getUserProfile}$userId",
+      );
+
+      if (response == null) {
+        showCatchToast('No response from server', null);
+        return null;
+      }
+      final responseBody = jsonDecode(response.body);
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        print("Res Body Data ${responseBody['profile']}");
+        if (responseBody['profile'] != null && responseBody != null) {
+          showSuccessToast(responseBody['message'] ?? 'Login successful');
+          return Profile.fromJson(responseBody['profile']);
+        }
+      }
+    } catch (exception, stack) {
+      showCatchToast(exception, stack);
+      return null;
+    }
+  }
 }
