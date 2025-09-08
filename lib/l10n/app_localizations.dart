@@ -314,7 +314,7 @@ abstract class AppLocalizations {
   /// No description provided for @interLocationManually.
   ///
   /// In en, this message translates to:
-  /// **'Inter Location Manually'**
+  /// **'Enter Location Manually'**
   String get interLocationManually;
 
   /// No description provided for @locationForRestaurantAndProduct.
@@ -616,6 +616,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Send OTP'**
   String get sendOTP;
+
+  /// No description provided for @manualLocationSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Manual location set'**
+  String get manualLocationSet;
+
+  /// No description provided for @typeYourCityOrArea.
+  ///
+  /// In en, this message translates to:
+  /// **'Type your city or area'**
+  String get typeYourCityOrArea;
 
   /// No description provided for @rateThisPost.
   ///

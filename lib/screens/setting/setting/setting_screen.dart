@@ -114,26 +114,27 @@ class SettingScreen extends StatelessWidget {
                 buildTabWidget(
                   provider: provider,
                   onTap: () {
-                    openCustomDialog(
-                      context,
-                      borderRadius: 30,
-                      title: context.l10n?.logoutSpace ?? "",
-                      subtitle: context.l10n?.areYouSureWantToLogOut ?? "",
-                      customChild: Container(
-                        width: 225.pw,
-                        padding: EdgeInsets.only(top: 15.ph),
-                        child: SubmitButton(
-                          height: 45.ph,
-                          loading: provider.loader,
-                          title: context.l10n?.logout ?? "2",
-                          raduis: 15,
-                          onTap: () async {
-                            await provider.logoutTap(context);
-                          },
-                          style: styleW600S12.copyWith(color: ColorRes.white),
-                        ),
-                      ),
-                    );
+                    showLogoutDialog(context, provider);
+                    // openCustomDialog(
+                    //                     //   context,
+                    //                     //   borderRadius: 30,
+                    //                     //   title: context.l10n?.logoutSpace ?? "",
+                    //                     //   subtitle: context.l10n?.areYouSureWantToLogOut ?? "",
+                    //                     //   customChild: Container(
+                    //                     //     width: 225.pw,
+                    //                     //     padding: EdgeInsets.only(top: 15.ph),
+                    //                     //     child: SubmitButton(
+                    //                     //       height: 45.ph,
+                    //                     //       loading: provider.loader,
+                    //                     //       title: context.l10n?.logout ?? "2",
+                    //                     //       raduis: 15,
+                    //                     //       onTap: () async {
+                    //                     //         await provider.logoutTap(context);
+                    //                     //       },
+                    //                     //       style: styleW600S12.copyWith(color: ColorRes.white),
+                    //                     //     ),
+                    //                     //   ),
+                    // );
                   },
                   title: context.l10n?.logout ?? "",
                   img: AssetRes.logoutIcon,
@@ -143,6 +144,75 @@ class SettingScreen extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  void showLogoutDialog(BuildContext context, SettingProvider provider) {
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Prevent closing during logout
+      builder:
+          (context) => AlertDialog(
+            title: Text(context.l10n?.logoutSpace ?? "",style: styleW700S24, textAlign: TextAlign.center),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(context.l10n?.areYouSureWantToLogOut ?? "",style: styleW400S16.copyWith(color: ColorRes.grey6),
+                  textAlign: TextAlign.center,),
+                if (provider.loader) ...[
+                  15.ph.spaceVertical,
+                  CircularProgressIndicator(),
+                  15.ph.spaceVertical,
+                ],
+              ],
+            ),
+            actions: [
+              Center(
+                child: Consumer<SettingProvider>(
+                  builder: (context, provider, child) {
+                    return Container(
+                      width: 225.pw,
+                      padding: EdgeInsets.only(top: 15.ph),
+                      child: SubmitButton(
+                        height: 45.ph,
+                        loading: provider.loader,
+                        title: context.l10n?.logout ?? "2",
+                        raduis: 15,
+                        onTap:
+                            provider.loader
+                                ? null
+                                : () async {
+                                  await provider.logoutTap(context);
+                                },
+                        style: styleW600S12.copyWith(color: ColorRes.white),
+                      ),
+                    )
+                    /*TextButton(
+                  onPressed: provider.loader
+                      ? null
+                      : () async {
+                    await provider.logoutTap(context);
+                  },
+                  child: provider.loader
+                      ? SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+                    ),
+                  )
+                      : Text(
+                    context.l10n?.logout ?? "Logout",
+                    style: TextStyle(color: Colors.red),
+                  ),
+                )*/
+                    ;
+                  },
+                ),
+              ),
+            ],
+          ),
     );
   }
 

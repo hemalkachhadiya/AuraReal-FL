@@ -1,10 +1,8 @@
 import 'package:aura_real/aura_real.dart';
-import 'package:aura_real/screens/auth/your_location/your_location_screen.dart';
-import 'package:aura_real/screens/dahsboard/dashboard_screen.dart';
-import 'package:aura_real/services/location_services.dart';
 import 'package:map_location_picker/map_location_picker.dart';
 
 bool _splashInit = false;
+bool _isLocationEnabled = false; // Variable to check location status
 
 class SplashScreen extends StatelessWidget {
   const SplashScreen({super.key});
@@ -15,91 +13,39 @@ class SplashScreen extends StatelessWidget {
     return SplashScreen();
   }
 
-  // Future<void> navigateScreen(BuildContext context) async {
-  //   try {
-  //     if (_splashInit) return;
-  //     _splashInit = true;
-  //
-  //     await Future.delayed(1000.milliseconds);
-  //
-  //     // Check location services and permissions
-  //     final locationService = GetLocationService();
-  //
-  //     final position = await locationService.getCurrentLocation(context);
-  //
-  //     String token = PrefService.getString(PrefKeys.token);
-  //     String userData = PrefService.getString(PrefKeys.userData);
-  //     print("token -- $token");
-  //     print("userData -- $userData");
-  //
-  //     if (context.mounted) {
-  //       if (position != null) {
-  //         // Location services enabled and permissions granted
-  //         final address = await locationService.getAddressFromLatLng(position);
-  //         await PrefService.set(PrefKeys.location, address);
-  //
-  //         // Navigate based on token
-  //         if (token.trim().isNotEmpty) {
-  //           if (context.mounted) {
-  //             context.navigator.pushReplacementNamed(DashboardScreen.routeName);
-  //           }
-  //         } else {
-  //           if (context.mounted) {
-  //             context.navigator.pushReplacementNamed(SignInScreen.routeName);
-  //           }
-  //         }
-  //       } else {
-  //         context.navigator.pushReplacementNamed(
-  //           YourLocationScreen.routeName,
-  //           arguments: {'isComeFromSplash': true}, // Pass the flag
-  //         );
-  //       }
-  //     }
-  //   } catch (e) {
-  //     debugPrint(e.toString());
-  //     if (context.mounted) {
-  //       context.navigator.pushReplacementNamed(
-  //         YourLocationScreen.routeName,
-  //         arguments: {'isComeFromSplash': true}, // Pass the flag
-  //       );
-  //     }
-  //   }
-  //   await Future.delayed(300.milliseconds);
-  //   // FlutterNativeSplash.remove();
-  // }
+  Future<void> checkLocationStatus() async {
+    try {
+      // Check if location services are enabled
+      _isLocationEnabled = await Geolocator.isLocationServiceEnabled();
+      print("Location services enabled: $_isLocationEnabled");
+    } catch (e) {
+      print("Error checking location status: $e");
+      _isLocationEnabled = false;
+    }
+  }
+
   Future<void> navigateScreen(BuildContext context) async {
+    final locationStatus = await GetLocationService.checkLocationStatus();
+    _isLocationEnabled = locationStatus == LocationStatus.enabled;
+    print("_isLocationEnabled============= ${_isLocationEnabled}");
+    final position = await GetLocationService.getCurrentLocation(context);
+    print("Location----------- ${position?.longitude} ${position?.latitude}");
+    final address = await GetLocationService.getAddressFromLatLng(context);
+
+    print("address======= ${address}");
     try {
       if (_splashInit) return;
       _splashInit = true;
 
       await Future.delayed(1000.milliseconds);
 
-      // Check location services and permissions
-      final locationService = GetLocationService();
-      final isLocationEnabled = await GetLocationService.isLocationServiceEnabled(context);
-      LocationPermission permission = await Geolocator.checkPermission();
-
       if (context.mounted) {
-        if (isLocationEnabled && (permission == LocationPermission.whileInUse || permission == LocationPermission.always)) {
-          final position = await GetLocationService.getCurrentLocation(context);
+        String token = PrefService.getString(PrefKeys.token);
 
-          String token = PrefService.getString(PrefKeys.token);
-          String userData = PrefService.getString(PrefKeys.userData);
-          print("token -- $token");
-          print("userData -- $userData");
-          print("position -- ${position?.latitude}, ${position?.longitude} ${position?.floor} ");
-
+        // Navigate based on token
+        if (token.trim().isNotEmpty) {
           if (position != null) {
-            // Location services enabled and permissions granted
-            final address = await GetLocationService.getAddressFromLatLng(context);
-            await PrefService.set(PrefKeys.location, address ?? "");
-
-            // Navigate based on token
-            if (token.trim().isNotEmpty) {
-              context.navigator.pushReplacementNamed(DashboardScreen.routeName);
-            } else {
-              context.navigator.pushReplacementNamed(SignInScreen.routeName);
-            }
+            context.navigator.pushReplacementNamed(DashboardScreen.routeName);
           } else {
             context.navigator.pushReplacementNamed(
               YourLocationScreen.routeName,
@@ -107,54 +53,15 @@ class SplashScreen extends StatelessWidget {
             );
           }
         } else {
-          context.navigator.pushReplacementNamed(
-            YourLocationScreen.routeName,
-            arguments: {'isComeFromSplash': true},
-          );
+          context.navigator.pushReplacementNamed(SignInScreen.routeName);
         }
       }
     } catch (e) {
       debugPrint(e.toString());
-      if (context.mounted) {
-        context.navigator.pushReplacementNamed(
-          YourLocationScreen.routeName,
-          arguments: {'isComeFromSplash': true},
-        );
-      }
     }
     await Future.delayed(300.milliseconds);
     // FlutterNativeSplash.remove();
   }
-
-  // Future<void> navigateScreen(BuildContext context) async {
-  //   try {
-  //     if (_splashInit) return;
-  //     _splashInit = true;
-  //     await Future.delayed(1000.milliseconds);
-  //     // Check location services and permissions
-  //     final locationService = GetLocationService();
-  //     final position = await locationService.getCurrentLocation(context);
-  //     String token = PrefService.getString(PrefKeys.token);
-  //     String userData = PrefService.getString(PrefKeys.userData);
-  //     print("token -- ${token}");
-  //
-  //     print("userData -- ${userData}");
-  //
-  //
-  //     if (context.mounted) {
-  //       if (token.trim().isNotEmpty) {
-  //         context.navigator.pushReplacementNamed(DashboardScreen.routeName);
-  //       } else {
-  //         context.navigator.pushReplacementNamed(SignInScreen.routeName);
-  //         // context.navigator.pushReplacementNamed(DashboardScreen.routeName);
-  //       }
-  //     }
-  //   } catch (e) {
-  //     debugPrint(e.toString());
-  //   }
-  //   await Future.delayed(300.milliseconds);
-  //   // FlutterNativeSplash.remove();
-  // }
 
   @override
   Widget build(BuildContext context) {

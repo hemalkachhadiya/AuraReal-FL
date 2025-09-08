@@ -1,19 +1,16 @@
 import 'package:aura_real/aura_real.dart';
-import 'package:aura_real/screens/home/home/model/post_model.dart';
-import 'package:aura_real/screens/home/home/widget/star_rating_widget.dart';
 import 'package:aura_real/screens/home/upload/upload_screen.dart';
 
 class PostCard extends StatelessWidget {
-  final PostModel post;
+  final PostListModel post;
+  final VoidCallback onTap;
 
-  const PostCard({super.key, required this.post});
+  const PostCard({super.key, required this.post, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () {
-        context.navigator.pushNamed(UploadScreen.routeName,arguments: post);
-      },
+   onTap: onTap,
       child: Column(
         children: [
           Padding(
@@ -33,7 +30,7 @@ class PostCard extends StatelessWidget {
                   padding: EdgeInsets.all(2),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(50),
-                    child: CachedImage(post.userProfileImage),
+                    child: CachedImage(post.postImage),
                   ),
                 ),
                 8.pw.spaceHorizontal,
@@ -41,7 +38,10 @@ class PostCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    Text(post.userName ?? "", style: styleW600S12),
+                    Text(
+                      post.userId?.profile?.username ?? "",
+                      style: styleW600S12,
+                    ),
                     4.ph.spaceVertical,
                     Row(
                       children: [
@@ -51,7 +51,7 @@ class PostCard extends StatelessWidget {
                           color: Color(0xFFFFD700),
                         ),
                         1.pw.spaceHorizontal,
-                        Text(post.rating.toString(), style: styleW600S12),
+                        Text("5", style: styleW600S12),
                       ],
                     ),
                   ],
@@ -80,7 +80,7 @@ class PostCard extends StatelessWidget {
                       inactiveColor: ColorRes.primaryColor,
                     ),
                     10.pw.spaceHorizontal,
-                    Text(post.rating.toString(), style: styleW700S16),
+                    Text("5", style: styleW700S16),
                     const Spacer(),
 
                     SvgAsset(
@@ -88,6 +88,9 @@ class PostCard extends StatelessWidget {
                       height: 22,
                       width: 22,
                     ),
+                    10.pw.spaceHorizontal,
+                    Text(post.commentsCount.toString(), style: styleW700S16),
+
                   ],
                 ),
                 10.ph.spaceVertical,
@@ -117,15 +120,17 @@ class PostCard extends StatelessWidget {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('How would you rate ${post.userName}\'s post?'),
+              Text(
+                'How would you rate ${post.userId?.profile?.username}\'s post?',
+              ),
               const SizedBox(height: 20),
               InteractiveStarRating(
-                initialRating: post.userRating,
+                initialRating: 5,
                 onRatingChanged: (rating) {
-                  Provider.of<PostsProvider>(
-                    context,
-                    listen: false,
-                  ).ratePost(post.id, rating);
+                  // Provider.of<PostsProvider>(
+                  //   context,
+                  //   listen: false,
+                  // ).ratePost(post.id, rating);
                   Navigator.of(context).pop();
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(

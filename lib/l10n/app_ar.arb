@@ -34,7 +34,7 @@
   "save": "حفظ",
   "whatIsYOurLocation": "ما هو موقعك؟",
   "allowLocationAccess": "السماح بالوصول إلى الموقع",
-  "interLocationManually": "إدخال الموقع يدويًا",
+  "interLocationManually": "أدخل الموقع يدويًا",
   "locationForRestaurantAndProduct": "الموقع لتقييم المطاعم والمنتجات",
   "emailIsRequired": "البريد الإلكتروني مطلوب",
   "passwordIsRequired": "كلمة المرور مطلوبة",
@@ -87,6 +87,8 @@
   "areYouSureWantToLogOut": "هل أنت متأكد أنك تريد تسجيل الخروج؟",
   "logoutSpace": "تسجيل الخروج",
   "sendOTP": "إرسال رمز التحقق",
+  "manualLocationSet": "تم تعيين الموقع يدويًا",
+  "typeYourCityOrArea": "اكتب مدينتك أو منطقتك",
   "@cameraPermissionContent": {
     "description": "رسالة طلب إذن الكاميرا"
   }

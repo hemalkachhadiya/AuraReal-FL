@@ -29,4 +29,16 @@ class SettingProvider extends ChangeNotifier {
     loader = false;
     notifyListeners();
   }
+
+
+
+// Usage in buildTabWidget:
+//   buildTabWidget(
+//   provider: provider,
+//   onTap: () {
+//   _showLogoutDialog(context, provider);
+//   },
+//   title: context.l10n?.logout ?? "",
+//   img: AssetRes.logoutIcon,
+//   ),
 }

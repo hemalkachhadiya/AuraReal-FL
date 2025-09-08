@@ -117,7 +117,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get allowLocationAccess => 'Allow Location Access';
 
   @override
-  String get interLocationManually => 'Inter Location Manually';
+  String get interLocationManually => 'Enter Location Manually';
 
   @override
   String get locationForRestaurantAndProduct => 'Weyourbocation to slow evalu restaurant & products';
@@ -268,6 +268,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sendOTP => 'Send OTP';
+
+  @override
+  String get manualLocationSet => 'Manual location set';
+
+  @override
+  String get typeYourCityOrArea => 'Type your city or area';
 
   @override
   String get rateThisPost => 'Rate this Post';

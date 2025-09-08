@@ -1,8 +1,40 @@
 import 'package:aura_real/aura_real.dart';
-import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 
+enum LocationStatus {
+  enabled,
+  disabled,
+  permissionDenied,
+  permissionPermanentlyDenied,
+  restricted,
+  error
+}
+
 class GetLocationService {
+  static Future<LocationStatus> checkLocationStatus() async {
+    try {
+      // Check if location services are enabled
+      final isEnabled = await Geolocator.isLocationServiceEnabled();
+
+      if (!isEnabled) {
+        return LocationStatus.disabled;
+      }
+
+      // Check location permission
+      final permission = await Geolocator.checkPermission();
+
+      if (permission == LocationPermission.denied) {
+        return LocationStatus.permissionDenied;
+      } else if (permission == LocationPermission.deniedForever) {
+        return LocationStatus.permissionPermanentlyDenied;
+      }   else {
+        return LocationStatus.enabled;
+      }
+    } catch (e) {
+      return LocationStatus.error;
+    }
+  }
+
   /// Checks if location services are enabled.
   /// Returns true if enabled, false if disabled, and shows a snackbar if disabled.
   static Future<bool> isLocationServiceEnabled(BuildContext context) async {
@@ -13,6 +45,83 @@ class GetLocationService {
       );
     }
     return serviceEnabled;
+  }
+
+  /// Navigates to dashboard if location services and permissions are enabled.
+  /// Returns true if navigation occurs, false otherwise.
+  static Future<bool> navigateToDashboardIfLocationEnabled(
+    BuildContext context,
+  ) async {
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    print("serviceEnabled--------------- ${serviceEnabled}");
+    LocationPermission permission = await Geolocator.checkPermission();
+
+    if (!serviceEnabled) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Location services are disabled")),
+        );
+      }
+      return false;
+    }
+
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Location permission denied")),
+          );
+        }
+        return false;
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text(
+              "Location permission permanently denied. Please enable it in settings.",
+            ),
+            action: SnackBarAction(
+              label: "Settings",
+              onPressed: () => Geolocator.openAppSettings(),
+            ),
+          ),
+        );
+      }
+      return false;
+    }
+
+    if (permission == LocationPermission.whileInUse ||
+        permission == LocationPermission.always) {
+      try {
+        Position position = await Geolocator.getCurrentPosition(
+          locationSettings: const LocationSettings(
+            accuracy: LocationAccuracy.high,
+          ),
+        );
+        String? address = await getAddressFromLatLng(
+          context,
+        ); // Reuse existing function
+        if (address != null && context.mounted) {
+          await PrefService.set(PrefKeys.location, address);
+          if (context.mounted) {
+            context.navigator.pushReplacementNamed(DashboardScreen.routeName);
+            return true;
+          }
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Error fetching location: $e")),
+          );
+        }
+        return false;
+      }
+    }
+    return false;
   }
 
   /// Fetches the current location if enabled and returns the address from latitude and longitude.
@@ -79,6 +188,9 @@ class GetLocationService {
         );
         if (placemarks.isNotEmpty) {
           Placemark placemark = placemarks.first;
+          print(
+            "Place mark Location ${"${placemark.street}, ${placemark.locality}, ${placemark.administrativeArea}, ${placemark.country}"}",
+          );
           return "${placemark.street}, ${placemark.locality}, ${placemark.administrativeArea}, ${placemark.country}";
         }
       } catch (e) {

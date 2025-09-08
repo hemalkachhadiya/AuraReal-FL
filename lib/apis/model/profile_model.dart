@@ -1,36 +1,39 @@
 class Profile {
-  final String username;
-  final String profileImage;
+  final String? username;
+  final String? profileImage;
   final String? bio;
-  final int followersCount;
-  final int totalPosts;
-  final int ratingsAvg;
-  final String dateOfBirth;
-  final int gender;
-  final String website;
+  final int? followersCount;
+  final int? totalPosts;
+  final int? ratingsAvg;
+  final String? dateOfBirth;
+  final int? gender;
+  final String? website;
+  final String? lastSeen; // Added last_seen field
 
   Profile({
-    required this.username,
-    required this.profileImage,
+    this.username,
+    this.profileImage,
     this.bio,
-    required this.followersCount,
-    required this.totalPosts,
-    required this.ratingsAvg,
-    required this.dateOfBirth,
-    required this.gender,
-    required this.website,
+    this.followersCount,
+    this.totalPosts,
+    this.ratingsAvg,
+    this.dateOfBirth,
+    this.gender,
+    this.website,
+    this.lastSeen, // Added last_seen field
   });
 
   factory Profile.fromJson(Map<String, dynamic> json) => Profile(
-    username: json['username'],
-    profileImage: json['profile_image'],
-    bio: json['bio'],
-    followersCount: json['followers_count'],
-    totalPosts: json['total_posts'],
-    ratingsAvg: json['ratings_avg'],
-    dateOfBirth: json['date_of_birth'],
-    gender: json['gender'],
-    website: json['website'],
+    username: json['username'] as String?,
+    profileImage: json['profile_image'] as String?,
+    bio: json['bio'] as String?,
+    followersCount: json['followers_count'] as int?,
+    totalPosts: json['total_posts'] as int?,
+    ratingsAvg: json['ratings_avg'] as int?,
+    dateOfBirth: json['date_of_birth'] as String?,
+    gender: json['gender'] as int?,
+    website: json['website'] as String?,
+    lastSeen: json['last_seen'] as String?, // Added last_seen field
   );
 
   Map<String, dynamic> toJson() => {
@@ -43,6 +46,7 @@ class Profile {
     'date_of_birth': dateOfBirth,
     'gender': gender,
     'website': website,
+    'last_seen': lastSeen, // Added last_seen field
   };
 
   /// Convenient copyWith
@@ -56,6 +60,7 @@ class Profile {
     String? dateOfBirth,
     int? gender,
     String? website,
+    String? lastSeen, // Added last_seen field
   }) => Profile(
     username: username ?? this.username,
     profileImage: profileImage ?? this.profileImage,
@@ -66,5 +71,18 @@ class Profile {
     dateOfBirth: dateOfBirth ?? this.dateOfBirth,
     gender: gender ?? this.gender,
     website: website ?? this.website,
+    lastSeen: lastSeen ?? this.lastSeen, // Added last_seen field
   );
+
+  // Helper getters for safe access with default values
+  String get safeUsername => username ?? 'Unknown';
+  String get safeProfileImage => profileImage ?? '';
+  String get safeBio => bio ?? '';
+  int get safeFollowersCount => followersCount ?? 0;
+  int get safeTotalPosts => totalPosts ?? 0;
+  int get safeRatingsAvg => ratingsAvg ?? 0;
+  String get safeDateOfBirth => dateOfBirth ?? '';
+  int get safeGender => gender ?? 0;
+  String get safeWebsite => website ?? '';
+  String get safeLastSeen => lastSeen ?? ''; // Added last_seen field
 }

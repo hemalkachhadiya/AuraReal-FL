@@ -1,6 +1,6 @@
 class EndPoints {
   /// LOCAL URL
-  static const domain = "http://192.168.1.28:4000/";
+  static const domain = "http://192.168.1.30:4000/";
 
   /// Test URL
   static const baseUrl = "${domain}api/v1/";
@@ -16,4 +16,8 @@ class EndPoints {
 
   /// ------------------------------------ User Profile -------------------------------
   static const getUserProfile = "${baseUrl}getuserprofile?userId=";
+
+ /// ------------------------------------ Dashboard -------------------------------
+  static const getAllPostAPI = "${baseUrl}getallposts";
+  static const getPostByUSer = "${baseUrl}getpostsbyuser?userId=68b6cf303add7fc6d731b7c7";
 }
