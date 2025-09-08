@@ -1,4 +1,5 @@
 import 'package:aura_real/apis/app_response.dart';
+import 'package:aura_real/apis/model/location_model.dart';
 import 'package:aura_real/aura_real.dart';
 import 'package:aura_real/screens/auth/sign_in/model/google_login_response_model.dart';
 import 'package:aura_real/screens/auth/sign_in/model/login_response_model.dart';
@@ -226,4 +227,28 @@ class AuthApis {
       return null;
     }
   }
+
+  // static Future<LocationModel?> getLocationAPI({required String userId}) async {
+  //   try {
+  //     final response = await ApiService.getApi(
+  //       url: "${EndPoints.location}$userId",
+  //     );
+  //
+  //     if (response == null) {
+  //       showCatchToast('No response from server', null);
+  //       return null;
+  //     }
+  //     final responseBody = jsonDecode(response.body);
+  //     if (response.statusCode == 200 || response.statusCode == 201) {
+  //       print("Res Body Data ${responseBody['location']}");
+  //       if (responseBody['location'] != null && responseBody != null) {
+  //         showSuccessToast(responseBody['location'] ?? 'Login successful');
+  //         return LocationModel.fromJson(responseBody['location']);
+  //       }
+  //     }
+  //   } catch (exception, stack) {
+  //     showCatchToast(exception, stack);
+  //     return null;
+  //   }
+  // }
 }

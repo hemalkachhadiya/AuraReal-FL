@@ -37,24 +37,43 @@ class CheckYourMailProvider extends ChangeNotifier {
     final result = await AuthApis.verifyOTPAPI(email: email, otp: otp);
     if (result != null) {
       // Use GetLocationService to check location permissions
-      final locationService = GetLocationService();
+      // final locationService = GetLocationService();
       if (context.mounted) {
-        final position = await GetLocationService.getCurrentLocation(context);
-        if (position != null && context.mounted) {
-          // Permission granted, get address and navigate to Dashboard
-          final address = await GetLocationService.getAddressFromLatLng(context);
-          // Optionally store address in provider or shared preferences
-          await PrefService.set(PrefKeys.location, address);
-          if (context.mounted) {
-            context.navigator.pushReplacementNamed(DashboardScreen.routeName);
+        if (context.mounted) {
+          bool navigated =
+              await GetLocationService.navigateToDashboardIfLocationEnabled(
+                context,
+              );
+          if (!navigated && context.mounted) {
+            context.navigator.pushReplacementNamed(
+              YourLocationScreen.routeName,
+              arguments: {'isComeFromSplash': false},
+            );
+
+            notifyListeners();
+          } else {
+            if(context.mounted){
+              context.navigator.pushReplacementNamed(DashboardScreen.routeName);
+
+            }
           }
-        } else if (context.mounted) {
-          // Permission not granted or services disabled, navigate to LocationServiceScreen
-          context.navigator.pushReplacementNamed(
-            YourLocationScreen.routeName,
-            arguments: {'isComeFromSplash': false}, // Pass the flag
-          );
         }
+        // final position = await GetLocationService.getCurrentLocation(context);
+        // if (position != null && context.mounted) {
+        //   // Permission granted, get address and navigate to Dashboard
+        //   final address = await GetLocationService.getAddressFromLatLng(context);
+        //   // Optionally store address in provider or shared preferences
+        //   await PrefService.set(PrefKeys.location, address);
+        //   if (context.mounted) {
+        //     context.navigator.pushReplacementNamed(DashboardScreen.routeName);
+        //   }
+        // } else if (context.mounted) {
+        //   // Permission not granted or services disabled, navigate to LocationServiceScreen
+        //   context.navigator.pushReplacementNamed(
+        //     YourLocationScreen.routeName,
+        //     arguments: {'isComeFromSplash': false}, // Pass the flag
+        //   );
+        // }
       }
     } else {
       otpError = "Invalid OTP";

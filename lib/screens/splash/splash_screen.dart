@@ -13,24 +13,26 @@ class SplashScreen extends StatelessWidget {
     return SplashScreen();
   }
 
-  Future<void> checkLocationStatus() async {
-    try {
-      // Check if location services are enabled
-      _isLocationEnabled = await Geolocator.isLocationServiceEnabled();
-      print("Location services enabled: $_isLocationEnabled");
-    } catch (e) {
-      print("Error checking location status: $e");
-      _isLocationEnabled = false;
-    }
-  }
+  // Future<void> checkLocationStatus() async {
+  //   try {
+  //     // Check if location services are enabled
+  //     _isLocationEnabled = await Geolocator.isLocationServiceEnabled();
+  //     print("Location services enabled: $_isLocationEnabled");
+  //   } catch (e) {
+  //     print("Error checking location status: $e");
+  //     _isLocationEnabled = false;
+  //   }
+  // }
 
   Future<void> navigateScreen(BuildContext context) async {
-    final locationStatus = await GetLocationService.checkLocationStatus();
-    _isLocationEnabled = locationStatus == LocationStatus.enabled;
-    print("_isLocationEnabled============= ${_isLocationEnabled}");
-    final position = await GetLocationService.getCurrentLocation(context);
-    print("Location----------- ${position?.longitude} ${position?.latitude}");
+    // final locationStatus = await GetLocationService.checkLocationStatus();
+    // _isLocationEnabled = locationStatus == LocationStatus.enabled;
+    // print("_isLocationEnabled============= ${_isLocationEnabled}");
+    // final position = await GetLocationService.getCurrentLocation(context);
+    // print("Location----------- ${position?.longitude} ${position?.latitude}");
+
     final address = await GetLocationService.getAddressFromLatLng(context);
+
 
     print("address======= ${address}");
     try {
@@ -44,9 +46,10 @@ class SplashScreen extends StatelessWidget {
 
         // Navigate based on token
         if (token.trim().isNotEmpty) {
-          if (position != null) {
+          if (address != null) {
             context.navigator.pushReplacementNamed(DashboardScreen.routeName);
           } else {
+            print("hi====================");
             context.navigator.pushReplacementNamed(
               YourLocationScreen.routeName,
               arguments: {'isComeFromSplash': true},

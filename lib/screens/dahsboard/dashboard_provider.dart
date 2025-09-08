@@ -38,5 +38,19 @@ class DashboardProvider extends ChangeNotifier {
     }
   }
 
-
+  // Future<void> getUserProfileAPI() async {
+  //   if (userData == null || userData?.id == null) return;
+  //   loader = true;
+  //   notifyListeners();
+  //   print("Get Profile ---- ${userData?.id}");
+  //   final result = await AuthApis.getUserProfile(userId: userData!.id!);
+  //   if (result != null) {
+  //     profileData = result;
+  //     print("profileData    $profileData");
+  //
+  //     notifyListeners();
+  //   }
+  //   loader = false;
+  //   notifyListeners();
+  // }
 }

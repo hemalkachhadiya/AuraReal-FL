@@ -76,6 +76,7 @@ class _YourLocationScreenState extends State<YourLocationScreen> {
   Widget build(BuildContext context) {
     return Consumer<YourLocationProvider>(
       builder: (context, provider, child) {
+        print(" provider.isComeFromSplash===== ${provider.isComeFromSplash}");
         return Scaffold(
           backgroundColor: Theme.of(context).colorScheme.surface,
           body: Padding(
@@ -176,13 +177,14 @@ class _YourLocationScreenState extends State<YourLocationScreen> {
                 // Enter manually
                 TextButton(
                   onPressed: () async {
-                    final location = await _showManualLocationDialog(context);
-                    if (location != null && location.isNotEmpty) {
-                      provider.setManualLocation(location);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text("Manual location: $location")),
-                      );
-                    }
+                    // final location = await _showManualLocationDialog(context);
+                    // if (location != null && location.isNotEmpty) {
+                    //   provider.setManualLocation(location);
+                    //   ScaffoldMessenger.of(context).showSnackBar(
+                    //     SnackBar(content: Text("Manual location: $location")),
+                    //   );
+                    // }
+                    context.navigator.pushNamed(MapScreen.routeName);
                   },
                   child: Text(
                     context.l10n?.interLocationManually ?? "",

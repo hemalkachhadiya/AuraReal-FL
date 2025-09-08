@@ -1,12 +1,11 @@
 import 'package:aura_real/aura_real.dart';
-import 'package:aura_real/screens/auth/create_new_password/create_new_password_provider.dart';
 import 'package:aura_real/screens/auth/your_location/map_screen_provider.dart';
-import 'package:flutter/material.dart';
 import 'package:google_places_flutter/google_places_flutter.dart';
 import 'package:map_location_picker/map_location_picker.dart';
 
 class MapScreen extends StatelessWidget {
   const MapScreen({super.key});
+
   static const routeName = "map_screen";
 
   static Widget builder(BuildContext context) {
@@ -88,8 +87,9 @@ class MapScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-                  debounceTime: 800, // instead of 800
+                  debounceTime: 800,
 
+                  // instead of 800
                   isLatLngRequired: true,
                   getPlaceDetailWithLatLng: (prediction) async {
                     if (prediction.lat != null && prediction.lng != null) {
@@ -135,11 +135,22 @@ class MapScreen extends StatelessWidget {
                   child: SubmitButton(
                     title: "Select",
 
-                    onTap: () {
+                    onTap: () async {
                       debugPrint(
                         "SELECTED LOCATION:-${provider.selectedLocation}",
                       );
-                      Navigator.pop(context);
+                      final position =
+                          await GetLocationService.getAddressFromLatLng1(
+                            location: provider.selectedLocation,
+                          );
+                      print("position--------- ${position.keys}");
+                      print("position--------- ${position.values}");
+                      if (context.mounted) {
+                        context.navigator.pushNamedAndRemoveUntil(
+                          SignInScreen.routeName,
+                          (_) => false,
+                        );
+                      }
                     },
                   ),
 

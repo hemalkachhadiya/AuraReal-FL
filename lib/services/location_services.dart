@@ -1,5 +1,6 @@
 import 'package:aura_real/aura_real.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:map_location_picker/map_location_picker.dart';
 
 enum LocationStatus {
   enabled,
@@ -126,6 +127,34 @@ class GetLocationService {
 
   /// Fetches the current location if enabled and returns the address from latitude and longitude.
   /// Returns the address as a string, or null if location services are disabled or permission is denied.
+  static Future<Map<String, String>> getAddressFromLatLng1({LatLng? location}) async {
+    try {
+      List<Placemark> placemarks =
+      await placemarkFromCoordinates(location!.latitude, location.longitude);
+
+      if (placemarks.isNotEmpty) {
+        Placemark place = placemarks[0];
+
+        return {
+          "name": place.name ?? "",
+          "streetNumber": place.subThoroughfare ?? "",
+          "street": place.thoroughfare ?? "",
+          "neighborhood": place.subLocality ?? "",
+          "city": place.locality ?? "",
+          "county": place.subAdministrativeArea ?? "",
+          "state": place.administrativeArea ?? "",
+          "postalCode": place.postalCode ?? "",
+          "country": place.country ?? "",
+        };
+      } else {
+        return {"error": "Address not found"};
+      }
+    } catch (e) {
+      debugPrint("Error: $e");
+      return {"error": "Error fetching address"};
+    }
+  }
+
   static Future<String?> getAddressFromLatLng(BuildContext context) async {
     bool serviceEnabled;
     LocationPermission permission;

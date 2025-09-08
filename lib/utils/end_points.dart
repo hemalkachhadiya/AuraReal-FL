@@ -16,6 +16,7 @@ class EndPoints {
 
   /// ------------------------------------ User Profile -------------------------------
   static const getUserProfile = "${baseUrl}getuserprofile?userId=";
+  // static const location = "${baseUrl}user/location";
 
  /// ------------------------------------ Dashboard -------------------------------
   static const getAllPostAPI = "${baseUrl}getallposts";
