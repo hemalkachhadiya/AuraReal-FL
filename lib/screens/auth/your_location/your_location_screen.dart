@@ -2,7 +2,9 @@ import 'package:aura_real/aura_real.dart';
 import 'package:aura_real/common/methods.dart';
 import 'package:aura_real/screens/auth/your_location/your_location_provider.dart';
 import 'package:aura_real/screens/dahsboard/dashboard_screen.dart';
+import 'package:aura_real/services/location_permission.dart';
 import 'package:aura_real/services/location_services.dart';
+import 'package:map_location_picker/map_location_picker.dart';
 
 class YourLocationScreen extends StatelessWidget {
   final bool isComeFromSplash;
@@ -71,34 +73,40 @@ class YourLocationScreen extends StatelessWidget {
                 // Allow location button
                 SubmitButton(
                   onTap: () async {
+                    // requestLocationPermission(context);
                     provider.allowLocation();
-                    final locationService = GetLocationService();
-                    final position = await locationService.getCurrentLocation(
-                      context,
-                    );
-                    if (position != null && context.mounted) {
-                      final address = await locationService
-                          .getAddressFromLatLng(position);
-                      provider.setManualLocation(address);
-                      await PrefService.set(PrefKeys.location, address);
-                      String token = PrefService.getString(PrefKeys.token);
-
-                      if (token.trim().isNotEmpty) {
-                        if (context.mounted) {
-                          context.navigator.pushReplacementNamed(
-                            DashboardScreen.routeName,
-                          );
-                        }
-                      } else {
-                        if (context.mounted) {
-                          context.navigator.pushReplacementNamed(
-                            SignInScreen.routeName,
-                          );
-                        }
-                      }
-                    } else if (context.mounted) {
-                      await openAppSettings();
-                    }
+                    Geolocator.openLocationSettings();
+                    // final locationService = GetLocationService();
+                    // final position = await locationService.getCurrentLocation(
+                    //   context,
+                    // );
+                    // if (position != null && context.mounted) {
+                    //   final address = await locationService
+                    //       .getAddressFromLatLng(position);
+                    //   provider.setManualLocation(address);
+                    //   await PrefService.set(PrefKeys.location, address);
+                    //   String token = PrefService.getString(PrefKeys.token);
+                    //   String location = PrefService.getString(
+                    //     PrefKeys.location,
+                    //   );
+                    //
+                    //   print("Location======== ${location}");
+                    //   // if (token.trim().isNotEmpty) {
+                    //   //   if (context.mounted) {
+                    //   //     context.navigator.pushReplacementNamed(
+                    //   //       DashboardScreen.routeName,
+                    //   //     );
+                    //   //   }
+                    //   // } else {
+                    //   //   if (context.mounted) {
+                    //   //     context.navigator.pushReplacementNamed(
+                    //   //       SignInScreen.routeName,
+                    //   //     );
+                    //   //   }
+                    //   // }
+                    // } else if (context.mounted) {
+                    //   await openAppSettings();
+                    // }
                   },
                   title:
                       context.l10n?.allowLocationAccess ??

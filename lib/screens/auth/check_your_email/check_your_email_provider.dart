@@ -39,10 +39,10 @@ class CheckYourMailProvider extends ChangeNotifier {
       // Use GetLocationService to check location permissions
       final locationService = GetLocationService();
       if (context.mounted) {
-        final position = await locationService.getCurrentLocation(context);
+        final position = await GetLocationService.getCurrentLocation(context);
         if (position != null && context.mounted) {
           // Permission granted, get address and navigate to Dashboard
-          final address = await locationService.getAddressFromLatLng(position);
+          final address = await GetLocationService.getAddressFromLatLng(context);
           // Optionally store address in provider or shared preferences
           await PrefService.set(PrefKeys.location, address);
           if (context.mounted) {
