@@ -1,8 +1,11 @@
 import 'package:aura_real/apis/app_response.dart';
 import 'package:aura_real/aura_real.dart';
+import 'package:aura_real/screens/auth/sign_in/model/google_login_response_model.dart';
 import 'package:aura_real/screens/auth/sign_in/model/login_response_model.dart';
 import 'package:aura_real/services/api_services.dart';
 import 'package:aura_real/utils/end_points.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class AuthApis {
   ///Register API
@@ -126,9 +129,55 @@ class AuthApis {
     }
   }
 
+  ///Google Login API
+  static Future<GoogleLoginRes?> googleAPI({
+    required String googleId,
+    required String email,
+  }) async {
+    try {
+      final response = await ApiService.postApi(
+        url: EndPoints.googleLogin,
+        body: {"email": email, "googleId": googleId},
+      );
+      if (response == null) {
+        showCatchToast('No response from server', null);
+        return null;
+      }
+      final responseBody = jsonDecode(response.body);
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        print("Res Body Data ${responseBody['user']}");
+        if (responseBody['user'] != null && responseBody != null) {
+          await PrefService.set(
+            PrefKeys.userData,
+            jsonEncode(responseBody['user']),
+          );
+
+          await PrefService.set(
+            PrefKeys.token,
+            jsonEncode(responseBody['user']['token']),
+          );
+
+          showSuccessToast(
+            responseBody['message'] ?? 'Google Login successful',
+          );
+          return GoogleLoginRes.fromJson(responseBody['user']);
+        }
+      }
+    } catch (exception, stack) {
+      showCatchToast(exception, stack);
+      return null;
+    }
+  }
+
   ///Logout
   static Future<bool> logoutAPI({required String userId}) async {
     try {
+      GoogleSignIn googleSignIn = GoogleSignIn();
+      if (await googleSignIn.isSignedIn()) {
+        await googleSignIn.signOut();
+      }
+
+      await FirebaseAuth.instance.signOut();
       final response = await ApiService.postApi(
         url: EndPoints.logout,
         body: {"userId": userId},

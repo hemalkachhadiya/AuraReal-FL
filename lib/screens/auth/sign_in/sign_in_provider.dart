@@ -1,15 +1,19 @@
 import 'package:aura_real/apis/app_response.dart';
 import 'package:aura_real/apis/auth_apis.dart';
 import 'package:aura_real/aura_real.dart';
+import 'package:aura_real/screens/auth/sign_in/model/google_login_response_model.dart';
 import 'package:aura_real/screens/auth/sign_in/model/login_response_model.dart';
 import 'package:aura_real/screens/dahsboard/dashboard_screen.dart';
 import 'package:aura_real/services/api_services.dart';
 import 'package:aura_real/utils/end_points.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class SignInProvider extends ChangeNotifier {
   SignInProvider();
 
   bool loader = false;
+  bool loaderGoogleLogin = false;
   TextEditingController emailController = TextEditingController(
     text: "nehal.smarttechnica@gmail.com",
   );
@@ -74,68 +78,9 @@ class SignInProvider extends ChangeNotifier {
     return emailError.isEmpty && pwdError.isEmpty;
   }
 
-  /// Login Function
-  // Simulated login API call
-  // Future<void> onLoginTap(BuildContext context) async {
-  //   if (!isFormValid) return;
-  //
-  //   loader = true;
-  //   notifyListeners();
-  //
-  //   try {
-  //     final response = await ApiService.postApi(
-  //       url: EndPoints.login, // Replace with your login endpoint
-  //       body: {
-  //         "email": emailController.text,
-  //         "password": passwordController.text,
-  //       },
-  //     );
-  //
-  //     if (response == null) {
-  //       showCatchToast('No response from server', null);
-  //       loader = false;
-  //       notifyListeners();
-  //       return;
-  //     }
-  //
-  //     final model = appResponseFromJson<bool>(response.body);
-  //     if (model.success == true) {
-  //       showSuccessToast('Login Successful');
-  //       if(context.mounted){
-  //         context.navigator.pushReplacementNamed(
-  //           DashboardScreen.routeName,
-  //         ); // Replace with your home route
-  //       }
-  //
-  //     } else {
-  //       // Handle invalid login attempt
-  //       if (model.message?.toLowerCase().contains(
-  //             "invalid email or password",
-  //           ) ==
-  //           true) {
-  //         showErrorMsg('Email not registered, please sign up');
-  //         if (context.mounted) {
-  //           context.navigator.pushNamed(
-  //             SignUpScreen.routeName,
-  //             arguments: {
-  //               'email': emailController.text,
-  //               "password": passwordController.text,
-  //             },
-  //           );
-  //         }
-  //       } else {
-  //         showCatchToast(model.message ?? 'Login failed', null);
-  //       }
-  //     }
-  //   } catch (exception, stack) {
-  //     showCatchToast(exception, stack);
-  //   } finally {
-  //     loader = false;
-  //     notifyListeners();
-  //   }
-  // }
-
   LoginRes? userData;
+
+  GoogleLoginRes? googleLoginUserData;
 
   Future<void> onLoginTap(BuildContext context) async {
     if (!isFormValid) return;
@@ -160,5 +105,65 @@ class SignInProvider extends ChangeNotifier {
       loader = false;
       notifyListeners();
     }
+  }
+
+  Future<void> googleSignIn(BuildContext context) async {
+    final FirebaseAuth auth = FirebaseAuth.instance;
+    final GoogleSignIn googleSignIn1 = GoogleSignIn();
+    if (await googleSignIn1.isSignedIn()) {
+      await googleSignIn1.signOut();
+    }
+    await FirebaseAuth.instance.signOut();
+    final GoogleSignIn googleSignIn = GoogleSignIn();
+
+    try {
+      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+      if (googleUser == null) {
+        return;
+      }
+
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+
+      final OAuthCredential credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      final UserCredential userCredential = await auth.signInWithCredential(
+        credential,
+      );
+
+      final User? firebaseUser = userCredential.user;
+      loaderGoogleLogin = true;
+      notifyListeners();
+
+      googleLoginAPi(
+        context,
+        firebaseUser!.email.toString(),
+        firebaseUser.uid.toString(),
+      );
+    } catch (e) {}
+  }
+
+  Future<void> googleLoginAPi(
+    BuildContext context,
+    String email,
+    String googleId,
+  ) async {
+    final result = await AuthApis.googleAPI(email: email, googleId: googleId);
+    googleLoginUserData = result;
+    if (googleLoginUserData != null) {
+      print("GOOGLE LOGIN USER DATA  $googleLoginUserData");
+
+      if (context.mounted) {
+        context.navigator.pushNamedAndRemoveUntil(
+          DashboardScreen.routeName,
+          (route) => false,
+        );
+      }
+    }
+    loaderGoogleLogin = false;
+    notifyListeners();
   }
 }

@@ -1,6 +1,7 @@
 import 'package:aura_real/aura_real.dart';
 import 'package:aura_real/screens/auth/check_your_email/check_your_email_screen.dart';
 import 'package:aura_real/screens/auth/password_reset/password_reset_screen.dart';
+import 'package:aura_real/screens/auth/your_location/map_screen.dart';
 import 'package:aura_real/screens/auth/your_location/your_location_screen.dart';
 import 'package:aura_real/screens/chat/chat_list/chat_screen.dart';
 import 'package:aura_real/screens/chat/message/message_provider.dart';
@@ -62,6 +63,12 @@ class RouteManager {
       case CreateNewPasswordScreen.routeName:
         return MaterialPageRoute(
           builder: CreateNewPasswordScreen.builder,
+          settings: settings,
+        );
+
+      case MapScreen.routeName:
+        return MaterialPageRoute(
+          builder: MapScreen.builder,
           settings: settings,
         );
 

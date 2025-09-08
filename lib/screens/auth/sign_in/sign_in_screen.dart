@@ -114,7 +114,6 @@ class SignInScreen extends StatelessWidget {
                             14.ph.spaceVertical,
                             InkWell(
                               onTap: () {
-
                                 context.navigator.pushNamed(
                                   PasswordRestScreen.routeName,
                                   arguments: {"isComeFromSignUp": false},
@@ -174,28 +173,37 @@ class SignInScreen extends StatelessWidget {
                               style: styleW500S16,
                             ),
                             40.ph.spaceVertical,
-                            InkWell(
-                              borderRadius: BorderRadius.circular(8),
-                              onTap: () {},
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    SvgAsset(imagePath: AssetRes.googleIcon),
-                                    15.pw.spaceHorizontal,
-                                    Text(
-                                      AppLocalizations.of(
-                                            context,
-                                          )?.signInWithGoogle ??
-                                          "Sign In with Google",
-                                      style: styleW600S18,
+
+                            provider.loaderGoogleLogin == true
+                                ? CircularProgressIndicator()
+                                : InkWell(
+                                  borderRadius: BorderRadius.circular(8),
+                                  onTap: () {
+                                    provider.googleSignIn(context);
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        SvgAsset(
+                                          imagePath: AssetRes.googleIcon,
+                                        ),
+                                        15.pw.spaceHorizontal,
+                                        Text(
+                                          AppLocalizations.of(
+                                                context,
+                                              )?.signInWithGoogle ??
+                                              "Sign In with Google",
+                                          style: styleW600S18,
+                                        ),
+                                      ],
                                     ),
-                                  ],
+                                  ),
                                 ),
-                              ),
-                            ),
                           ],
                         ),
                       ),

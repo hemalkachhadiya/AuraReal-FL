@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "382221381003",
+    "project_id": "aurareal-a2ca3",
+    "storage_bucket": "aurareal-a2ca3.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:382221381003:android:b7de2ec5f3f8364aa1938e",
+        "android_client_info": {
+          "package_name": "com.smarttechnica.aura.real.social.media"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "382221381003-073sepcq88fmkjm8b5of7d9migjtvj9n.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBm_TOk07V5gnxavJqzZfFXDgZBPwW9gco"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "382221381003-073sepcq88fmkjm8b5of7d9migjtvj9n.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

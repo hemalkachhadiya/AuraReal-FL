@@ -1,5 +1,6 @@
 import 'package:aura_real/aura_real.dart';
 import 'package:aura_real/common/methods.dart';
+import 'package:aura_real/screens/auth/your_location/map_screen.dart';
 import 'package:aura_real/screens/auth/your_location/your_location_provider.dart';
 import 'package:aura_real/screens/dahsboard/dashboard_screen.dart';
 import 'package:aura_real/services/location_permission.dart';
@@ -134,13 +135,14 @@ class YourLocationScreen extends StatelessWidget {
                 // Enter manually
                 TextButton(
                   onPressed: () async {
-                    final location = await _showManualLocationDialog(context);
-                    if (location != null && location.isNotEmpty) {
-                      provider.setManualLocation(location);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text("Manual location: $location")),
-                      );
-                    }
+                    context.navigator.pushNamed(MapScreen.routeName);
+                    // final location = await _showManualLocationDialog(context);
+                    // if (location != null && location.isNotEmpty) {
+                    //   provider.setManualLocation(location);
+                    //   ScaffoldMessenger.of(context).showSnackBar(
+                    //     SnackBar(content: Text("Manual location: $location")),
+                    //   );
+                    // }
                   },
                   child: Text(
                     context.l10n?.interLocationManually ?? "",

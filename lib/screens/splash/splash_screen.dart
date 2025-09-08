@@ -76,22 +76,29 @@ class SplashScreen extends StatelessWidget {
 
       // Check location services and permissions
       final locationService = GetLocationService();
-      final isLocationEnabled = await GetLocationService.isLocationServiceEnabled(context);
+      final isLocationEnabled =
+          await GetLocationService.isLocationServiceEnabled(context);
       LocationPermission permission = await Geolocator.checkPermission();
 
       if (context.mounted) {
-        if (isLocationEnabled && (permission == LocationPermission.whileInUse || permission == LocationPermission.always)) {
+        if (isLocationEnabled &&
+            (permission == LocationPermission.whileInUse ||
+                permission == LocationPermission.always)) {
           final position = await GetLocationService.getCurrentLocation(context);
 
           String token = PrefService.getString(PrefKeys.token);
           String userData = PrefService.getString(PrefKeys.userData);
           print("token -- $token");
           print("userData -- $userData");
-          print("position -- ${position?.latitude}, ${position?.longitude} ${position?.floor} ");
+          print(
+            "position -- ${position?.latitude}, ${position?.longitude} ${position?.floor} ",
+          );
 
           if (position != null) {
             // Location services enabled and permissions granted
-            final address = await GetLocationService.getAddressFromLatLng(context);
+            final address = await GetLocationService.getAddressFromLatLng(
+              context,
+            );
             await PrefService.set(PrefKeys.location, address ?? "");
 
             // Navigate based on token

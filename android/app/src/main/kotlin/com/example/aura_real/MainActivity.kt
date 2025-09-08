@@ -1,4 +1,4 @@
-package com.example.aura_real
+package com.smarttechnica.aura.real.social.media
 
 import io.flutter.embedding.android.FlutterActivity
 
