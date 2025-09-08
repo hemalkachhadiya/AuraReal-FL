@@ -117,7 +117,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get allowLocationAccess => 'السماح بالوصول إلى الموقع';
 
   @override
-  String get interLocationManually => 'إدخال الموقع يدويًا';
+  String get interLocationManually => 'أدخل الموقع يدويًا';
 
   @override
   String get locationForRestaurantAndProduct => 'الموقع لتقييم المطاعم والمنتجات';
@@ -268,6 +268,12 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get sendOTP => 'إرسال رمز التحقق';
+
+  @override
+  String get manualLocationSet => 'تم تعيين الموقع يدويًا';
+
+  @override
+  String get typeYourCityOrArea => 'اكتب مدينتك أو منطقتك';
 
   @override
   String get rateThisPost => 'قيم هذه المشاركة';

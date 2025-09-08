@@ -1,6 +1,18 @@
-import 'package:flutter/material.dart';
+import 'package:aura_real/apis/auth_apis.dart';
+import 'package:aura_real/aura_real.dart';
 
 class DashboardProvider extends ChangeNotifier {
+  DashboardProvider() {
+    init();
+  }
+
+  Future<void> init() async {
+    await GetLocationService.getCurrentLocation(
+      navigatorKey.currentState!.context,
+    );
+
+  }
+
   int _selectedIndex = 0;
 
   int get selectedIndex => _selectedIndex;
@@ -25,4 +37,6 @@ class DashboardProvider extends ChangeNotifier {
         return 'Home';
     }
   }
+
+
 }

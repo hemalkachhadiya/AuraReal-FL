@@ -1,8 +1,4 @@
 import 'package:aura_real/aura_real.dart';
-import 'package:aura_real/screens/home/add_post/add_post_screen.dart';
-
-import 'package:aura_real/screens/home/home/widget/post_list_screen.dart';
-import 'package:aura_real/screens/home/notification/notification_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -21,79 +17,147 @@ class HomeScreen extends StatelessWidget {
     final appProvider = Provider.of<AppProvider>(context, listen: true);
     return ChangeNotifierProvider<PostsProvider>(
       create: (context) => PostsProvider(),
-      child: Scaffold(
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        floatingActionButton: FloatingActionButton(
-          onPressed: () => context.navigator.pushNamed(AddPostScreen.routeName),
-          backgroundColor: ColorRes.primaryColor,
-          elevation: 6.0,
-          // Added elevation for a raised effect
-          shape: const CircleBorder(),
-          // Ensures a perfectly round shape
-          child: SvgAsset(imagePath: AssetRes.addIcon, height: 20, width: 20),
-        ),
-        body: SafeArea(
-          child: Directionality(
-            textDirection:
-                appProvider.locale?.languageCode == 'ar'
-                    ? TextDirection.rtl
-                    : TextDirection.ltr,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                8.ph.spaceVertical,
-                Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: Constants.horizontalPadding,
-                  ),
-                  child: Row(
-                    mainAxisAlignment:
-                        appProvider.locale?.languageCode == 'ar'
-                            ? MainAxisAlignment.end
-                            : MainAxisAlignment.start,
+      child: Consumer<PostsProvider>(
+        builder: (context, provider, child) {
+          return StackedLoader(
+            loading: provider.loader,
+            child: Scaffold(
+              backgroundColor: Theme.of(context).colorScheme.surface,
+              floatingActionButton: FloatingActionButton(
+                onPressed:
+                    () => context.navigator.pushNamed(AddPostScreen.routeName),
+                backgroundColor: ColorRes.primaryColor,
+                elevation: 6.0,
+                // Added elevation for a raised effect
+                shape: const CircleBorder(),
+                // Ensures a perfectly round shape
+                child: SvgAsset(
+                  imagePath: AssetRes.addIcon,
+                  height: 20,
+                  width: 20,
+                ),
+              ),
+              body: SafeArea(
+                child: Directionality(
+                  textDirection:
+                      appProvider.locale?.languageCode == 'ar'
+                          ? TextDirection.rtl
+                          : TextDirection.ltr,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      SvgAsset(
-                        imagePath: AssetRes.logoNameIcon,
-                        width: 100,
-                        height: 40,
+                      8.ph.spaceVertical,
+                      Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: Constants.horizontalPadding,
+                        ),
+                        child: Row(
+                          mainAxisAlignment:
+                              appProvider.locale?.languageCode == 'ar'
+                                  ? MainAxisAlignment.end
+                                  : MainAxisAlignment.start,
+                          children: [
+                            SvgAsset(
+                              imagePath: AssetRes.logoNameIcon,
+                              width: 100,
+                              height: 40,
+                            ),
+                            const Spacer(),
+                            Row(
+                              children: [
+                                _buildIconButton(AssetRes.searchIcon, () {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        context.l10n?.message ?? "Search",
+                                      ),
+                                    ),
+                                  );
+                                }),
+                                const SizedBox(width: 15),
+                                _buildIconButton(AssetRes.warnIcon, () {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        context.l10n?.message ?? "Warning",
+                                      ),
+                                    ),
+                                  );
+                                  context.navigator.pushNamed(
+                                    NotificationScreen.routeName,
+                                  );
+                                }),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
-                      const Spacer(),
-                      Row(
-                        children: [
-                          _buildIconButton(AssetRes.searchIcon, () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  context.l10n?.message ?? "Search",
+                      25.ph.spaceVertical,
+                      Expanded(
+                        child: Container(
+                          decoration: BoxDecoration(color: ColorRes.white),
+                          child: CustomListView(
+                            itemCount:
+                                provider.loader
+                                    ? 0
+                                    : provider.postListResponse.length + 1,
+                            onRefresh:
+                                () =>
+                                    provider.getAllPostListAPI(resetData: true),
+                            emptyWidget: UnKnownScreen(),
+                            showEmptyWidget:
+                                !provider.loader &&
+                                provider.postListResponse.isEmpty,
+                            separatorBuilder:
+                                (ctx, ind) => Container(
+                                  height: 1.ph,
+                                  width: 100.pw,
+                                  color: ColorRes.black.withValues(alpha: 0.1),
                                 ),
-                              ),
-                            );
-                          }),
-                          const SizedBox(width: 15),
-                          _buildIconButton(AssetRes.warnIcon, () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  context.l10n?.message ?? "Warning",
-                                ),
-                              ),
-                            );
+                            itemBuilder: (context, index) {
+                              if (index >= provider.postListResponse.length) {
+                                if (!provider.hasMoreData) {
+                                  return Padding(
+                                    padding: EdgeInsets.all(16),
+                                    child: Center(
+                                      child: Text(
+                                        'No more items',
+                                        style: styleW500S12.copyWith(
+                                          color: ColorRes.grey,
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                }
+                                if (!provider.isApiCalling) {
+                                  provider.getAllPostListAPI();
+                                }
+                                return SizedBox(
+                                  height: 100.ph,
+                                  child: const SmallLoader(),
+                                );
+                              }
 
-                            context.navigator.pushNamed(
-                              NotificationScreen.routeName,
-                            );
-                          }),
-                        ],
+                              return PostCard(
+                                post: provider.postListResponse[index],
+                                onTap: () {
+                                  context.navigator.pushNamed(
+                                    UploadScreen.routeName,
+                                    arguments: provider.postListResponse[index],
+                                  );
+                                },
+                              );
+                            },
+                          ),
+                        ),
                       ),
                     ],
                   ),
                 ),
-                25.ph.spaceVertical,
-                Expanded(child: PostsListScreen()),
-              ],
+              ),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }
@@ -114,99 +178,6 @@ class HomeScreen extends StatelessWidget {
           child: SvgAsset(imagePath: assetPath, width: 20, height: 20),
         ),
       ),
-    );
-  }
-
-  void _showAddPostDialog(BuildContext context) {
-    final nameController = TextEditingController();
-    final imageController = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          title: Text(
-            "Add New Post",
-            style: TextStyle(color: ColorRes.primaryColor),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: nameController,
-                decoration: InputDecoration(
-                  labelText: context.l10n?.fullName ?? "User Name",
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: ColorRes.primaryColor),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: imageController,
-                decoration: InputDecoration(
-                  labelText: "Image URL",
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: ColorRes.primaryColor),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: Text(
-                context.l10n?.back ?? "Cancel",
-                style: const TextStyle(color: Colors.grey),
-              ),
-            ),
-            Consumer<PostsProvider>(
-              builder: (context, postsProvider, child) {
-                return ElevatedButton(
-                  onPressed: () {
-                    if (nameController.text.isNotEmpty &&
-                        imageController.text.isNotEmpty) {
-                      final newPost = PostModel(
-                        id: DateTime.now().millisecondsSinceEpoch.toString(),
-                        userName: nameController.text,
-                        userProfileImage:
-                            'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face',
-                        postImage: imageController.text,
-                        rating: 0.0,
-                        totalRatings: 0,
-                        imageSize: '640 x 480',
-                        createdAt: DateTime.now(),
-                        userRating: 0,
-                      );
-                      postsProvider.addPost(newPost);
-                      Navigator.of(dialogContext).pop();
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: ColorRes.primaryColor,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child: Text(
-                    context.l10n?.save ?? "Add Post",
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                );
-              },
-            ),
-          ],
-        );
-      },
     );
   }
 }

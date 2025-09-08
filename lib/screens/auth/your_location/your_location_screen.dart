@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:aura_real/aura_real.dart';
 import 'package:aura_real/common/methods.dart';
 import 'package:aura_real/screens/auth/your_location/map_screen.dart';
@@ -7,7 +9,17 @@ import 'package:aura_real/services/location_permission.dart';
 import 'package:aura_real/services/location_services.dart';
 import 'package:map_location_picker/map_location_picker.dart';
 
-class YourLocationScreen extends StatelessWidget {
+import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:aura_real/aura_real.dart';
+import 'package:aura_real/common/methods.dart';
+import 'package:aura_real/screens/auth/your_location/your_location_provider.dart';
+import 'package:aura_real/screens/dahsboard/dashboard_screen.dart';
+import 'package:aura_real/screens/auth/sign_in/sign_in_screen.dart';
+import 'package:aura_real/services/location_services.dart';
+import 'package:map_location_picker/map_location_picker.dart';
+
+class YourLocationScreen extends StatefulWidget {
   final bool isComeFromSplash;
 
   const YourLocationScreen({super.key, this.isComeFromSplash = false});
@@ -21,15 +33,44 @@ class YourLocationScreen extends StatelessWidget {
     );
   }
 
-  // static const routeName = "your_location_screen";
-  //
-  // static Widget builder(BuildContext context) {
-  //
-  //   return ChangeNotifierProvider<YourLocationProvider>(
-  //     create: (c) => YourLocationProvider(  ),
-  //     child: const YourLocationScreen(),
-  //   );
-  // }
+  @override
+  State<YourLocationScreen> createState() => _YourLocationScreenState();
+}
+
+class _YourLocationScreenState extends State<YourLocationScreen> {
+  @override
+  void didChangeDependencies() {
+    print("test==============1");
+
+    super.didChangeDependencies();
+    // Use the correct context that has access to the provider
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        print("Call Did change");
+
+        Provider.of<YourLocationProvider>(
+          context as BuildContext,
+          listen: false,
+        ).checkPermissionsAfterSettings(context as BuildContext);
+      }
+    });
+  }
+
+  @override
+  void didChangeAppLifecycleState() {
+    print("test==============2");
+    // Use the correct context that has access to the provider
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        print("Call Did change");
+
+        Provider.of<YourLocationProvider>(
+          context as BuildContext,
+          listen: false,
+        ).checkPermissionsAfterSettings(context as BuildContext);
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -135,14 +176,13 @@ class YourLocationScreen extends StatelessWidget {
                 // Enter manually
                 TextButton(
                   onPressed: () async {
-                    context.navigator.pushNamed(MapScreen.routeName);
-                    // final location = await _showManualLocationDialog(context);
-                    // if (location != null && location.isNotEmpty) {
-                    //   provider.setManualLocation(location);
-                    //   ScaffoldMessenger.of(context).showSnackBar(
-                    //     SnackBar(content: Text("Manual location: $location")),
-                    //   );
-                    // }
+                    final location = await _showManualLocationDialog(context);
+                    if (location != null && location.isNotEmpty) {
+                      provider.setManualLocation(location);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text("Manual location: $location")),
+                      );
+                    }
                   },
                   child: Text(
                     context.l10n?.interLocationManually ?? "",
@@ -164,21 +204,25 @@ class YourLocationScreen extends StatelessWidget {
       context: context,
       builder:
           (_) => AlertDialog(
-            title: const Text("Enter Location"),
+            title: Text(
+              context.l10n?.interLocationManually ?? "Enter Location",
+            ),
             content: TextField(
               controller: controller,
-              decoration: const InputDecoration(
-                hintText: "Type your city or area",
+              decoration: InputDecoration(
+                hintText:
+                    context.l10n?.typeYourCityOrArea ??
+                    "Type your city or area",
               ),
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, null),
-                child: const Text("Cancel"),
+                child: Text(context.l10n?.cancel ?? "Cancel"),
               ),
               ElevatedButton(
                 onPressed: () => Navigator.pop(context, controller.text.trim()),
-                child: const Text("Save"),
+                child: Text(context.l10n?.save ?? "Save"),
               ),
             ],
           ),

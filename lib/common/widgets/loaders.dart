@@ -57,28 +57,28 @@ class StackedLoader extends StatelessWidget {
   }
 }
 
-class AppRefreshIndicator extends StatelessWidget {
-  final Widget child;
-  final Future<void> Function()? onRefresh;
-
-  const AppRefreshIndicator({
-    super.key,
-    required this.child,
-    required this.onRefresh,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    if (onRefresh == null) return child;
-    return RefreshIndicator(
-      onRefresh: onRefresh!,
-      backgroundColor: ColorRes.white,
-      color: ColorRes.primaryColor,
-      strokeWidth: 4,
-      child: child,
-    );
-  }
-}
+// class AppRefreshIndicator extends StatelessWidget {
+//   final Widget child;
+//   final Future<void> Function()? onRefresh;
+//
+//   const AppRefreshIndicator({
+//     super.key,
+//     required this.child,
+//     required this.onRefresh,
+//   });
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     if (onRefresh == null) return child;
+//     return RefreshIndicator(
+//       onRefresh: onRefresh!,
+//       backgroundColor: ColorRes.white,
+//       color: ColorRes.primaryColor,
+//       strokeWidth: 4,
+//       child: child,
+//     );
+//   }
+// }
 
 bool isLoaderDialogOpen = false;
 

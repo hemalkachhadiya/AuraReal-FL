@@ -15,10 +15,10 @@ class SignInProvider extends ChangeNotifier {
   bool loader = false;
   bool loaderGoogleLogin = false;
   TextEditingController emailController = TextEditingController(
-    text: "nehal.smarttechnica@gmail.com",
+    text: "",
   );
   TextEditingController passwordController = TextEditingController(
-    text: "Nehal@123",
+    text: "",
   );
 
   String emailError = "";

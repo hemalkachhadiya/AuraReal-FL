@@ -14,7 +14,7 @@ class DashboardScreen extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<YourLocationProvider>(
-          create: (c) => YourLocationProvider(),
+          create: (c) => YourLocationProvider(isComeFromSplash: false),
         ),
         ChangeNotifierProvider<DashboardProvider>(
           create: (c) => DashboardProvider(),
@@ -46,7 +46,7 @@ class DashboardScreen extends StatelessWidget {
           borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 60,
               offset: const Offset(0, -4),
             ),

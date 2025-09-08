@@ -35,7 +35,7 @@
   "save": "Save",
   "whatIsYOurLocation": "What is Your Location?",
   "allowLocationAccess": "Allow Location Access",
-  "interLocationManually": "Inter Location Manually",
+  "interLocationManually": "Enter Location Manually",
   "locationForRestaurantAndProduct": "Weyourbocation to slow evalu restaurant & products",
   "emailIsRequired": "Email is Required",
   "passwordIsRequired": "Password is Required",
@@ -86,5 +86,7 @@
   "areYouSureWantToLogOut": "Are you sure want to log out?",
   "logoutSpace": "Log out",
   "sendOTP": "Send OTP",
+  "manualLocationSet": "Manual location set",
+  "typeYourCityOrArea": "Type your city or area",
   "rateThisPost": "Rate this Post"
 }
