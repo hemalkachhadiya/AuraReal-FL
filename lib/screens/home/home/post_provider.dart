@@ -1,4 +1,5 @@
 import 'package:aura_real/apis/app_response_2.dart';
+import 'package:aura_real/apis/model/post_model.dart';
 import 'package:aura_real/apis/post_apis.dart';
 import 'package:aura_real/aura_real.dart';
 
@@ -8,16 +9,16 @@ class PostsProvider extends ChangeNotifier {
   }
 
   Future<void> init() async {
-    await getAllPostListAPI(showLoader: true,resetData: true);
+    await getAllPostListAPI(showLoader: true, resetData: true);
   }
 
-  late final List<PostListModel>  posts = [];
+  late final List<PostModel> posts = [];
   bool _isLoading = false;
   String? _error;
 
-  AppResponse2<PostListModel>? paginationModel;
+  AppResponse2<PostModel>? paginationModel;
 
-  List<PostListModel> get postListResponse => paginationModel?.list ?? [];
+  List<PostModel> get postListResponse => paginationModel?.list ?? [];
 
   int currentPage = 0;
   int pageSize = 20;
@@ -26,13 +27,13 @@ class PostsProvider extends ChangeNotifier {
   bool _disposed = false;
 
   // Getters
-  // List<PostListModel> get posts => _posts;
+  // List<PostModel> get posts => _posts;
 
   bool get isLoading => _isLoading;
 
   String? get error => _error;
 
-  // List<PostListModel>? get postListResponse => paginationModel?.list ?? [];
+  // List<PostModel>? get postListResponse => paginationModel?.list ?? [];
   bool get hasMoreData => paginationModel?.hasMorePages ?? false;
 
   /// Get All Post List API with pagination
@@ -76,6 +77,7 @@ class PostsProvider extends ChangeNotifier {
           );
         }
         currentPage++;
+        print("paginationModel-------- ${paginationModel?.list?.length}");
       } else {
         _error = "Failed to fetch posts";
       }
@@ -102,7 +104,7 @@ class PostsProvider extends ChangeNotifier {
   }
 
   /// Get post by ID
-  PostListModel? getPostById(String? postId) {
+  PostModel? getPostById(String? postId) {
     if (postId == null) return null;
     try {
       return posts.firstWhere((post) => post.id == postId);

@@ -153,12 +153,55 @@ class SettingScreen extends StatelessWidget {
       barrierDismissible: false, // Prevent closing during logout
       builder:
           (context) => AlertDialog(
-            title: Text(context.l10n?.logoutSpace ?? "",style: styleW700S24, textAlign: TextAlign.center),
+            title: Column(
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 24,
+                      height: 24,
+                      margin: EdgeInsets.only(bottom: 15),
+                      child: InkWell(
+                        onTap: () {
+                          context.navigator.pop(context);
+                        },
+                        borderRadius: BorderRadius.circular(50),
+                        child: Align(
+                          alignment: Alignment.topLeft,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(50),
+                              color: ColorRes.red,
+                            ),
+                            child: Center(
+                              child: Icon(
+                                Icons.close,
+                                color: ColorRes.white,
+                                size: 15,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    Spacer(),
+                  ],
+                ),
+                Text(
+                  context.l10n?.logoutSpace ?? "",
+                  style: styleW700S24,
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(context.l10n?.areYouSureWantToLogOut ?? "",style: styleW400S16.copyWith(color: ColorRes.grey6),
-                  textAlign: TextAlign.center,),
+                Text(
+                  context.l10n?.areYouSureWantToLogOut ?? "",
+                  style: styleW400S16.copyWith(color: ColorRes.grey6),
+                  textAlign: TextAlign.center,
+                ),
                 if (provider.loader) ...[
                   15.ph.spaceVertical,
                   CircularProgressIndicator(),
@@ -166,6 +209,7 @@ class SettingScreen extends StatelessWidget {
                 ],
               ],
             ),
+
             actions: [
               Center(
                 child: Consumer<SettingProvider>(
@@ -186,28 +230,7 @@ class SettingScreen extends StatelessWidget {
                                 },
                         style: styleW600S12.copyWith(color: ColorRes.white),
                       ),
-                    )
-                    /*TextButton(
-                  onPressed: provider.loader
-                      ? null
-                      : () async {
-                    await provider.logoutTap(context);
-                  },
-                  child: provider.loader
-                      ? SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
-                    ),
-                  )
-                      : Text(
-                    context.l10n?.logout ?? "Logout",
-                    style: TextStyle(color: Colors.red),
-                  ),
-                )*/
-                    ;
+                    );
                   },
                 ),
               ),

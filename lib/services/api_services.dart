@@ -230,20 +230,25 @@ class ApiService {
       return {};
     } else {
       final str = PrefService.getString(PrefKeys.token);
-      return {"Authorization": str};
+      // return {"Authorization": str};
+      return {"token": "$str"};
     }
   }
 
   static Future<bool> isTokenExpire(http.Response response) async {
     if (response.statusCode == 401 || response.statusCode == 403) {
-      logoutUser();
+      // logoutUser();
       return true;
     } else {
       return false;
     }
   }
+
   static void handleError(http.Response response) async {
     try {
+      print("HandleError - Status: ${response.statusCode}");
+      print("HandleError - Body: ${response.body}");
+
       if (response.body.isNotEmpty) {
         final dynamic jsonResponse = jsonDecode(response.body);
         if (jsonResponse is Map<String, dynamic>) {
@@ -252,6 +257,8 @@ class ApiService {
             showErrorMsg(model.message ?? "Error");
           }
         } else {
+          print("test------------4");
+
           showErrorMsg("Invalid response format");
         }
       } else {
@@ -263,6 +270,7 @@ class ApiService {
       showErrorMsg("An error occurred while processing the response");
     }
   }
+
   // static void handleError(http.Response response) async {
   //   try {
   //     final model = appResponseFromJson(response.body);

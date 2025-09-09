@@ -276,5 +276,11 @@ class AppLocalizationsAr extends AppLocalizations {
   String get typeYourCityOrArea => 'اكتب مدينتك أو منطقتك';
 
   @override
+  String get reset => 'إعادة تعيين';
+
+  @override
+  String get passwordIsIncorrect => 'كلمة المرور غير صحيحة';
+
+  @override
   String get rateThisPost => 'قيم هذه المشاركة';
 }

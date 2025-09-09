@@ -135,6 +135,20 @@ Future<void> requestPermissions() async {
   ].request();
 }
 
+Future<void>  fetchLocation(BuildContext context) async {
+  final (lat, lon, error) = await GetLocationService.getCurrentLatLon(context);
+  if (lat != null && lon != null) {
+    // Use latitude and longitude (e.g., save to PrefService or navigate)
+    await PrefService.set('latitude', lat);
+    await PrefService.set('longitude', lon);
+    if (context.mounted) {
+      context.navigator.pushReplacementNamed(DashboardScreen.routeName);
+    }
+  } else {
+
+  }
+}
+
 Future<File?> compressImage(File? file, {double? requestedSize}) async {
   if (file == null) {
     return null;

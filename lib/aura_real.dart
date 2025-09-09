@@ -52,7 +52,7 @@ export 'package:flutter_image_compress/flutter_image_compress.dart';
 export 'package:path_provider/path_provider.dart';
 export 'package:permission_handler/permission_handler.dart';
 export 'package:aura_real/common/widgets/app_butoon_2.dart';
-export 'package:aura_real/screens/home/home/model/post_model.dart';
+
 export 'package:aura_real/screens/home/home/widget/post_card_widget.dart';
 export 'package:aura_real/screens/home/home/widget/star_rating_widget.dart';
 export 'package:aura_real/screens/home/upload/upload_provider.dart';
@@ -77,5 +77,4 @@ export 'package:aura_real/screens/home/upload/upload_screen.dart';
 export 'package:aura_real/services/api_services.dart';
 export 'package:aura_real/utils/end_points.dart';
 export 'package:aura_real/services/location_services.dart';
-
 export 'package:aura_real/screens/auth/your_location/your_location_screen.dart';

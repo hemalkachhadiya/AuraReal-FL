@@ -260,7 +260,7 @@ abstract class AppLocalizations {
   /// No description provided for @pleasePutThe4DigitSentToYou.
   ///
   /// In en, this message translates to:
-  /// **'Please put the 4 digits sent to you'**
+  /// **'Please put the 6 digits sent to you'**
   String get pleasePutThe4DigitSentToYou;
 
   /// No description provided for @submit.
@@ -628,6 +628,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Type your city or area'**
   String get typeYourCityOrArea;
+
+  /// No description provided for @reset.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset'**
+  String get reset;
+
+  /// No description provided for @passwordIsIncorrect.
+  ///
+  /// In en, this message translates to:
+  /// **'Password is incorrect'**
+  String get passwordIsIncorrect;
 
   /// No description provided for @rateThisPost.
   ///

@@ -26,7 +26,7 @@
   "email": "Email",
   "send": "Send",
   "checkYourMail": "Check your mail ",
-  "pleasePutThe4DigitSentToYou": "Please put the 4 digits sent to you",
+  "pleasePutThe4DigitSentToYou": "Please put the 6 digits sent to you",
   "submit": "Submit",
   "createNewPassword": "Create New Password",
   "yourNewPasswordMustBeDifferentFromPreviousUsedPassword": "Your new password must be different from previous used passwords.",
@@ -88,5 +88,7 @@
   "sendOTP": "Send OTP",
   "manualLocationSet": "Manual location set",
   "typeYourCityOrArea": "Type your city or area",
+  "reset": "Reset",
+  "passwordIsIncorrect": "Password is incorrect",
   "rateThisPost": "Rate this Post"
 }

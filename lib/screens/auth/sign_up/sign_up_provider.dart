@@ -2,6 +2,7 @@ import 'package:aura_real/apis/auth_apis.dart';
 import 'package:aura_real/aura_real.dart';
 import 'package:aura_real/screens/auth/check_your_email/check_your_email_screen.dart';
 import 'package:aura_real/screens/auth/password_reset/password_reset_screen.dart';
+import 'package:map_location_picker/map_location_picker.dart';
 
 class SignUpProvider extends ChangeNotifier {
   SignUpProvider({Map<String, dynamic>? args}) {
@@ -147,42 +148,57 @@ class SignUpProvider extends ChangeNotifier {
         isChecked; // ✅ must agree to terms
   }
 
-  void onSignUpTap(BuildContext context) {
+  // Future<void> _fetchLocation() async {
+  //   final (lat, lon, error) = await GetLocationService.getCurrentLatLon(context);
+  //   setState(() {
+  //     latitude = lat;
+  //     longitude = lon;
+  //     errorMessage = error;
+  //   });
+  // }
+  Future<void> onSignUpTap(BuildContext context) async {
     if (validate()) {
       context.navigator.pushNamed(
         PasswordRestScreen.routeName,
-        arguments: {"isComeFromSignUp": true,"email": emailController.text.trim(),
+        arguments: {
+          "isComeFromSignUp": true,
+          "email": emailController.text.trim(),
           "fullName": fullNameController.text.trim(),
           "phoneNumber": mobileController.text.trim(),
-          "password": passwordController.text.trim(),},
+          "password": passwordController.text.trim(),
+        },
       );
     }
   }
 
-  /// Submit signup
-  Future<void> signUpAPI(BuildContext context) async {
-    print('on sgn up');
-
-    print('onSignUpTap =============');
-    loader = true;
-    notifyListeners();
-    final result = await AuthApis.registerAPI(
-      email: emailController.text,
-      fullName: fullNameController.text,
-      password: passwordController.text,
-      phoneNumber: mobileController.text,
-    );
-    if (result) {
-      if (context.mounted) {
-        context.navigator.pushNamed(
-          CheckYourEmailScreen.routeName,
-          arguments: {'email': emailController.text},
-        );
-      }
-    }
-    loader = false;
-    notifyListeners();
-  }
+  // /// Submit signup
+  // Future<void> signUpAPI(
+  //   BuildContext context, {
+  //   String? selectedOTPType,
+  // }) async {
+  //   print('on sgn up');
+  //
+  //   print('onSignUpTap =============');
+  //   loader = true;
+  //   notifyListeners();
+  //   final result = await AuthApis.registerAPI(
+  //     email: emailController.text,
+  //     fullName: fullNameController.text,
+  //     password: passwordController.text,
+  //     phoneNumber: mobileController.text,
+  //     otpType: selectedOTPType ?? "0",
+  //   );
+  //   if (result) {
+  //     if (context.mounted) {
+  //       context.navigator.pushNamed(
+  //         CheckYourEmailScreen.routeName,
+  //         arguments: {'email': emailController.text},
+  //       );
+  //     }
+  //   }
+  //   loader = false;
+  //   notifyListeners();
+  // }
 
   // @override
   // void dispose() {

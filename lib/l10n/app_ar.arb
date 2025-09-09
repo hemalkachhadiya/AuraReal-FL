@@ -89,6 +89,8 @@
   "sendOTP": "إرسال رمز التحقق",
   "manualLocationSet": "تم تعيين الموقع يدويًا",
   "typeYourCityOrArea": "اكتب مدينتك أو منطقتك",
+  "reset": "إعادة تعيين",
+  "passwordIsIncorrect": "كلمة المرور غير صحيحة",
   "@cameraPermissionContent": {
     "description": "رسالة طلب إذن الكاميرا"
   }

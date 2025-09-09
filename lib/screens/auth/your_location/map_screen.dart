@@ -139,17 +139,34 @@ class MapScreen extends StatelessWidget {
                       debugPrint(
                         "SELECTED LOCATION:-${provider.selectedLocation}",
                       );
-                      final position =
+                      var address =
                           await GetLocationService.getAddressFromLatLng1(
                             location: provider.selectedLocation,
                           );
-                      print("position--------- ${position.keys}");
-                      print("position--------- ${position.values}");
+                      print("Selected Adders ==== ${address}");
+
+                      await GetLocationService.getAddressFromLatLng1(
+                        location: provider.selectedLocation,
+                      );
+
                       if (context.mounted) {
-                        context.navigator.pushNamedAndRemoveUntil(
-                          SignInScreen.routeName,
-                          (_) => false,
-                        );
+                        if (provider.selectedLocation != null) {
+                          PrefService.set(
+                            PrefKeys.latitude,
+                            provider.selectedLocation!.latitude,
+                          );
+                          PrefService.set(
+                            PrefKeys.longitude,
+                            provider.selectedLocation!.longitude,
+                          );
+                          PrefService.set(PrefKeys.location, address);
+                          context.navigator.pushNamedAndRemoveUntil(
+                            DashboardScreen.routeName,
+                            (_) => false,
+                          );
+                        } else {
+                          context.navigator.pop(context);
+                        }
                       }
                     },
                   ),

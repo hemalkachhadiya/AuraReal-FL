@@ -1,4 +1,5 @@
 import 'package:aura_real/aura_real.dart';
+import 'package:aura_real/screens/auth/check_your_email/check_your_email_screen.dart';
 import 'package:aura_real/screens/auth/password_reset/password_reset_screen.dart';
 
 class SignInScreen extends StatelessWidget {
@@ -6,10 +7,186 @@ class SignInScreen extends StatelessWidget {
 
   static const routeName = "sign_in";
 
+  // static Widget builder(BuildContext context) {
+  //   return ChangeNotifierProvider<SignInProvider>(
+  //     create: (c) => SignInProvider(args: ),
+  //     child: const SignInScreen(),
+  //   );
+  // }
   static Widget builder(BuildContext context) {
+    Map<String, dynamic>? args;
+
+    // Check if context.args is a Map and assign it
+    if (context.args is Map<String, dynamic>) {
+      args = context.args as Map<String, dynamic>;
+    }
     return ChangeNotifierProvider<SignInProvider>(
-      create: (c) => SignInProvider(),
+      create: (c) => SignInProvider(args: args),
       child: const SignInScreen(),
+    );
+  }
+
+
+  void showForgotDialog(BuildContext context, SignInProvider provider) {
+    final TextEditingController emailController = TextEditingController();
+    String? emailError;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Prevent closing during logout
+      builder:
+          (dialogContext) => AlertDialog(
+            insetPadding: EdgeInsets.symmetric(
+              horizontal: Constants.horizontalPadding,
+            ),
+            contentPadding: EdgeInsets.symmetric(
+              horizontal: Constants.horizontalPadding,
+            ),
+            title: Column(
+              children: [
+
+                Row(
+                  children: [
+                    Container(
+                      width: 24,
+                      height: 24,
+                      margin: const EdgeInsets.only(bottom: 15),
+                      child: InkWell(
+                        onTap: () {
+                          Navigator.of(dialogContext).pop();
+                        },
+                        borderRadius: BorderRadius.circular(50),
+                        child: Align(
+                          alignment: Alignment.topLeft,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(50),
+                              color: ColorRes.red,
+                            ),
+                            child: const Center(
+                              child: Icon(
+                                Icons.close,
+                                color: ColorRes.white,
+                                size: 15,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const Spacer(),
+                  ],
+                ),
+                20.ph.spaceVertical,
+                Text(
+                  context.l10n?.forgotYourPassword ?? "Forgot Your Password",
+                  style: styleW700S20,
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+            content: SizedBox(
+              // Constrain the height to prevent overflow
+              height: 150.ph, // Adjust based on your design
+              child: SingleChildScrollView(
+                child: StatefulBuilder(
+                  builder: (BuildContext context, StateSetter setState) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        20.ph.spaceVertical,
+                        AppTextField(
+                          controller: emailController,
+                          error: emailError,
+                          hintText:
+                              context.l10n?.emailAddress ?? "Email Address",
+                          prefixIcon: const Padding(
+                            padding: EdgeInsets.all(18.0),
+                            child: SvgAsset(
+                              imagePath: AssetRes.messageIcon,
+                              width: 18,
+                              height: 18,
+                              color: ColorRes.primaryColor,
+                            ),
+                          ),
+                          isMandatory: true,
+                          textInputType: TextInputType.emailAddress,
+                          fillColor: ColorRes.lightGrey2,
+                          borderRadius: 40.pw,
+                          onChanged: (value) {
+                            setState(() {
+                              // Basic email validation
+                              if (value.isEmpty) {
+                                emailError =
+                                    context.l10n?.emailIsRequired ??
+                                    "Email is required";
+                              } else if (!RegExp(
+                                r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                              ).hasMatch(value)) {
+                                emailError =
+                                    context.l10n?.invalidEmail ??
+                                    "Invalid email format";
+                              } else {
+                                emailError = null;
+                              }
+                            });
+                          },
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ),
+            ),
+
+            actions: [
+              Center(
+                child: Container(
+                  width: 225.pw,
+                  padding: EdgeInsets.only(top: 15.ph),
+                  child: SubmitButton(
+                    height: 45.ph,
+                    loading: provider.loader,
+                    title: context.l10n?.reset ?? "Reset",
+                    raduis: 15,
+                    onTap:
+                        provider.loader
+                            ? null
+                            : () async {
+                              final email = emailController.text.trim();
+                              if (email.isEmpty) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      context.l10n?.emailIsRequired ??
+                                          "Email is required",
+                                    ),
+                                  ),
+                                );
+                                return;
+                              }
+                              if (!RegExp(
+                                r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                              ).hasMatch(email)) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      context.l10n?.invalidEmail ??
+                                          "Invalid email format",
+                                    ),
+                                  ),
+                                );
+                                return;
+                              }
+                              await provider.reqPasswordReset(context, email);
+                            },
+                    style: styleW600S12.copyWith(color: ColorRes.white),
+                  ),
+                ),
+              ),
+            ],
+          ),
     );
   }
 
@@ -58,8 +235,8 @@ class SignInScreen extends StatelessWidget {
                               hintText:
                                   AppLocalizations.of(context)?.emailAddress ??
                                   "Email Address",
-                              prefixIcon: Padding(
-                                padding: const EdgeInsets.all(18.0),
+                              prefixIcon: const Padding(
+                                padding: EdgeInsets.all(18.0),
                                 child: SvgAsset(
                                   imagePath: AssetRes.messageIcon,
                                   width: 18,
@@ -71,7 +248,7 @@ class SignInScreen extends StatelessWidget {
                               fillColor: ColorRes.lightGrey2,
                               borderRadius: 40.pw,
                               onChanged: (value) {
-                                provider.onEmailChanged(value, context);
+                                provider.onEmailChanged(value,);
                               },
                             ),
                             20.ph.spaceVertical,
@@ -81,8 +258,8 @@ class SignInScreen extends StatelessWidget {
                               hintText:
                                   AppLocalizations.of(context)?.password ??
                                   "Password",
-                              prefixIcon: Padding(
-                                padding: const EdgeInsets.all(18.0),
+                              prefixIcon: const Padding(
+                                padding: EdgeInsets.all(18.0),
                                 child: SvgAsset(
                                   imagePath: AssetRes.lockIcon,
                                   width: 18,
@@ -108,16 +285,13 @@ class SignInScreen extends StatelessWidget {
                               fillColor: ColorRes.lightGrey2,
                               borderRadius: 40.pw,
                               onChanged: (value) {
-                                provider.onEmailChanged(value, context);
+                                provider.onEmailChanged(value,);
                               },
                             ),
                             14.ph.spaceVertical,
                             InkWell(
                               onTap: () {
-                                context.navigator.pushNamed(
-                                  PasswordRestScreen.routeName,
-                                  arguments: {"isComeFromSignUp": false},
-                                );
+                                showForgotDialog(context, provider);
                               },
                               child: Padding(
                                 padding: const EdgeInsets.all(8.0),
@@ -173,9 +347,8 @@ class SignInScreen extends StatelessWidget {
                               style: styleW500S16,
                             ),
                             40.ph.spaceVertical,
-
-                            provider.loaderGoogleLogin == true
-                                ? CircularProgressIndicator()
+                            provider.loaderGoogleLogin
+                                ? const CircularProgressIndicator()
                                 : InkWell(
                                   borderRadius: BorderRadius.circular(8),
                                   onTap: () {
@@ -189,7 +362,7 @@ class SignInScreen extends StatelessWidget {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.center,
                                       children: [
-                                        SvgAsset(
+                                        const SvgAsset(
                                           imagePath: AssetRes.googleIcon,
                                         ),
                                         15.pw.spaceHorizontal,

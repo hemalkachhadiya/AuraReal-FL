@@ -32,9 +32,12 @@ class SplashScreen extends StatelessWidget {
     // print("Location----------- ${position?.longitude} ${position?.latitude}");
 
     final address = await GetLocationService.getAddressFromLatLng(context);
+    var latitude = await PrefService.getDouble(PrefKeys.latitude);
 
+    print("latitude======= ${latitude}");
 
     print("address======= ${address}");
+
     try {
       if (_splashInit) return;
       _splashInit = true;
@@ -42,17 +45,42 @@ class SplashScreen extends StatelessWidget {
       await Future.delayed(1000.milliseconds);
 
       if (context.mounted) {
-        String token = PrefService.getString(PrefKeys.token);
+        final userData = PrefService.getString(PrefKeys.userData);
 
+        if (kDebugMode) {
+          print("token-------------- ${userData}");
+        }
         // Navigate based on token
-        if (token.trim().isNotEmpty) {
-          if (address != null) {
-            context.navigator.pushReplacementNamed(DashboardScreen.routeName);
+        if (userData.isNotEmpty) {
+          final (isEnabled, error) =
+              await GetLocationService.checkLocationService();
+          if (isEnabled) {
+            if (context.mounted && isEnabled) {
+              final position = await GetLocationService.getCurrentLocation(
+                context,
+              );
+              if (context.mounted) {
+                final address = await GetLocationService.getAddressFromLatLng(
+                  context,
+                );
+              }
+
+              print("address------ ${address}");
+              await PrefService.set(PrefKeys.location, address);
+            }
+            if (context.mounted) {
+              var location = PrefService.getString(PrefKeys.location);
+
+              print("Location---------- ${location}");
+              context.navigator.pushNamedAndRemoveUntil(
+                DashboardScreen.routeName,
+                (route) => false,
+              );
+            }
           } else {
-            print("hi====================");
             context.navigator.pushReplacementNamed(
               YourLocationScreen.routeName,
-              arguments: {'isComeFromSplash': true},
+              arguments: {'isComeFromSplash': true}, // Pass the flag
             );
           }
         } else {

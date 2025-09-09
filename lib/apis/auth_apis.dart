@@ -15,6 +15,7 @@ class AuthApis {
     required String email,
     required String fullName,
     required String password,
+    required String otpType,
   }) async {
     try {
       final response = await ApiService.postApi(
@@ -24,6 +25,7 @@ class AuthApis {
           "fullName": fullName,
           "password": password,
           "phoneNumber": phoneNumber,
+          "is_otp_type": phoneNumber,
         },
       );
       if (response == null) {
@@ -61,7 +63,7 @@ class AuthApis {
       print("OTP CALL ------------------ ${int.parse(otp.toString())}");
       final response = await ApiService.postApi(
         url: EndPoints.verifyOTP,
-        body: {"email": email, "otp": int.parse(otp.toString())},
+        body: {"email": email, "otp": otp.toString()},
       );
       if (response == null) {
         showCatchToast('No response from server', null);
@@ -108,7 +110,6 @@ class AuthApis {
       }
       final responseBody = jsonDecode(response.body);
       if (response.statusCode == 200 || response.statusCode == 201) {
-        print("Res Body Data ${responseBody['data']}");
         if (responseBody['data'] != null && responseBody != null) {
           await PrefService.set(
             PrefKeys.userData,
@@ -188,10 +189,7 @@ class AuthApis {
         return false;
       }
       final model = appResponseFromJson(response.body);
-      print("model.data");
 
-      print(model.data);
-      print(model.success);
       if (model.success == true) {
         showSuccessToast(model.message ?? "Message Form LOGOUT API");
         return true;
@@ -225,6 +223,85 @@ class AuthApis {
     } catch (exception, stack) {
       showCatchToast(exception, stack);
       return null;
+    }
+  }
+
+  ///Request Password API
+  static Future<bool?> reqPasswordResetAPI({required String email}) async {
+    try {
+      final response = await ApiService.postApi(
+        url: EndPoints.requestPasswordReset,
+        body: {"identifier": email},
+      );
+      if (response == null) {
+        showCatchToast('No response from server', null);
+        return false;
+      }
+      final responseBody = jsonDecode(response.body);
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        if (responseBody['message'] != null && responseBody != null) {
+          showSuccessToast(responseBody['message'] ?? 'Login successful');
+          return true;
+        }
+      }
+    } catch (exception, stack) {
+      showCatchToast(exception, stack);
+      return false;
+    }
+  }
+
+  ///Request Password API
+  static Future<bool?> otpVerifyForgotPasswordAPI({
+    required String email,
+    required String otp,
+  }) async {
+    try {
+      final response = await ApiService.postApi(
+        url: EndPoints.verifyPasswordResetOTP,
+        body: {"identifier": email, "otp": otp},
+      );
+      if (response == null) {
+        showCatchToast('No response from server', null);
+        return false;
+      }
+      final responseBody = jsonDecode(response.body);
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        if (responseBody['message'] != null && responseBody != null) {
+          showSuccessToast(responseBody['message'] ?? 'Login successful');
+          return true;
+        }
+      }
+    } catch (exception, stack) {
+      showCatchToast(exception, stack);
+      return false;
+    }
+  }
+
+  ///Request Password API
+  static Future<bool?> resetPasswordAPI({
+    required String email,
+    required String otp,
+    required String newPassword,
+  }) async {
+    try {
+      final response = await ApiService.postApi(
+        url: EndPoints.resetPassword,
+        body: {"identifier": email, "otp": otp, "newPassword": newPassword},
+      );
+      if (response == null) {
+        showCatchToast('No response from server', null);
+        return false;
+      }
+      final responseBody = jsonDecode(response.body);
+      if (response.statusCode == 200 || response.statusCode == 201) {
+          if (responseBody['message'] != null && responseBody != null) {
+          showSuccessToast(responseBody['message'] ?? 'Login successful');
+          return true;
+        }
+      }
+    } catch (exception, stack) {
+      showCatchToast(exception, stack);
+      return false;
     }
   }
 

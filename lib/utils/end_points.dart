@@ -1,6 +1,9 @@
 class EndPoints {
   /// LOCAL URL
-  static const domain = "http://192.168.1.30:4000/";
+  // static const domain = "http://192.168.1.30:4000/";
+
+  ///Live URL
+  static const domain = "https://aurarealapi.smarttechnica.com/";
 
   /// Test URL
   static const baseUrl = "${domain}api/v1/";
@@ -10,6 +13,12 @@ class EndPoints {
   static const login = "${baseUrl}user/login";
   static const verifyOTP = "${baseUrl}verify-otp";
   static const logout = "${baseUrl}userlogout";
+
+  /// ------------------------------------ Forgot Password -------------------------------
+
+  static const requestPasswordReset = "${baseUrl}requestPasswordReset";
+  static const verifyPasswordResetOTP = "${baseUrl}verifyPasswordResetOTP";
+  static const resetPassword = "${baseUrl}resetPassword";
 
   /// ------------------------------------ Google Login -------------------------------
   static const googleLogin = "${baseUrl}google-login";

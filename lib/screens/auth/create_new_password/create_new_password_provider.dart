@@ -1,9 +1,14 @@
+import 'package:aura_real/apis/auth_apis.dart';
 import 'package:aura_real/aura_real.dart';
 import 'package:aura_real/screens/auth/your_location/your_location_screen.dart';
 
 class CreateNewPasswordProvider extends ChangeNotifier {
+  CreateNewPasswordProvider({this.email, this.otp});
+
   final TextEditingController newPasseController = TextEditingController();
   final TextEditingController confirmPassController = TextEditingController();
+  final String? email;
+  final String? otp;
 
   String newPassword = "";
   String confirmPassword = "";
@@ -76,34 +81,33 @@ class CreateNewPasswordProvider extends ChangeNotifier {
     return isNewValid && isConfirmValid;
   }
 
-  /// Save action
-  Future<void> onSaveTap(BuildContext context) async {
-    if (!validateAll(context)) return;
+  /// Reset Password action
 
+
+  Future<void> resetPasswordAPI(BuildContext context) async {
+    if (!validateAll(context)) return;
     loader = true;
     notifyListeners();
 
     try {
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 2));
-
-      print("password--------------");
-
-      showSuccessToast('Password changed successfully');
-      if (context.mounted) {
-        context.navigator.pushReplacementNamed(
-          YourLocationScreen.routeName,
-          arguments: {'isComeFromSplash': false}, // Pass the flag
-        );
+      final result = await AuthApis.resetPasswordAPI(
+        email: email ?? "",
+        otp: otp ?? "",
+        newPassword: newPassword,
+      );
+      if (result!) {
+        if (context.mounted) {
+          context.navigator.pushNamed(
+            SignInScreen.routeName,
+            arguments: {'email': email, 'password': newPassword},
+          );
+        }
       }
     } catch (e) {
-
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Error: $e")));
-    } finally {
-      loader = false;
-      notifyListeners();
+      showErrorMsg(e.toString());
     }
+
+    loader = false;
+    notifyListeners();
   }
 }

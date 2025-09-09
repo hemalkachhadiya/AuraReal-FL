@@ -1,6 +1,7 @@
 import 'package:aura_real/apis/app_response.dart';
 import 'package:aura_real/apis/auth_apis.dart';
 import 'package:aura_real/aura_real.dart';
+import 'package:aura_real/screens/auth/check_your_email/check_your_email_screen.dart';
 import 'package:aura_real/screens/auth/sign_in/model/google_login_response_model.dart';
 import 'package:aura_real/screens/auth/sign_in/model/login_response_model.dart';
 import 'package:aura_real/screens/dahsboard/dashboard_screen.dart';
@@ -10,16 +11,28 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 class SignInProvider extends ChangeNotifier {
-  SignInProvider();
+  SignInProvider({Map<String, dynamic>? args}) {
+    // Prefill email and password if provided in args
+    if (args != null) {
+      final prefilledEmail = args['email'] as String? ?? '';
+      final prefilledPassword = args['password'] as String? ?? '';
+      if (prefilledEmail.isNotEmpty) {
+        emailController.text = prefilledEmail;
+        onEmailChanged(prefilledEmail); // Validate without context if null
+      }
+      if (prefilledPassword.isNotEmpty) {
+        passwordController.text = prefilledPassword;
+        onPasswordChanged(
+          prefilledPassword,
+        ); // Validate without context if null
+      }
+    }
+  }
 
   bool loader = false;
   bool loaderGoogleLogin = false;
-  TextEditingController emailController = TextEditingController(
-    text: "",
-  );
-  TextEditingController passwordController = TextEditingController(
-    text: "",
-  );
+  TextEditingController emailController = TextEditingController(text: "");
+  TextEditingController passwordController = TextEditingController(text: "");
 
   String emailError = "";
   String pwdError = "";
@@ -37,12 +50,12 @@ class SignInProvider extends ChangeNotifier {
         passwordController.text.trim().isNotEmpty;
   }
 
-  void onEmailChanged(String value, BuildContext context) {
-    validate(context);
+  void onEmailChanged(String value) {
+    validate(navigatorKey.currentState!.context);
   }
 
-  void onPasswordChanged(String value, BuildContext context) {
-    validate(context);
+  void onPasswordChanged(String value) {
+    validate(navigatorKey.currentState!.context);
   }
 
   /// Validate inputs
@@ -78,9 +91,23 @@ class SignInProvider extends ChangeNotifier {
     return emailError.isEmpty && pwdError.isEmpty;
   }
 
-  LoginRes? userData;
-
   GoogleLoginRes? googleLoginUserData;
+
+  bool _isLocationEnabled = false;
+  String? _error;
+
+  Future checkLocation() async {
+    final (isEnabled, error) = await GetLocationService.checkLocationService();
+    _isLocationEnabled = isEnabled;
+    _error = error;
+    if (!_isLocationEnabled && _error != null) {
+      final (newEnabled, newError) =
+          await GetLocationService.requestLocationPermission();
+      _isLocationEnabled = newEnabled;
+      _error = newError;
+    }
+    notifyListeners();
+  }
 
   Future<void> onLoginTap(BuildContext context) async {
     if (!isFormValid) return;
@@ -91,17 +118,47 @@ class SignInProvider extends ChangeNotifier {
         email: emailController.text,
         password: passwordController.text,
       );
-      userData = result;
-      if (userData != null) {
-        print("LOGIN USER DATA  $userData");
 
+      if (result != null) {
         if (context.mounted) {
-          context.navigator.pushNamedAndRemoveUntil(
-            DashboardScreen.routeName,
-            (route) => false,
+          await PrefService.set(PrefKeys.email, emailController.text);
+
+          final (isEnabled, error) =
+              await GetLocationService.checkLocationService();
+          await checkLocation();
+          if (context.mounted && isEnabled) {
+            final address = await GetLocationService.getAddressFromLatLng(
+              context,
+            );
+            await PrefService.set(PrefKeys.location, address);
+            if (context.mounted) {
+              context.navigator.pushNamedAndRemoveUntil(
+                DashboardScreen.routeName,
+                (route) => false,
+              );
+            }
+          } else {
+            if (context.mounted) {
+              context.navigator.pushReplacementNamed(
+                YourLocationScreen.routeName,
+                arguments: {'isComeFromSplash': true}, // Pass the flag
+              );
+            }
+          }
+        }
+      } else {
+        print("result=========== ${result}");
+        if (context.mounted) {
+          context.navigator.pushNamed(
+            SignUpScreen.routeName,
+            arguments: {
+              "email": emailController.text,
+              "password": passwordController.text,
+            },
           );
         }
       }
+
       loader = false;
       notifyListeners();
     }
@@ -164,6 +221,29 @@ class SignInProvider extends ChangeNotifier {
       }
     }
     loaderGoogleLogin = false;
+    notifyListeners();
+  }
+
+  Future<void> reqPasswordReset(BuildContext context, String email) async {
+    loader = true;
+    notifyListeners();
+    final result = await AuthApis.reqPasswordResetAPI(email: email);
+    if (result!) {
+      if (context.mounted) {
+        print("result------------- req------- ${result}");
+        navigatorKey.currentState?.context.navigator.pop();
+        context.navigator.pushNamed(
+          CheckYourEmailScreen.routeName,
+          // Replace with your OTP screen route
+          arguments: {
+            "email": email,
+            "isComeFromSignUp": false,
+            "isReset": true,
+          },
+        );
+      }
+    }
+    loader = false;
     notifyListeners();
   }
 }

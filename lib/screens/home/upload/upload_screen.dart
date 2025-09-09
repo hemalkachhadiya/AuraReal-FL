@@ -1,17 +1,17 @@
 import 'dart:ui' as ui;
 import 'package:aura_real/aura_real.dart';
-
+import 'package:aura_real/apis/model/post_model.dart';
 class UploadScreen extends StatelessWidget {
-  final PostListModel? post;
+  final PostModel? post;
 
   const UploadScreen({super.key, this.post});
 
   static const routeName = "upload_screen";
 
-  static Widget builder(BuildContext context, {PostListModel? post}) {
+  static Widget builder(BuildContext context, {PostModel? post}) {
     // If post is not provided directly, try to get it from route arguments
-    final PostListModel? routePost =
-        post ?? (ModalRoute.of(context)?.settings.arguments as PostListModel?);
+    final PostModel? routePost =
+        post ?? (ModalRoute.of(context)?.settings.arguments as PostModel?);
 
     return MultiProvider(
       providers: [

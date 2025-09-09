@@ -90,7 +90,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get checkYourMail => 'Check your mail ';
 
   @override
-  String get pleasePutThe4DigitSentToYou => 'Please put the 4 digits sent to you';
+  String get pleasePutThe4DigitSentToYou => 'Please put the 6 digits sent to you';
 
   @override
   String get submit => 'Submit';
@@ -274,6 +274,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get typeYourCityOrArea => 'Type your city or area';
+
+  @override
+  String get reset => 'Reset';
+
+  @override
+  String get passwordIsIncorrect => 'Password is incorrect';
 
   @override
   String get rateThisPost => 'Rate this Post';

@@ -40,6 +40,7 @@ class PasswordResetProvider extends ChangeNotifier {
       fullName: fullName ?? "",
       password: password ?? "",
       phoneNumber: phoneNumber ?? "",
+      otpType:  selectedMethod == 'SMS'?"1":"0"
     );
     if (result) {
       if (context.mounted) {

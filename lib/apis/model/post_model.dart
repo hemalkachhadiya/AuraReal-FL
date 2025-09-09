@@ -1,12 +1,14 @@
 import 'package:aura_real/aura_real.dart';
 
-class PostListModel {
+class PostModel {
   final String? id;
   final UserId? userId;
   final String? content;
   final String? postImage;
   final int? privacyLevel;
   final String? locationId;
+  final Location? location;
+  final Coordinates? coordinates;
   final int? commentsCount;
   final int? sharesCount;
   final bool? isDeleted;
@@ -15,13 +17,15 @@ class PostListModel {
   final DateTime? updatedAt;
   final int? v;
 
-  PostListModel({
+  PostModel({
     this.id,
     this.userId,
     this.content,
     this.postImage,
     this.privacyLevel,
     this.locationId,
+    this.location,
+    this.coordinates,
     this.commentsCount,
     this.sharesCount,
     this.isDeleted,
@@ -31,7 +35,7 @@ class PostListModel {
     this.v,
   });
 
-  factory PostListModel.fromJson(Map<String, dynamic> json) {
+  factory PostModel.fromJson(Map<String, dynamic> json) {
     // Handle both cases for user_id: string or object
     UserId? userId;
     final userData = json['user_id'];
@@ -46,13 +50,15 @@ class PostListModel {
       }
     }
 
-    return PostListModel(
+    return PostModel(
       id: json['_id'] as String?,
       userId: userId,
       content: json['content'] as String?,
       postImage: json['post_image'] as String?,
       privacyLevel: json['privacy_level'] as int?,
       locationId: json['location_id'] as String?,
+      location: json['location'] != null ? Location.fromJson(json['location']) : null,
+      coordinates: json['coordinates'] != null ? Coordinates.fromJson(json['coordinates']) : null,
       commentsCount: json['comments_count'] as int?,
       sharesCount: json['shares_count'] as int?,
       isDeleted: json['is_deleted'] as bool?,
@@ -63,13 +69,15 @@ class PostListModel {
     );
   }
 
-  PostListModel copyWith({
+  PostModel copyWith({
     String? id,
     UserId? userId,
     String? content,
     String? postImage,
     int? privacyLevel,
     String? locationId,
+    Location? location,
+    Coordinates? coordinates,
     int? commentsCount,
     int? sharesCount,
     bool? isDeleted,
@@ -78,13 +86,15 @@ class PostListModel {
     DateTime? updatedAt,
     int? v,
   }) =>
-      PostListModel(
+      PostModel(
         id: id ?? this.id,
         userId: userId ?? this.userId,
         content: content ?? this.content,
         postImage: postImage ?? this.postImage,
         privacyLevel: privacyLevel ?? this.privacyLevel,
         locationId: locationId ?? this.locationId,
+        location: location ?? this.location,
+        coordinates: coordinates ?? this.coordinates,
         commentsCount: commentsCount ?? this.commentsCount,
         sharesCount: sharesCount ?? this.sharesCount,
         isDeleted: isDeleted ?? this.isDeleted,
@@ -131,4 +141,57 @@ class UserId {
   // Helper methods to safely access values
   String get safeId => id ?? '';
   String get safeFullName => fullName ?? 'Unknown User';
+}
+
+
+class Location {
+  final double? latitude;
+  final double? longitude;
+
+  Location({
+    this.latitude,
+    this.longitude,
+  });
+
+  factory Location.fromJson(Map<String, dynamic> json) {
+    return Location(
+      latitude: (json['latitude'] as num?)?.toDouble(),
+      longitude: (json['longitude'] as num?)?.toDouble(),
+    );
+  }
+
+  Location copyWith({
+    double? latitude,
+    double? longitude,
+  }) =>
+      Location(
+        latitude: latitude ?? this.latitude,
+        longitude: longitude ?? this.longitude,
+      );
+}
+
+class Coordinates {
+  final String? type;
+  final List<double>? coordinates;
+
+  Coordinates({
+    this.type,
+    this.coordinates,
+  });
+
+  factory Coordinates.fromJson(Map<String, dynamic> json) {
+    return Coordinates(
+      type: json['type'] as String?,
+      coordinates: json['coordinates'] != null ? List<double>.from(json['coordinates'].map((x) => (x as num).toDouble())) : null,
+    );
+  }
+
+  Coordinates copyWith({
+    String? type,
+    List<double>? coordinates,
+  }) =>
+      Coordinates(
+        type: type ?? this.type,
+        coordinates: coordinates ?? this.coordinates,
+      );
 }

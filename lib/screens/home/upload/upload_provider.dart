@@ -1,4 +1,5 @@
 import 'package:aura_real/apis/app_response_2.dart';
+import 'package:aura_real/apis/model/post_model.dart';
 import 'package:aura_real/apis/post_apis.dart';
 import 'package:aura_real/aura_real.dart';
 
@@ -11,16 +12,16 @@ class UploadProvider extends ChangeNotifier {
     await getPostByUserAPI(showLoader: true, resetData: true);
   }
 
-  AppResponse2<PostListModel>? paginationModel;
+  AppResponse2<PostModel>? paginationModel;
 
-  List<PostListModel> get postByUserResponse => paginationModel?.list ?? [];
+  List<PostModel> get postByUserResponse => paginationModel?.list ?? [];
   bool _disposed = false;
   int currentPage = 0;
   int pageSize = 20;
   bool isApiCalling = false;
   bool loader = false;
 
-  late final List<PostListModel> posts = [];
+  late final List<PostModel> posts = [];
   final bool _isLoading = false;
   String? _error;
 
@@ -28,7 +29,7 @@ class UploadProvider extends ChangeNotifier {
 
   String? get error => _error;
 
-  // List<PostListModel>? get postByUserResponse => paginationModel?.list ?? [];
+  // List<PostModel>? get postByUserResponse => paginationModel?.list ?? [];
   bool get hasMoreData => paginationModel?.hasMorePages ?? false;
 
   /// Get All Post List API with pagination

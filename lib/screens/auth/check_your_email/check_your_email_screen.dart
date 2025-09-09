@@ -12,7 +12,12 @@ class CheckYourEmailScreen extends StatelessWidget {
       args = context.args as Map<String, dynamic>;
     }
     return ChangeNotifierProvider<CheckYourMailProvider>(
-      create: (c) => CheckYourMailProvider(email: args?['email'] ?? ""),
+      create:
+          (c) => CheckYourMailProvider(
+            email: args?['email'] ?? "",
+            isComeFromSignUp: args?['isComeFromSignUp'],
+            isReset: args?["isReset"],
+          ),
       child: const CheckYourEmailScreen(),
     );
   }
@@ -37,7 +42,8 @@ class CheckYourEmailScreen extends StatelessWidget {
                 loading: provider.loader,
                 bgColor:
                     provider.loader ? ColorRes.primaryColor : ColorRes.grey3,
-                onTap:
+
+               onTap:
                     provider.loader
                         ? null
                         : () => provider.onVerifyOTPTap(context),
@@ -45,6 +51,7 @@ class CheckYourEmailScreen extends StatelessWidget {
               ),
             ),
           ),
+
           body: SafeArea(
             child: CustomSingleChildScroll(
               padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -68,7 +75,7 @@ class CheckYourEmailScreen extends StatelessWidget {
                   Center(
                     child: Text(
                       context.l10n?.pleasePutThe4DigitSentToYou ??
-                          "Please put the 4 digits sent to you",
+                          "Please put the 6 digits sent to you",
                       style: styleW400S14.copyWith(color: ColorRes.grey6),
                       textAlign: TextAlign.center,
                     ),

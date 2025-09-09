@@ -6,9 +6,17 @@ class CreateNewPasswordScreen extends StatelessWidget {
   static const routeName = "create_new_password";
 
   static Widget builder(BuildContext context) {
+    Map<String, dynamic> argMap = {};
+    if (context.args is Map<String, dynamic>) {
+      argMap = context.args as Map<String, dynamic>;
+    }
     return ChangeNotifierProvider<CreateNewPasswordProvider>(
-      create: (c) => CreateNewPasswordProvider(),
-      child: const CreateNewPasswordScreen(),
+      create:
+          (c) => CreateNewPasswordProvider(
+            email: argMap["email"]?.toString() ?? "",
+            otp: argMap["otp"]?.toString() ?? "",
+          ),
+      child: CreateNewPasswordScreen(),
     );
   }
 
@@ -16,6 +24,8 @@ class CreateNewPasswordScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<CreateNewPasswordProvider>(
       builder: (context, provider, child) {
+        print("provider email ------- ${provider.email}");
+        print("provider opt ------- ${provider.otp}");
         return Scaffold(
           backgroundColor: Theme.of(context).colorScheme.surface,
           bottomNavigationBar: Padding(
@@ -26,7 +36,10 @@ class CreateNewPasswordScreen extends StatelessWidget {
             child: SubmitButton(
               loading: provider.loader,
               title: context.l10n?.save ?? "",
-              onTap: provider.loader ? null : () => provider.onSaveTap(context),
+              onTap:
+                  provider.loader
+                      ? null
+                      : () => provider.resetPasswordAPI(context),
             ),
           ),
           body: SafeArea(

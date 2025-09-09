@@ -12,6 +12,7 @@ class SettingProvider extends ChangeNotifier {
   bool loader = false;
 
   Future<void> logoutTap(BuildContext context) async {
+
     if (userData == null || userData?.id == null) return;
     loader = true;
     notifyListeners();
@@ -30,15 +31,13 @@ class SettingProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-
-
-// Usage in buildTabWidget:
-//   buildTabWidget(
-//   provider: provider,
-//   onTap: () {
-//   _showLogoutDialog(context, provider);
-//   },
-//   title: context.l10n?.logout ?? "",
-//   img: AssetRes.logoutIcon,
-//   ),
+  // Usage in buildTabWidget:
+  //   buildTabWidget(
+  //   provider: provider,
+  //   onTap: () {
+  //   _showLogoutDialog(context, provider);
+  //   },
+  //   title: context.l10n?.logout ?? "",
+  //   img: AssetRes.logoutIcon,
+  //   ),
 }

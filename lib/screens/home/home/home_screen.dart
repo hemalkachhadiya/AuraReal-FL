@@ -20,6 +20,7 @@ class HomeScreen extends StatelessWidget {
       child: Consumer<PostsProvider>(
         builder: (context, provider, child) {
           return StackedLoader(
+
             loading: provider.loader,
             child: Scaffold(
               backgroundColor: Theme.of(context).colorScheme.surface,
