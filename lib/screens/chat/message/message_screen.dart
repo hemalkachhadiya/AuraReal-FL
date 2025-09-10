@@ -1,5 +1,6 @@
 import 'package:aura_real/aura_real.dart';
 import 'package:aura_real/screens/chat/message/message_provider.dart';
+import 'package:aura_real/services/sockect_helper.dart';
 
 class MessageScreen extends StatefulWidget {
   final ChatUser chatUser;
@@ -15,6 +16,13 @@ class MessageScreen extends StatefulWidget {
 class _MessageScreenState extends State<MessageScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  conectCocketFun() async {
+    socketIoHelper.connectSocket("", setState);
+  }
+
+  disconectCocketFun() async {
+    socketIoHelper.disconnectSocket();
+  }
 
   @override
   void initState() {
@@ -28,6 +36,7 @@ class _MessageScreenState extends State<MessageScreen> {
   void dispose() {
     _messageController.dispose();
     _scrollController.dispose();
+    conectCocketFun();
     super.dispose();
   }
 
@@ -68,6 +77,7 @@ class _MessageScreenState extends State<MessageScreen> {
   AppBar _buildAppBar(BuildContext context) {
     return AppBar(
       backgroundColor: Colors.white,
+      surfaceTintColor: ColorRes.white,
       elevation: 0,
       leading: Padding(
         padding: const EdgeInsets.all(0),
@@ -121,7 +131,7 @@ class _MessageScreenState extends State<MessageScreen> {
                   widget.chatUser.isOnline ? 'Online' : 'Offline',
                   style: TextStyle(
                     color:
-                        !widget.chatUser.isOnline ? Colors.green : Colors.grey,
+                    !widget.chatUser.isOnline ? Colors.green : Colors.grey,
                     fontSize: 12,
                   ),
                 ),
@@ -152,10 +162,10 @@ class _MessageScreenState extends State<MessageScreen> {
         final message = messageProvider.messages[index];
         final showTimestamp =
             index == 0 ||
-            messageProvider.messages[index - 1].timestamp
+                messageProvider.messages[index - 1].timestamp
                     .difference(message.timestamp)
                     .inMinutes >
-                5;
+                    5;
 
         return Column(
           children: [
@@ -195,10 +205,10 @@ class _MessageScreenState extends State<MessageScreen> {
 
   Widget _buildMessageBubble(Message message, MessageProvider messageProvider) {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 2),
+      margin: const EdgeInsets.symmetric(vertical: 08),
       child: Row(
         mainAxisAlignment:
-            message.isFromMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+        message.isFromMe ? MainAxisAlignment.end : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           if (message.isFromMe) const Spacer(),
@@ -208,10 +218,16 @@ class _MessageScreenState extends State<MessageScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               decoration: BoxDecoration(
                 color:
-                    message.isFromMe
-                        ? const Color(0xFF7C3AED)
-                        : Colors.grey[100],
-                borderRadius: BorderRadius.circular(20),
+                message.isFromMe
+                    ? const Color(0xFF7C3AED)
+                    : Colors.grey[100],
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(message.isFromMe ? 16 : 0),
+                  bottomRight: Radius.circular(message.isFromMe ? 0 : 16),
+                  topLeft: const Radius.circular(16),
+                  topRight: const Radius.circular(16),
+                ),
+                // borderRadius: BorderRadius.circular(20),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -231,9 +247,9 @@ class _MessageScreenState extends State<MessageScreen> {
                         messageProvider.formatMessageTime(message.timestamp),
                         style: TextStyle(
                           color:
-                              message.isFromMe
-                                  ? Colors.white70
-                                  : Colors.grey[600],
+                          message.isFromMe
+                              ? Colors.white70
+                              : Colors.grey[600],
                           fontSize: 11,
                         ),
                       ),
@@ -243,10 +259,10 @@ class _MessageScreenState extends State<MessageScreen> {
                           messageProvider.getStatusIcon(message.status),
                           size: 12,
                           color:
-                              messageProvider.getStatusColor(message.status) ==
-                                     ColorRes.primaryColor
-                                  ? Colors.white
-                                  : Colors.white70,
+                          messageProvider.getStatusColor(message.status) ==
+                              ColorRes.primaryColor
+                              ? Colors.white
+                              : Colors.white70,
                         ),
                       ],
                     ],
@@ -287,7 +303,7 @@ class _MessageScreenState extends State<MessageScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     _buildTypingDot(0),
-                   4.pw.spaceHorizontal,
+                    4.pw.spaceHorizontal,
                     _buildTypingDot(200),
                     4.pw.spaceHorizontal,
                     _buildTypingDot(400),
@@ -322,100 +338,97 @@ class _MessageScreenState extends State<MessageScreen> {
   }
 
   Widget _buildMessageInput(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.only(
-        left: 16,
-        right: 16,
-        top: 8,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 16,
-      ),
-      decoration: BoxDecoration(
-        color: ColorRes.white,
-        // border: Border(top: BorderSide(color: Colors.grey[200]!, width: 1)),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                color: ColorRes.lightGrey2,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Row(
-                children: [
-                  SvgAsset(
-                    imagePath: AssetRes.smileIcon,
-                    width: 18.pw,
-                    height: 18.ph,
-                  ),
-                  Expanded(
-                    child: Consumer<MessageProvider>(
-                      builder: (context, messageProvider, child) {
-                        return TextField(
-                          controller: _messageController,
-                          onChanged:
-                              (text) => messageProvider.updateMessageText(text),
-                          onSubmitted: (text) => _sendMessage(messageProvider),
-                          decoration: InputDecoration(
-                            hintText: context.l10n?.typeAMessage ?? "",
-                            hintStyle: styleW400S12.copyWith(
-                              color: ColorRes.black.withValues(alpha: 0.5),
-                            ),
-                            border: InputBorder.none,
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 10,
-                            ),
-                          ),
-                          maxLines: null,
-                          textCapitalization: TextCapitalization.sentences,
-                        );
-                      },
+    return SafeArea(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: const BoxDecoration(color: ColorRes.white),
+        child: Row(
+          children: [
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 15),
+                decoration: BoxDecoration(
+                  color: ColorRes.lightGrey2,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Row(
+                  children: [
+                    SvgAsset(
+                      imagePath: AssetRes.smileIcon,
+                      width: 18.pw,
+                      height: 18.ph,
                     ),
-                  ),
-                  SvgAsset(
-                    imagePath: AssetRes.attachIcon,
-                    width: 18.pw,
-                    height: 18.ph,
-                  ),
-                  SvgAsset(
-                    imagePath: AssetRes.cameraIcon2,
-                    width: 18.pw,
-                    height: 18.ph,
-                  ),
-                ],
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Consumer<MessageProvider>(
+                        builder: (context, messageProvider, child) {
+                          return TextField(
+                            controller: _messageController,
+                            onChanged:
+                                (text) =>
+                                messageProvider.updateMessageText(text),
+                            onSubmitted:
+                                (text) => _sendMessage(messageProvider),
+                            decoration: InputDecoration(
+                              hintText: context.l10n?.typeAMessage ?? "",
+                              hintStyle: TextStyle(fontSize: 12),
+                              border: InputBorder.none,
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 05,
+                                vertical: 05,
+                              ),
+                            ),
+                            maxLines: null,
+                            textCapitalization: TextCapitalization.sentences,
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    SvgAsset(
+                      imagePath: AssetRes.attachIcon,
+                      width: 18.pw,
+                      height: 18.ph,
+                    ),
+                    const SizedBox(width: 8),
+                    SvgAsset(
+                      imagePath: AssetRes.cameraIcon2,
+                      width: 18.pw,
+                      height: 18.ph,
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-          14.pw.spaceHorizontal,
-          // Use SizedBox for spacing instead of spaceHorizontal
-          Consumer<MessageProvider>(
-            builder: (context, messageProvider, child) {
-              return GestureDetector(
-                onTap:
-                    messageProvider.canSendMessage
-                        ? () => _sendMessage(messageProvider)
-                        : null,
-                child: Container(
-                  width: 64.pw,
-                  height: 64.ph,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(64.pw),
-                    color: ColorRes.primaryColor,
-                  ),
-                  child: Center(
-                    child: SvgAsset(
-                      imagePath: AssetRes.voiceIcon,
-                      color: ColorRes.white,
-                      height: 28.ph,
-                      width: 28.pw,
+            const SizedBox(width: 14),
+            Consumer<MessageProvider>(
+              builder: (context, messageProvider, child) {
+                return GestureDetector(
+                  onTap:
+                  messageProvider.canSendMessage
+                      ? () => _sendMessage(messageProvider)
+                      : null,
+                  child: Container(
+                    width: 53,
+                    height: 53,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(28),
+                      color: ColorRes.primaryColor,
+                    ),
+                    child: Center(
+                      child: SvgAsset(
+                        imagePath: AssetRes.voiceIcon,
+                        color: ColorRes.white,
+                        height: 28.ph,
+                        width: 28.pw,
+                      ),
                     ),
                   ),
-                ),
-              );
-            },
-          ),
-        ],
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }

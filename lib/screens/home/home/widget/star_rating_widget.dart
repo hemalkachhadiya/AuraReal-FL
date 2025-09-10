@@ -1,5 +1,5 @@
+import 'package:aura_real/aura_real.dart';
 import 'package:flutter/material.dart';
-
 
 class StarRatingWidget extends StatelessWidget {
   final double rating;
@@ -29,12 +29,23 @@ class StarRatingWidget extends StatelessWidget {
       mainAxisAlignment: alignment,
       children: List.generate(totalStars, (index) {
         return GestureDetector(
-          onTap: isInteractive && onRatingChanged != null
-              ? () => onRatingChanged!(index + 1)
-              : null,
+          onTap:
+              isInteractive && onRatingChanged != null
+                  ? () => onRatingChanged!(index + 1)
+                  : null,
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
-            child: Icon(
+            child: SvgAsset(
+              imagePath:
+                  index < rating.floor()
+                      ? AssetRes.starIcon
+                      : index < rating
+                      ? AssetRes.starFillIcon
+                      : AssetRes.starUnFillIcon,
+              width: size,
+              height: size,
+              color: index < rating ? activeColor : inactiveColor,
+            ) /*Icon(
               index < rating.floor()
                   ? Icons.star
                   : index < rating
@@ -42,7 +53,7 @@ class StarRatingWidget extends StatelessWidget {
                   : Icons.star_border,
               size: size,
               color: index < rating ? activeColor : inactiveColor,
-            ),
+            )*/,
           ),
         );
       }),
@@ -99,7 +110,10 @@ class _InteractiveStarRatingState extends State<InteractiveStarRating> {
             child: Icon(
               _currentRating > index ? Icons.star : Icons.star_border,
               size: widget.size,
-              color: _currentRating > index ? widget.activeColor : widget.inactiveColor,
+              color:
+                  _currentRating > index
+                      ? widget.activeColor
+                      : widget.inactiveColor,
             ),
           ),
         );

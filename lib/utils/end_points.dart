@@ -5,8 +5,15 @@ class EndPoints {
   ///Live URL
   static const domain = "https://aurarealapi.smarttechnica.com/";
 
-  /// Test URL
+  /// Base URL
   static const baseUrl = "${domain}api/v1/";
+
+  /// ------------------------------------ Socket -------------------------------
+  static const WebSocketurl =
+      "http://localhost:4000/socket.io/?EIO=4&transport=websocket";
+
+
+
 
   /// ------------------------------------ Auth -------------------------------
   static const register = "${baseUrl}user/register";

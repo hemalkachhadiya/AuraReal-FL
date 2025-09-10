@@ -63,6 +63,7 @@ export 'package:aura_real/screens/setting/launuage/language_screen.dart';
 export 'package:aura_real/screens/setting/profile/profile_screen.dart';
 export 'package:aura_real/screens/setting/setting/setting_provider.dart';
 export 'package:aura_real/common/methods.dart';
+export 'package:aura_real/common/extensions.dart';
 export 'package:aura_real/common/widgets/app_open_custom_dialog.dart';
 export 'package:aura_real/screens/rating/rating_provider.dart';
 export 'package:image_picker/image_picker.dart';

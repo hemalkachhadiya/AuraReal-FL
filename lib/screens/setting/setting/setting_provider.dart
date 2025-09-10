@@ -1,4 +1,3 @@
-import 'package:aura_real/apis/auth_apis.dart';
 import 'package:aura_real/aura_real.dart';
 
 class SettingProvider extends ChangeNotifier {

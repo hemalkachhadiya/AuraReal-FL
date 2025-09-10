@@ -122,8 +122,12 @@ class PostAPI {
     int page = 1,
     int pageSize = 10,
   }) async {
+    String token = PrefService.getString(PrefKeys.token);
     try {
-      String token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4YmU4OGI5NWIzMmU0Y2MxYzA3OWM3NSIsImlhdCI6MTc1NzMzNDM1NSwiZXhwIjoxNzU3OTM5MTU1fQ.lxyp1jx-A_id1aSYWw8DHjLoR169ofFG8T9Ox6eNYHE";
+      if (token.startsWith('"') && token.endsWith('"')) {
+        token = token.substring(1, token.length - 1);
+      }
+
       final headers = {"token": token};
 
       final response = await ApiService.getApi(
@@ -136,10 +140,10 @@ class PostAPI {
         return null;
       }
 
-
       final model = appResponseFromJson2<PostModel>(
         response.body,
-        converter: (dynamic data) => PostModel.fromJson(data as Map<String, dynamic>),
+        converter:
+            (dynamic data) => PostModel.fromJson(data as Map<String, dynamic>),
         dataKey: 'posts',
       );
 
@@ -155,6 +159,7 @@ class PostAPI {
       return null;
     }
   }
+
   // static Future<AppResponse2<PostModel>?> getAllPostListAPI({
   //   int page = 1,
   //   int pageSize = 10,
@@ -208,7 +213,7 @@ class PostAPI {
   }) async {
     try {
       final response = await ApiService.getApi(
-        url: EndPoints.getUserProfileWithPosts,
+        url: '${EndPoints.getUserProfileWithPosts}${userData!.id!}',
       );
 
       if (response == null) {
@@ -224,6 +229,7 @@ class PostAPI {
       );
 
       if (model.isSuccess) {
+        print("Profile model======== ${model.profile}");
         showSuccessToast(model.message ?? "Posts fetched successfully");
         return model;
       } else {

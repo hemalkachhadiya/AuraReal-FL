@@ -1,3 +1,4 @@
+
 import 'package:aura_real/apis/model/post_model.dart';
 import 'package:aura_real/aura_real.dart';
 
@@ -11,7 +12,7 @@ class PostsProvider extends ChangeNotifier {
     await getAllPostListAPI(showLoader: true, resetData: true);
   }
 
-  List<PostModel> posts = [];
+  late final List<PostModel> posts = [];
   bool _isLoading = false;
   String? _error;
 
@@ -25,6 +26,7 @@ class PostsProvider extends ChangeNotifier {
   bool loader = false;
   bool _disposed = false;
 
+
   bool get isLoading => _isLoading;
 
   String? get error => _error;
@@ -32,8 +34,10 @@ class PostsProvider extends ChangeNotifier {
   // List<PostModel>? get postListResponse => paginationModel?.list ?? [];
   bool get hasMoreData => paginationModel?.hasMorePages ?? false;
 
-  Profile? profileDetail;
-  /// Get All Post List API with pagination
+
+
+
+
   /// Get All Post List API with pagination
   Future<void> getAllPostListAPI({
     bool showLoader = false,
@@ -47,14 +51,13 @@ class PostsProvider extends ChangeNotifier {
 
     if (showLoader) {
       loader = true;
-      notifyListeners();
+      _safeNotifyListeners();
     }
 
     if (resetData) {
       currentPage = 0;
       paginationModel = null;
       posts.clear();
-      profileDetail = null; // Reset profileDetail on data reset
     }
 
     try {
@@ -64,157 +67,34 @@ class PostsProvider extends ChangeNotifier {
       );
 
       if (model != null) {
-        // Store profile data if present
-        if (model.profile != null) {
-          profileDetail = model.profile;
-          print("profileDetail stored: ${profileDetail?.username}");
-        }
-
-        if (model.isSuccess) {
-          if (resetData || paginationModel == null) {
-            paginationModel = model.copyWith();
-            posts = model.list ?? [];
-          } else {
-            final existingIds = paginationModel?.list?.map((e) => e.id).toSet() ?? {};
-            final newItems = (model.list ?? []).where((e) => !existingIds.contains(e.id)).toList();
-
-            paginationModel = paginationModel?.copyWith(
-              list: [...(paginationModel?.list ?? []), ...newItems],
-            );
-            posts = paginationModel?.list ?? [];
-          }
-          currentPage++;
-          print("paginationModel posts count: ${paginationModel?.list?.length}");
+        if (resetData || paginationModel == null) {
+          paginationModel = model.copyWith();
         } else {
-          _error = model.message ?? "Failed to fetch posts";
-          showCatchToast(_error, null);
+          final existingIds = paginationModel?.list?.map((e) => e.id).toSet() ?? {};
+          final newItems = (model.list ?? [])
+              .where((e) => !existingIds.contains(e.id))
+              .toList();
+
+          paginationModel = paginationModel?.copyWith(
+            list: [...(paginationModel?.list ?? []), ...newItems],
+          );
         }
+        currentPage++;
+        print("paginationModel-------- ${paginationModel?.list?.length}");
       } else {
-        _error = "No response from server";
-        showCatchToast(_error, null);
+        _error = "Failed to fetch posts";
       }
-    } catch (e, stack) {
+      await Future.delayed(1.seconds);
+    } catch (e) {
       _error = e.toString();
-      showCatchToast(_error, stack);
+      // Optionally show a toast or update UI
+      if (showLoader) showCatchToast(_error, null);
     } finally {
       loader = false;
       isApiCalling = false;
-      notifyListeners();
+      _safeNotifyListeners();
     }
   }
-  // Future<void> getAllPostListAPI({
-  //   bool showLoader = false,
-  //   bool resetData = false,
-  // }) async {
-  //   // Avoid calling API if the list is empty and no reset is requested
-  //   if (posts.isEmpty && !resetData) return;
-  //
-  //   if (isApiCalling) return;
-  //   isApiCalling = true;
-  //
-  //   if (showLoader) {
-  //     loader = true;
-  //     _safeNotifyListeners();
-  //   }
-  //
-  //   if (resetData) {
-  //     currentPage = 0;
-  //     paginationModel = null;
-  //     posts.clear();
-  //   }
-  //
-  //   try {
-  //     final model = await PostAPI.getAllPostListAPI(
-  //       page: currentPage + 1, // API expects 1-based indexing
-  //       pageSize: pageSize,
-  //     );
-  //     profileDetail ??= model?.profile;
-  //     print("profileDetail ======= ${profileDetail?.username}");
-  //     if (model != null) {
-  //       if (resetData || paginationModel == null) {
-  //         paginationModel = model.copyWith();
-  //       } else {
-  //         final existingIds =
-  //             paginationModel?.list?.map((e) => e.id).toSet() ?? {};
-  //         final newItems =
-  //             (model.list ?? [])
-  //                 .where((e) => !existingIds.contains(e.id))
-  //                 .toList();
-  //
-  //         paginationModel = paginationModel?.copyWith(
-  //           list: [...(paginationModel?.list ?? []), ...newItems],
-  //         );
-  //       }
-  //       currentPage++;
-  //       print("paginationModel-------- ${paginationModel?.list?.length}");
-  //     } else {
-  //       _error = "Failed to fetch posts";
-  //     }
-  //     await Future.delayed(1.seconds);
-  //   } catch (e) {
-  //     _error = e.toString();
-  //     // Optionally show a toast or update UI
-  //     if (showLoader) showCatchToast(_error, null);
-  //   } finally {
-  //     loader = false;
-  //     isApiCalling = false;
-  //     _safeNotifyListeners();
-  //   }
-  // }
-
-  // Future<void> getAllPostListAPI({
-  //   bool showLoader = false,
-  //   bool resetData = false,
-  // }) async {
-  //   if (isApiCalling) return;
-  //   isApiCalling = true;
-  //
-  //   if (showLoader) {
-  //     loader = true;
-  //     _safeNotifyListeners();
-  //   }
-  //
-  //   if (resetData) {
-  //     currentPage = 0;
-  //     paginationModel = null;
-  //     posts.clear();
-  //   }
-  //
-  //   try {
-  //     final model = await PostAPI.getAllPostListAPI(
-  //       page: currentPage + 1, // API expects 1-based indexing
-  //       pageSize: pageSize,
-  //     );
-  //
-  //     if (model != null) {
-  //       if (resetData || paginationModel == null) {
-  //         paginationModel = model.copyWith();
-  //       } else {
-  //         final existingIds =
-  //             paginationModel?.list?.map((e) => e.id).toSet() ?? {};
-  //         final newItems =
-  //             (model.list ?? [])
-  //                 .where((e) => !existingIds.contains(e.id))
-  //                 .toList();
-  //
-  //         paginationModel = paginationModel?.copyWith(
-  //           list: [...(paginationModel?.list ?? []), ...newItems],
-  //         );
-  //       }
-  //       currentPage++;
-  //       print("paginationModel-------- ${paginationModel?.list?.length}");
-  //     } else {
-  //       _error = "Failed to fetch posts";
-  //     }
-  //     await Future.delayed(1.seconds);
-  //   } catch (e) {
-  //     _error = e.toString();
-  //   } finally {
-  //     loader = false;
-  //     isApiCalling = false;
-  //     _safeNotifyListeners();
-  //   }
-  // }
 
   /// Load posts (wrapper for getAllPostListAPI)
   Future<void> loadPosts({bool resetData = false}) async {

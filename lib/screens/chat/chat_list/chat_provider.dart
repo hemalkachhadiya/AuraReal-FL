@@ -2,8 +2,6 @@ import 'package:aura_real/aura_real.dart';
 
 import 'package:flutter/material.dart';
 
-
-
 class ChatMessage {
   final String id;
   final String name;
@@ -24,8 +22,6 @@ class ChatMessage {
   });
 }
 
-
-
 class ChatProvider extends ChangeNotifier {
   List<ChatMessage> _chatList = [];
   List<ChatMessage> _filteredChatList = [];
@@ -33,9 +29,10 @@ class ChatProvider extends ChangeNotifier {
   bool _isLoading = false;
 
   // Getters
-  List<ChatMessage> get chatList => _filteredChatList.isEmpty && _searchQuery.isEmpty
-      ? _chatList
-      : _filteredChatList;
+  List<ChatMessage> get chatList =>
+      _filteredChatList.isEmpty && _searchQuery.isEmpty
+          ? _chatList
+          : _filteredChatList;
   String get searchQuery => _searchQuery;
   bool get isLoading => _isLoading;
 
@@ -51,7 +48,8 @@ class ChatProvider extends ChangeNotifier {
         name: 'Jenny Wilson',
         message: 'Of course, we just added that to you...',
         time: '3:40 PM',
-        avatarUrl: 'https://images.unsplash.com/photo-1494790108755-2616b612b789?w=150&h=150&fit=crop&crop=face',
+        avatarUrl:
+        'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
         unreadCount: 2,
         isOnline: true,
       ),
@@ -60,7 +58,8 @@ class ChatProvider extends ChangeNotifier {
         name: 'Davis Siphron',
         message: 'From chew toys to cozy beds, we\'ve got ev...',
         time: '3:40 PM',
-        avatarUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
+        avatarUrl:
+        'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
         unreadCount: 0,
         isOnline: false,
       ),
@@ -69,7 +68,8 @@ class ChatProvider extends ChangeNotifier {
         name: 'Aspen Herwitz',
         message: 'From chew toys to cozy beds, we\'ve got ev...',
         time: '3:40 PM',
-        avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
+        avatarUrl:
+        'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
         unreadCount: 0,
         isOnline: false,
       ),
@@ -78,7 +78,8 @@ class ChatProvider extends ChangeNotifier {
         name: 'Cheyenne Kenter',
         message: 'From chew toys to cozy beds, we\'ve got ev...',
         time: '3:40 PM',
-        avatarUrl: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face',
+        avatarUrl:
+        'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face',
         unreadCount: 0,
         isOnline: false,
       ),
@@ -87,7 +88,8 @@ class ChatProvider extends ChangeNotifier {
         name: 'Livia Ekstrom Bothman',
         message: 'From chew toys to cozy beds, we\'ve got ev...',
         time: '3:40 PM',
-        avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop&crop=face',
+        avatarUrl:
+        'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop&crop=face',
         unreadCount: 0,
         isOnline: false,
       ),
@@ -104,10 +106,11 @@ class ChatProvider extends ChangeNotifier {
     if (query.isEmpty) {
       _filteredChatList = [];
     } else {
-      _filteredChatList = _chatList.where((chat) {
-        return chat.name.toLowerCase().contains(query.toLowerCase()) ||
-            chat.message.toLowerCase().contains(query.toLowerCase());
-      }).toList();
+      _filteredChatList =
+          _chatList.where((chat) {
+            return chat.name.toLowerCase().contains(query.toLowerCase()) ||
+                chat.message.toLowerCase().contains(query.toLowerCase());
+          }).toList();
     }
 
     notifyListeners();

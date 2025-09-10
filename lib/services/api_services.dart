@@ -386,8 +386,8 @@ class ApiService {
 
   static void handleErrorForPagination(http.Response response) async {
     try {
-      print("HandleError - Status: ${response.statusCode}");
-      print("HandleError - Body: ${response.body}");
+      print("HandleError2 - Status: ${response.statusCode}");
+      print("HandleError2 - Body: ${response.body}");
 
       if (response.body.isNotEmpty) {
         final dynamic jsonResponse = jsonDecode(response.body);

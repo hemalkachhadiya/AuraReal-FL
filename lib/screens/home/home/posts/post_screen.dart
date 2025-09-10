@@ -115,6 +115,7 @@ class HomeScreen extends StatelessWidget {
                                   color: ColorRes.black.withValues(alpha: 0.1),
                                 ),
                             itemBuilder: (context, index) {
+
                               if (index >= provider.postListResponse.length) {
                                 if (!provider.hasMoreData) {
                                   return Padding(
@@ -140,7 +141,7 @@ class HomeScreen extends StatelessWidget {
 
                               return PostCard(
                                 post: provider.postListResponse[index],
-                                profile: provider.profileDetail??Profile(),
+                                profile: Profile(),
                                 onTap: () {
                                   context.navigator.pushNamed(
                                     UploadScreen.routeName,

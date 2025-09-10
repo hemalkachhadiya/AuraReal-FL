@@ -5,6 +5,7 @@ class ColorRes {
   static const Color black = Color(0xFF000000);
   static const Color transparent = Colors.transparent;
   static const Color dullWhite = Color(0xFFF7F7F7);
+  static const Color darkJungleGreen = Color(0xFF1E1E1E);
 
   static const Color black2 = Color(0xFF15161A);
   static const Color white = Color(0xFFFFFFFF);

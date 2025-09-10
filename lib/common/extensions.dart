@@ -4,6 +4,31 @@ import 'package:intl/intl.dart';
 import 'package:aura_real/aura_real.dart';
 import 'package:path/path.dart' as path;
 
+extension PostRatingToStars on double {
+  int toStarCount() {
+    switch (this) {
+      case 0.02:
+        return 1;
+      case 0.04:
+        return 2;
+      case 0.06:
+        return 3;
+      case 0.08:
+        return 4;
+      case 0.10:
+        return 5;
+      default:
+        return 0; // Handle unexpected values
+    }
+  }
+}
+
+extension StringPathExtension on String {
+  /// Converts forward slashes (/) to backslashes (\) in a string.
+  String toBackslashPath() {
+    return replaceAll('\\', '/');
+  }
+}
 extension IntExtension on int {
   SizedBox get spaceVertical => SizedBox(height: toDouble());
   SizedBox get spaceHorizontal => SizedBox(width: toDouble());

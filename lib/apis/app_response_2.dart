@@ -66,13 +66,13 @@ class AppResponse2<T> {
             parsedList = null;
           }
         }
-      } else if (json[dataKey] is Map<String, dynamic> && json[dataKey]['list'] is List) {
+      } else if (json[dataKey] is Map<String, dynamic> && json[dataKey]['posts'] is List) {
         final postsData = json[dataKey] as Map<String, dynamic>;
         if (converter != null) {
-          parsedList = (postsData['list'] as List).map((item) => converter(item)).toList();
+          parsedList = (postsData['posts'] as List).map((item) => converter(item)).toList();
         } else {
           try {
-            parsedList = postsData['list'] as List<T>;
+            parsedList = postsData['posts'] as List<T>;
           } catch (e) {
             parsedList = null;
           }

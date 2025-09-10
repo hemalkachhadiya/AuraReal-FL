@@ -1,18 +1,26 @@
 import 'package:aura_real/apis/model/post_model.dart';
 import 'package:aura_real/aura_real.dart';
-import 'package:aura_real/screens/home/upload/upload_screen.dart';
 
 class PostCard extends StatelessWidget {
   final PostModel post;
   final Profile profile;
   final VoidCallback onTap;
 
-  const PostCard({super.key, required this.post, required this.onTap, required this.profile});
+  const PostCard({
+    super.key,
+    required this.post,
+    required this.onTap,
+    required this.profile,
+  });
 
   @override
   Widget build(BuildContext context) {
+    print(
+      "EndPoints.domain + post.postImage.toString()${EndPoints.domain + post.postImage.toString().toBackslashPath()}",
+    );
+    final double postRating = post.postRating as double;
     return InkWell(
-   onTap: onTap,
+      onTap: onTap,
       child: Column(
         children: [
           Padding(
@@ -32,28 +40,33 @@ class PostCard extends StatelessWidget {
                   padding: EdgeInsets.all(2),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(50),
-                    child: CachedImage(post.postImage),
+                    child: CachedImage(
+                      EndPoints.domain +
+                          post.userId!.profile!.profileImage.toString(),
+                    ),
                   ),
                 ),
                 8.pw.spaceHorizontal,
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     Text(
-                      post.userId?.profile?.username ?? "",
+                      post.userId?.fullName ?? "Unknown",
                       style: styleW600S12,
                     ),
                     4.ph.spaceVertical,
                     Row(
                       children: [
-                        const Icon(
-                          Icons.star,
-                          size: 16,
-                          color: Color(0xFFFFD700),
+                        SvgAsset(
+                          imagePath: AssetRes.starFillIcon,
+                          height: 16,
+                          width: 16,
+                          color: ColorRes.yellowColor,
                         ),
-                        1.pw.spaceHorizontal,
-                        Text("5", style: styleW600S12),
+                        2.pw.spaceHorizontal,
+                        Text(post.postRating.toString(), style: styleW600S12),
                       ],
                     ),
                   ],
@@ -61,8 +74,8 @@ class PostCard extends StatelessWidget {
               ],
             ),
           ),
-          AssetsImg(
-            imagePath: AssetRes.post_1,
+          CachedImage(
+            EndPoints.domain + post.postImage.toString().toBackslashPath(),
             height: 390.ph,
             fit: BoxFit.cover,
           ),
@@ -76,13 +89,13 @@ class PostCard extends StatelessWidget {
                 Row(
                   children: [
                     StarRatingWidget(
-                      rating: 4,
-                      size: 20,
+                      rating: postRating,
+                      // Use the extension to convert rating to star count                      size: 20,
                       activeColor: ColorRes.primaryColor,
                       inactiveColor: ColorRes.primaryColor,
                     ),
                     10.pw.spaceHorizontal,
-                    Text("5", style: styleW700S16),
+                    Text(post.postRating.toString(), style: styleW700S16),
                     const Spacer(),
 
                     SvgAsset(
@@ -92,7 +105,6 @@ class PostCard extends StatelessWidget {
                     ),
                     10.pw.spaceHorizontal,
                     Text(post.commentsCount.toString(), style: styleW700S16),
-
                   ],
                 ),
                 10.ph.spaceVertical,
