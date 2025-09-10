@@ -503,6 +503,7 @@ class UploadScreen extends StatelessWidget {
                           );
                         }
                         return PostCard(
+                          profile: Profile(),
                           post: provider.postByUserResponse[index],
                           onTap: () {
                             context.navigator.pushNamed(

@@ -1,5 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
+import 'package:aura_real/apis/auth_apis.dart';
 import 'package:map_location_picker/map_location_picker.dart';
 import 'package:aura_real/aura_real.dart'; // Assuming this provides PrefService and PrefKeys
 
@@ -169,6 +168,23 @@ class GetLocationService {
 
       if (placemarks.isNotEmpty) {
         Placemark place = placemarks[0];
+        final locationModel = await AuthApis.postLocationAPI(
+          latitude: location.latitude,
+          longitude: location.longitude,
+          address:
+              "${place.subThoroughfare}-${place.thoroughfare}${place.subLocality}",
+          city: place.locality ?? "",
+          state: place.administrativeArea ?? "",
+          country: place.country ?? "",
+        );
+        print("locationModel========= $locationModel");
+        await PrefService.set(
+          PrefKeys.location,
+          "${place.subThoroughfare}-${place.thoroughfare}${place.subLocality}",
+        );
+        await PrefService.set(PrefKeys.city, place.locality);
+        await PrefService.set(PrefKeys.state, place.administrativeArea);
+        await PrefService.set(PrefKeys.country, place.country);
 
         return {
           "name": place.name ?? "",
@@ -196,10 +212,12 @@ class GetLocationService {
       if (!isEnabled) return LocationStatus.disabled;
 
       final permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied)
+      if (permission == LocationPermission.denied) {
         return LocationStatus.permissionDenied;
-      if (permission == LocationPermission.deniedForever)
+      }
+      if (permission == LocationPermission.deniedForever) {
         return LocationStatus.permissionPermanentlyDenied;
+      }
       return LocationStatus.enabled;
     } catch (e) {
       print("Error checking location status: $e");
@@ -232,6 +250,7 @@ class GetLocationService {
   /// Navigates to dashboard if location services and permissions are enabled.
   static Future<bool> navigateToDashboardIfLocationEnabled(
     BuildContext context,
+    String userId,
   ) async {
     print("Starting location check for navigation...");
     bool serviceEnabled = await isLocationServiceEnabled(context);
@@ -277,13 +296,39 @@ class GetLocationService {
           ),
         );
         print("Position fetched: $position");
-        String? address = await getAddressFromLatLng(context);
-        if (address != null && context.mounted) {
-          await PrefService.set(PrefKeys.location, address);
-          print("Address saved, navigating to Dashboard");
-          if (context.mounted) {
-            context.navigator.pushReplacementNamed(DashboardScreen.routeName);
-            return true;
+        Map<String, String>? locationData = await getAddressFromLatLng(context);
+        if (locationData != null && context.mounted) {
+          // Save location data to preferences
+          await PrefService.set(PrefKeys.location, locationData['address']);
+          await PrefService.set(PrefKeys.city, locationData['city']);
+          await PrefService.set(PrefKeys.state, locationData['state']);
+          await PrefService.set(PrefKeys.country, locationData['country']);
+
+          // Post location to API
+          final locationModel = await AuthApis.postLocationAPI(
+            latitude: double.parse(locationData['latitude']!),
+            longitude: double.parse(locationData['longitude']!),
+            address: locationData['address']!,
+            city: locationData['city']!,
+            state: locationData['state']!,
+            country: locationData['country']!,
+          );
+
+          print("Location Service Called");
+          if (locationModel != null) {
+            print("Location posted successfully, navigating to Dashboard");
+            if (context.mounted) {
+              context.navigator.pushReplacementNamed(DashboardScreen.routeName);
+              return true;
+            }
+          } else {
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text("Failed to post location to server"),
+                ),
+              );
+            }
           }
         } else {
           if (context.mounted) {
@@ -304,6 +349,81 @@ class GetLocationService {
     }
     return false;
   }
+
+  // static Future<bool> navigateToDashboardIfLocationEnabled(
+  //   BuildContext context,
+  // ) async {
+  //   print("Starting location check for navigation...");
+  //   bool serviceEnabled = await isLocationServiceEnabled(context);
+  //   if (!serviceEnabled) return false;
+  //
+  //   LocationPermission permission = await Geolocator.checkPermission();
+  //   print("Permission check: $permission");
+  //   if (permission == LocationPermission.denied) {
+  //     permission = await Geolocator.requestPermission();
+  //     if (permission == LocationPermission.denied) {
+  //       if (context.mounted) {
+  //         ScaffoldMessenger.of(context).showSnackBar(
+  //           const SnackBar(content: Text("Location permission denied")),
+  //         );
+  //       }
+  //       return false;
+  //     }
+  //   }
+  //
+  //   if (permission == LocationPermission.deniedForever) {
+  //     if (context.mounted) {
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         SnackBar(
+  //           content: const Text(
+  //             "Location permission permanently denied. Enable in settings.",
+  //           ),
+  //           action: SnackBarAction(
+  //             label: "Settings",
+  //             onPressed: () => Geolocator.openAppSettings(),
+  //           ),
+  //         ),
+  //       );
+  //     }
+  //     return false;
+  //   }
+  //
+  //   if (permission == LocationPermission.whileInUse ||
+  //       permission == LocationPermission.always) {
+  //     try {
+  //       Position position = await Geolocator.getCurrentPosition(
+  //         locationSettings: const LocationSettings(
+  //           accuracy: LocationAccuracy.high,
+  //         ),
+  //       );
+  //       print("Position fetched: $position");
+  //       String? address = await getAddressFromLatLng(context);
+  //       if (address != null && context.mounted) {
+  //         await PrefService.set(PrefKeys.location, address);
+  //         print("Address saved, navigating to Dashboard");
+  //         if (context.mounted) {
+  //           context.navigator.pushReplacementNamed(DashboardScreen.routeName);
+  //           return true;
+  //         }
+  //       } else {
+  //         if (context.mounted) {
+  //           ScaffoldMessenger.of(context).showSnackBar(
+  //             const SnackBar(content: Text("Could not fetch address")),
+  //           );
+  //         }
+  //       }
+  //     } catch (e) {
+  //       print("Error fetching location: $e");
+  //       if (context.mounted) {
+  //         ScaffoldMessenger.of(context).showSnackBar(
+  //           SnackBar(content: Text("Error fetching location: $e")),
+  //         );
+  //       }
+  //       return false;
+  //     }
+  //   }
+  //   return false;
+  // }
 
   /// Fetches the current location and returns the position.
   static Future<Position?> getCurrentLocation(BuildContext context) async {
@@ -353,7 +473,9 @@ class GetLocationService {
   }
 
   /// Fetches address from current location.
-  static Future<String?> getAddressFromLatLng(BuildContext context) async {
+  static Future<Map<String, String>?> getAddressFromLatLng(
+    BuildContext context,
+  ) async {
     print("Fetching address from location...");
     Position? position = await getCurrentLocation(context);
     if (position == null) return null;
@@ -367,12 +489,28 @@ class GetLocationService {
         Placemark placemark = placemarks.first;
         String address =
             "${placemark.street}, ${placemark.locality}, ${placemark.administrativeArea}, ${placemark.country}";
-        print("Place mark Location: $address");
+        String city = placemark.locality ?? ''; // City
+        String state = placemark.administrativeArea ?? ''; // State
+        String country = placemark.country ?? ''; // Country
+
+        if (kDebugMode) {
+          print("Place mark Location: $address \n $country \n $state \n $city");
+        }
         await PrefService.set(PrefKeys.location, address);
-        return address;
+        await PrefService.set(PrefKeys.country, country);
+        await PrefService.set(PrefKeys.state, state);
+        await PrefService.set(PrefKeys.city, city);
+
+        return {
+          'address': address,
+          'city': city,
+          'state': state,
+          'country': country,
+          'latitude': position.latitude.toString(),
+          'longitude': position.longitude.toString(),
+        };
       }
     } catch (e) {
-      print("Error fetching address: $e");
       if (context.mounted) {
         ScaffoldMessenger.of(
           context,
@@ -408,7 +546,10 @@ class GetLocationService {
     if (context.mounted) {
       final (isEnabled, error) = await checkLocationService();
       if (isEnabled) {
-        await navigateToDashboardIfLocationEnabled(context); // Retry navigation
+        await navigateToDashboardIfLocationEnabled(
+          context,
+          userData!.id.toString(),
+        ); // Retry navigation
       } else if (error != null) {
         ScaffoldMessenger.of(
           context,

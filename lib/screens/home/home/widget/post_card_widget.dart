@@ -4,9 +4,10 @@ import 'package:aura_real/screens/home/upload/upload_screen.dart';
 
 class PostCard extends StatelessWidget {
   final PostModel post;
+  final Profile profile;
   final VoidCallback onTap;
 
-  const PostCard({super.key, required this.post, required this.onTap});
+  const PostCard({super.key, required this.post, required this.onTap, required this.profile});
 
   @override
   Widget build(BuildContext context) {

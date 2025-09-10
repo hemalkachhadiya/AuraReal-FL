@@ -28,11 +28,6 @@ class PasswordResetProvider extends ChangeNotifier {
 
   /// Submit signup
   Future<void> signUpAPI(BuildContext context) async {
-    print('on sgn up');
-
-    print(
-      'onSignUpTap =============${email} ${password} ${phoneNumber} ${fullName}',
-    );
     loader = true;
     notifyListeners();
     final result = await AuthApis.registerAPI(
@@ -40,13 +35,17 @@ class PasswordResetProvider extends ChangeNotifier {
       fullName: fullName ?? "",
       password: password ?? "",
       phoneNumber: phoneNumber ?? "",
-      otpType:  selectedMethod == 'SMS'?"1":"0"
+      otpType: selectedMethod == 'SMS' ? "1" : "0",
     );
     if (result) {
       if (context.mounted) {
         context.navigator.pushNamed(
           CheckYourEmailScreen.routeName,
-          arguments: {'email': email},
+          arguments: {
+            'email': email,
+            "otp_type": selectedMethod == 'SMS' ? "1" : "0",
+            "phoneNumber": phoneNumber,
+          },
         );
       }
     }
@@ -72,7 +71,14 @@ class PasswordResetProvider extends ChangeNotifier {
 
       // Navigate to verification screen or back
       if (context.mounted) {
-        context.navigator.pushNamed(CheckYourEmailScreen.routeName);
+        context.navigator.pushNamed(
+          CheckYourEmailScreen.routeName,
+          arguments: {
+            'email': email,
+            "otp_type": selectedMethod == 'SMS' ? "1" : "0",
+            "phoneNumber": phoneNumber,
+          },
+        );
       }
     } catch (e) {
       // Handle error

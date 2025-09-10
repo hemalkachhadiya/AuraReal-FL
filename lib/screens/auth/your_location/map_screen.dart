@@ -160,10 +160,11 @@ class MapScreen extends StatelessWidget {
                             provider.selectedLocation!.longitude,
                           );
                           PrefService.set(PrefKeys.location, address);
-                          context.navigator.pushNamedAndRemoveUntil(
-                            DashboardScreen.routeName,
-                            (_) => false,
-                          );
+                          print("address===== ${address}");
+                          // context.navigator.pushNamedAndRemoveUntil(
+                          //   DashboardScreen.routeName,
+                          //   (_) => false,
+                          // );
                         } else {
                           context.navigator.pop(context);
                         }

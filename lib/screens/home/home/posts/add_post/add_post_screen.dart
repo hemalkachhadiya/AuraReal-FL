@@ -1,7 +1,5 @@
 import 'package:aura_real/aura_real.dart';
-import 'package:aura_real/screens/home/add_post/add_post_provider.dart';
 
-// Main Screen
 class AddPostScreen extends StatelessWidget {
   const AddPostScreen({super.key});
 
@@ -35,7 +33,9 @@ class AddPostScreen extends StatelessWidget {
                         ? ColorRes.grey3
                         : ColorRes.primaryColor,
                 onTap:
-                    provider.canPublish() ? () => provider.publishPost(context) : null,
+                    provider.canPublish()
+                        ? () => provider.createPostAPI()
+                        : null,
 
                 title: context.l10n?.publish ?? "",
               ),
@@ -55,7 +55,7 @@ class AddPostScreen extends StatelessWidget {
                 34.ph.spaceVertical,
 
                 // Main content area
-                Container(
+                SizedBox(
                   height: 200,
                   child: Padding(
                     padding: EdgeInsets.symmetric(

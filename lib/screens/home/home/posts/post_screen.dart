@@ -20,7 +20,6 @@ class HomeScreen extends StatelessWidget {
       child: Consumer<PostsProvider>(
         builder: (context, provider, child) {
           return StackedLoader(
-
             loading: provider.loader,
             child: Scaffold(
               backgroundColor: Theme.of(context).colorScheme.surface,
@@ -131,7 +130,7 @@ class HomeScreen extends StatelessWidget {
                                   );
                                 }
                                 if (!provider.isApiCalling) {
-                                  provider.getAllPostListAPI();
+                                  // provider.getAllPostListAPI();
                                 }
                                 return SizedBox(
                                   height: 100.ph,
@@ -141,6 +140,7 @@ class HomeScreen extends StatelessWidget {
 
                               return PostCard(
                                 post: provider.postListResponse[index],
+                                profile: provider.profileDetail??Profile(),
                                 onTap: () {
                                   context.navigator.pushNamed(
                                     UploadScreen.routeName,

@@ -6,8 +6,10 @@ import 'package:map_location_picker/map_location_picker.dart';
 class CheckYourMailProvider extends ChangeNotifier {
   CheckYourMailProvider({
     required this.email,
+    this.phoneNumber,
     required this.isComeFromSignUp,
     this.isReset = false,
+    this.otpType = "1",
   });
 
   String otp = "";
@@ -15,8 +17,10 @@ class CheckYourMailProvider extends ChangeNotifier {
   bool loader = false;
 
   final String email;
+  final String? phoneNumber;
   final bool? isComeFromSignUp;
   final bool? isReset;
+  final String? otpType;
 
   // Check if the provider is disposed
   bool _disposed = false;
@@ -31,7 +35,7 @@ class CheckYourMailProvider extends ChangeNotifier {
     if (_disposed) return; // Prevent updates if disposed
     otp = value;
 
-    if (otp.length == 6) {
+    if (otpType == "1" ? otp.length == 4 : otp.length == 6) {
       onVerifyOTPTap(context);
     }
     if (!_disposed) notifyListeners();
@@ -40,12 +44,19 @@ class CheckYourMailProvider extends ChangeNotifier {
   LocationPermission? permission;
 
   Future<void> onVerifyOTPTap(BuildContext context) async {
+    print("type======== ${otpType}");
+
+    // return;
     if (_disposed) return; // Prevent execution if disposed
 
-    if (otp.length != 6) {
+    if (otpType == "1" ? otp.length != 4 : otp.length != 6) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Please enter a valid 6-digit code")),
+          SnackBar(
+            content: Text(
+              "Please enter a valid ${otpType == "1" ? "4" : "6"}-digit code",
+            ),
+          ),
         );
       }
       return;
@@ -71,7 +82,13 @@ class CheckYourMailProvider extends ChangeNotifier {
         }
       } else {
         print("For Verify =============");
-        result = await AuthApis.verifyOTPAPI(email: email, otp: otp);
+        print("type======== $otpType");
+        result = await AuthApis.verifyOTPAPI(
+          email: email,
+          otp: otp,
+          otpType: otpType ?? "0",
+          phone: phoneNumber ?? "",
+        );
       }
       final (isPermitted, permError) =
           await GetLocationService.requestLocationPermission();

@@ -1,6 +1,6 @@
 class EndPoints {
   /// LOCAL URL
-  // static const domain = "http://192.168.1.30:4000/";
+  // static const domain = "http://192.168.1.23:4000/";
 
   ///Live URL
   static const domain = "https://aurarealapi.smarttechnica.com/";
@@ -25,9 +25,16 @@ class EndPoints {
 
   /// ------------------------------------ User Profile -------------------------------
   static const getUserProfile = "${baseUrl}getuserprofile?userId=";
-  // static const location = "${baseUrl}user/location";
 
- /// ------------------------------------ Dashboard -------------------------------
+  /// ------------------------------------ Location -------------------------------
+
+  static const location = "${baseUrl}user/location";
+  static const getUserLocations = "${baseUrl}getUserLocations?user_id=";
+
+  /// ------------------------------------ Dashboard -------------------------------
+  static const createPostAPI = "${baseUrl}createpost";
   static const getAllPostAPI = "${baseUrl}getallposts";
-  static const getPostByUSer = "${baseUrl}getpostsbyuser?userId=68b6cf303add7fc6d731b7c7";
+  static const getPostByUSer = "${baseUrl}getpostsbyuser?userId";
+  static const getUserProfileWithPosts =
+      "${baseUrl}getUserProfileWithPosts?userId=";
 }

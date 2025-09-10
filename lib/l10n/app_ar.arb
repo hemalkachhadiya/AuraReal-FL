@@ -25,7 +25,8 @@
   "email": "بريد إلكتروني",
   "send": "إرسال",
   "checkYourMail": "تحقق من بريدك الإلكتروني",
-  "pleasePutThe4DigitSentToYou": "يرجى إدخال الرقم المكون من 4 أرقام المرسل إليك",
+  "pleasePutThe6DigitSentToYou": "يرجى إدخال الرمز المكون من 6 أرقام المرسل إليك",
+  "pleasePutThe4DigitSentToYou": "يرجى إدخال الرمز المكون من 4 أرقام المرسل إليك",
   "submit": "إرسال",
   "createNewPassword": "إنشاء كلمة مرور جديدة",
   "yourNewPasswordMustBeDifferentFromPreviousUsedPassword": "يجب أن تكون كلمة المرور الجديدة مختلفة عن الكلمات المستخدمة سابقًا",
@@ -91,6 +92,7 @@
   "typeYourCityOrArea": "اكتب مدينتك أو منطقتك",
   "reset": "إعادة تعيين",
   "passwordIsIncorrect": "كلمة المرور غير صحيحة",
+  "checkYourPhone": "تحقق من هاتفك",
   "@cameraPermissionContent": {
     "description": "رسالة طلب إذن الكاميرا"
   }

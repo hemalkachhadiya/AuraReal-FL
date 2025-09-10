@@ -257,10 +257,22 @@ abstract class AppLocalizations {
   /// **'Check your mail '**
   String get checkYourMail;
 
-  /// No description provided for @pleasePutThe4DigitSentToYou.
+  /// No description provided for @checkYourPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Check your phone '**
+  String get checkYourPhone;
+
+  /// No description provided for @pleasePutThe6DigitSentToYou.
   ///
   /// In en, this message translates to:
   /// **'Please put the 6 digits sent to you'**
+  String get pleasePutThe6DigitSentToYou;
+
+  /// No description provided for @pleasePutThe4DigitSentToYou.
+  ///
+  /// In en, this message translates to:
+  /// **'Please put the 4 digits sent to you'**
   String get pleasePutThe4DigitSentToYou;
 
   /// No description provided for @submit.

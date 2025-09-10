@@ -90,7 +90,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get checkYourMail => 'تحقق من بريدك الإلكتروني';
 
   @override
-  String get pleasePutThe4DigitSentToYou => 'يرجى إدخال الرقم المكون من 4 أرقام المرسل إليك';
+  String get checkYourPhone => 'تحقق من هاتفك';
+
+  @override
+  String get pleasePutThe6DigitSentToYou => 'يرجى إدخال الرمز المكون من 6 أرقام المرسل إليك';
+
+  @override
+  String get pleasePutThe4DigitSentToYou => 'يرجى إدخال الرمز المكون من 4 أرقام المرسل إليك';
 
   @override
   String get submit => 'إرسال';

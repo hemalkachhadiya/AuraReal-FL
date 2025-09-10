@@ -2,6 +2,7 @@ class PrefKeys {
   static const localLanguage = 'local_language';
   static const userData = 'user_data';
   static const email = 'email';
+  static const phoneNumber = 'phoneNumber';
   static const token = 'token';
   static const appSecret = 'app_secret';
   static const locationId = 'location_id'; // Added new key for location

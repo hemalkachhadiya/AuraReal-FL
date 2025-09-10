@@ -1,3 +1,4 @@
+import 'package:aura_real/aura_real.dart';
 class LocationModel {
   final String? userId;
   final double? latitude;

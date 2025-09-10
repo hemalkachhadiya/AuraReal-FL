@@ -1,5 +1,4 @@
 import 'package:aura_real/aura_real.dart';
-import 'package:image_picker/image_picker.dart';
 
 class AddPostProvider extends ChangeNotifier {
   final TextEditingController textController = TextEditingController();
@@ -57,16 +56,48 @@ class AddPostProvider extends ChangeNotifier {
     return textController.text.trim().isNotEmpty || selectedImage != null;
   }
 
+  ///Create Post PI
+  Future<void> createPostAPI() async {
+    if (!canPublish()) return;
+    if (userData == null || userData?.id == null) return;
+    loader = true;
+    notifyListeners();
+    var latitude = PrefService.getDouble(PrefKeys.latitude);
+    var longitude = PrefService.getDouble(PrefKeys.longitude);
+
+    var locationId = PrefService.getString(PrefKeys.locationId);
+
+    final result = await PostAPI.createPostAPI(
+      longitude: longitude,
+      latitude: latitude,
+      content: textController.text,
+      locationId: locationId,
+      postImg: selectedImage!.path,
+      selectedHashtags: selectedHashtags,
+    );
+    if (result != null) {
+      navigatorKey.currentState?.context.navigator.pop();
+      notifyListeners();
+    }
+    loader = false;
+    textController.clear();
+    selectedImage = null;
+    imageWidth = 0;
+    imageHeight = 0;
+    selectedHashtags.clear();
+    notifyListeners();
+  }
+
   void publishPost(BuildContext context) {
     if (!canPublish()) return;
 
-    print('Publishing post with text: ${textController.text}');
-    print('Selected hashtags: $selectedHashtags');
     if (selectedImage != null) {
       print('With image: ${selectedImage!.path}');
     }
     if (context.mounted) {
       context.navigator.pop();
+      final postsProvider = Provider.of<PostsProvider>(context, listen: false);
+      postsProvider.getAllPostListAPI(showLoader: true, resetData: true);
     }
     // Reset
     textController.clear();

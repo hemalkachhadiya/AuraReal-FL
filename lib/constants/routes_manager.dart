@@ -1,23 +1,5 @@
 import 'package:aura_real/aura_real.dart';
-import 'package:aura_real/screens/auth/check_your_email/check_your_email_screen.dart';
-import 'package:aura_real/screens/auth/password_reset/password_reset_screen.dart';
-import 'package:aura_real/screens/auth/your_location/map_screen.dart';
-import 'package:aura_real/screens/auth/your_location/your_location_screen.dart';
-import 'package:aura_real/screens/chat/chat_list/chat_screen.dart';
-import 'package:aura_real/screens/chat/message/message_provider.dart';
-import 'package:aura_real/screens/chat/message/message_screen.dart';
-import 'package:aura_real/screens/dahsboard/dashboard_screen.dart';
-import 'package:aura_real/screens/home/add_post/add_post_screen.dart';
-import 'package:aura_real/screens/home/home/home_screen.dart';
-import 'package:aura_real/screens/home/notification/notification_screen.dart';
-import 'package:aura_real/screens/home/upload/upload_screen.dart';
-import 'package:aura_real/screens/rating/rating_screen.dart';
-import 'package:aura_real/screens/setting/change_password/change_password_screen.dart';
-import 'package:aura_real/screens/setting/launuage/language_screen.dart';
-import 'package:aura_real/screens/setting/profile/profile_screen.dart';
-import 'package:aura_real/screens/setting/setting/setting_screen.dart';
 
-import '../screens/auth/create_new_password/create_new_password_screen.dart';
 
 class RouteManager {
   static String get initialRoute => SplashScreen.routeName;

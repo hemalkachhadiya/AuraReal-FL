@@ -2,9 +2,6 @@ import 'package:aura_real/apis/app_response.dart';
 import 'package:aura_real/apis/model/location_model.dart';
 import 'package:aura_real/aura_real.dart';
 import 'package:aura_real/screens/auth/sign_in/model/google_login_response_model.dart';
-import 'package:aura_real/screens/auth/sign_in/model/login_response_model.dart';
-import 'package:aura_real/services/api_services.dart';
-import 'package:aura_real/utils/end_points.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
@@ -25,7 +22,7 @@ class AuthApis {
           "fullName": fullName,
           "password": password,
           "phoneNumber": phoneNumber,
-          "is_otp_type": phoneNumber,
+          "is_otp_type": "0",
         },
       );
       if (response == null) {
@@ -58,19 +55,40 @@ class AuthApis {
   static Future<LoginRes?> verifyOTPAPI({
     required String otp,
     required String email,
+    required String phone,
+    required String otpType,
   }) async {
     try {
-      print("OTP CALL ------------------ ${int.parse(otp.toString())}");
+      // Determine the body based on otpType
+      Map<String, dynamic> body = {"otp": otp.toString()};
+
+      if (otpType == "0" || otpType.toLowerCase() == "email") {
+        PrefService.set(PrefKeys.email, email);
+        body["email"] = email; // For email OTP
+      } else if (otpType == "1" || otpType.toLowerCase() == "sms") {
+        PrefService.set(PrefKeys.phoneNumber, phone);
+        if (phone.isEmpty) {
+          showCatchToast('Phone number not available for SMS OTP', null);
+          return null;
+        }
+        body["phoneNumber"] = phone;
+      } else {
+        showCatchToast('Invalid OTP type', null);
+        return null;
+      }
+
       final response = await ApiService.postApi(
         url: EndPoints.verifyOTP,
-        body: {"email": email, "otp": otp.toString()},
+        body: body,
       );
       if (response == null) {
         showCatchToast('No response from server', null);
         return null;
       }
 
-      print("BODY: ${jsonEncode({"email": email, "otp": otp})}");
+      if (kDebugMode) {
+        print("BODY: ${jsonEncode(body)}");
+      }
       final responseBody = jsonDecode(response.body);
       if (response.statusCode == 200 || response.statusCode == 201) {
         if (responseBody['data'] != null && responseBody != null) {
@@ -294,7 +312,7 @@ class AuthApis {
       }
       final responseBody = jsonDecode(response.body);
       if (response.statusCode == 200 || response.statusCode == 201) {
-          if (responseBody['message'] != null && responseBody != null) {
+        if (responseBody['message'] != null && responseBody != null) {
           showSuccessToast(responseBody['message'] ?? 'Login successful');
           return true;
         }
@@ -305,27 +323,61 @@ class AuthApis {
     }
   }
 
-  // static Future<LocationModel?> getLocationAPI({required String userId}) async {
-  //   try {
-  //     final response = await ApiService.getApi(
-  //       url: "${EndPoints.location}$userId",
-  //     );
-  //
-  //     if (response == null) {
-  //       showCatchToast('No response from server', null);
-  //       return null;
-  //     }
-  //     final responseBody = jsonDecode(response.body);
-  //     if (response.statusCode == 200 || response.statusCode == 201) {
-  //       print("Res Body Data ${responseBody['location']}");
-  //       if (responseBody['location'] != null && responseBody != null) {
-  //         showSuccessToast(responseBody['location'] ?? 'Login successful');
-  //         return LocationModel.fromJson(responseBody['location']);
-  //       }
-  //     }
-  //   } catch (exception, stack) {
-  //     showCatchToast(exception, stack);
-  //     return null;
-  //   }
-  // }
+  ///Location API
+  static Future<LocationModel?> postLocationAPI({
+    required double latitude,
+    required double longitude,
+    required String address,
+    required String city,
+    required String state,
+    required String country,
+  }) async {
+    try {
+      final response = await ApiService.postApi(
+        url: EndPoints.location,
+        body: jsonEncode({
+          "user_id": userData?.id.toString(),
+          "latitude": latitude,
+          "longitude": longitude,
+          "address": address,
+          "city": city,
+          "state": state,
+          "country": country,
+          "is_current": true,
+        }),
+        header: {'Content-Type': 'application/json'},
+      );
+
+      print(
+        "Location BODY ====== ${jsonEncode({"latitude": latitude, "longitude": longitude, "address": address, "city": city, "state": state, "country": country, "is_current": true})}",
+      );
+      if (response == null) {
+        showCatchToast('No response from server', null);
+        return null;
+      }
+
+      final responseBody = jsonDecode(response.body);
+      print("Location API ----- ${response.body}");
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        print("Res Body Data ${responseBody['location']}");
+        print("Res Body Data ${responseBody['location']['_id']}");
+        if (responseBody['location'] != null && responseBody != null) {
+          // Pass a specific string field (e.g., address) or a custom message to showSuccessToast
+          print(
+            "Location Id ---> ${jsonEncode(responseBody['location']['_id'])}",
+          );
+          await PrefService.set(
+            PrefKeys.locationId,
+            jsonEncode(responseBody['location']['_id']),
+          );
+          return LocationModel.fromJson(responseBody['location']);
+        }
+      }
+      return null;
+    } catch (exception, stack) {
+      showCatchToast(exception, stack);
+      return null;
+    }
+  }
 }

@@ -131,6 +131,7 @@ class SignInProvider extends ChangeNotifier {
               context,
             );
             await PrefService.set(PrefKeys.location, address);
+
             if (context.mounted) {
               context.navigator.pushNamedAndRemoveUntil(
                 DashboardScreen.routeName,
@@ -239,6 +240,7 @@ class SignInProvider extends ChangeNotifier {
             "email": email,
             "isComeFromSignUp": false,
             "isReset": true,
+            "otp_type": "0",
           },
         );
       }

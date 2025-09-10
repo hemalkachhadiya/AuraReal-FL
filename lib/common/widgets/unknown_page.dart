@@ -1,4 +1,5 @@
 import 'package:aura_real/aura_real.dart';
+
 class UnKnownScreen extends StatelessWidget {
   static const String routeName = "/pageNotFound";
 
@@ -7,7 +8,7 @@ class UnKnownScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(child: Text("Page Not Found", style: styleW700S22)),
+      body: Center(child: Text("Data Not Found", style: styleW700S22)),
     );
   }
 }

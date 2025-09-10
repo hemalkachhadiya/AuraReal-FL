@@ -61,6 +61,7 @@ class YourLocationProvider extends ChangeNotifier {
             context,
           );
           if (address != null && context.mounted) {
+            print("Allow Location ======= ${address}");
             await PrefService.set(PrefKeys.location, address);
             // Optional: Add a slight delay to ensure loader is visible
             await Future.delayed(Duration(milliseconds: 500));

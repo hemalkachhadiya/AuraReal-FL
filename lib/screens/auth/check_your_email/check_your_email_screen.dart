@@ -17,6 +17,8 @@ class CheckYourEmailScreen extends StatelessWidget {
             email: args?['email'] ?? "",
             isComeFromSignUp: args?['isComeFromSignUp'],
             isReset: args?["isReset"],
+            otpType: args?["otp_type"],
+            phoneNumber: args?["phoneNumber"],
           ),
       child: const CheckYourEmailScreen(),
     );
@@ -43,7 +45,7 @@ class CheckYourEmailScreen extends StatelessWidget {
                 bgColor:
                     provider.loader ? ColorRes.primaryColor : ColorRes.grey3,
 
-               onTap:
+                onTap:
                     provider.loader
                         ? null
                         : () => provider.onVerifyOTPTap(context),
@@ -65,7 +67,9 @@ class CheckYourEmailScreen extends StatelessWidget {
                   /// Title
                   Center(
                     child: Text(
-                      context.l10n?.checkYourMail ?? "Check your mail",
+                      (provider.otpType != null && provider.otpType == "1")
+                          ? context.l10n?.checkYourPhone ?? "Check your phone"
+                          : context.l10n?.checkYourMail ?? "Check your mail",
                       style: styleW700S24,
                     ),
                   ),
@@ -74,8 +78,11 @@ class CheckYourEmailScreen extends StatelessWidget {
                   /// Subtitle
                   Center(
                     child: Text(
-                      context.l10n?.pleasePutThe4DigitSentToYou ??
-                          "Please put the 6 digits sent to you",
+                      (provider.otpType != null && provider.otpType == "1")
+                          ? context.l10n?.pleasePutThe4DigitSentToYou ??
+                              "Please put the 4 digits sent to you"
+                          : context.l10n?.pleasePutThe4DigitSentToYou ??
+                              "Please put the 6 digits sent to you",
                       style: styleW400S14.copyWith(color: ColorRes.grey6),
                       textAlign: TextAlign.center,
                     ),
@@ -85,7 +92,7 @@ class CheckYourEmailScreen extends StatelessWidget {
                   /// Pinput
                   Center(
                     child: Pinput(
-                      length: 6,
+                      length: provider.otpType == "1" ? 4 : 6,
                       onChanged: (val) => provider.setOtp(context, val),
                       errorText: provider.otpError,
                       defaultPinTheme: PinTheme(

@@ -90,7 +90,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get checkYourMail => 'Check your mail ';
 
   @override
-  String get pleasePutThe4DigitSentToYou => 'Please put the 6 digits sent to you';
+  String get checkYourPhone => 'Check your phone ';
+
+  @override
+  String get pleasePutThe6DigitSentToYou => 'Please put the 6 digits sent to you';
+
+  @override
+  String get pleasePutThe4DigitSentToYou => 'Please put the 4 digits sent to you';
 
   @override
   String get submit => 'Submit';
