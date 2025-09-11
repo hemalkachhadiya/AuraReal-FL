@@ -68,6 +68,10 @@ class SignInProvider extends ChangeNotifier {
       emailError = context.l10n?.emailAddress ?? "Email is required";
     } else if (!emailText.isEmailValid()) {
       emailError = context.l10n?.invalidEmail ?? "Enter a valid email address";
+    } else if (emailText.hasSpaces()) {
+      emailError =
+          context.l10n?.emailShouldNotContainSpace ??
+          "Email should not contain spaces";
     } else {
       emailError = "";
     }

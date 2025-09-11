@@ -81,7 +81,7 @@ class CheckYourEmailScreen extends StatelessWidget {
                       (provider.otpType != null && provider.otpType == "1")
                           ? context.l10n?.pleasePutThe4DigitSentToYou ??
                               "Please put the 4 digits sent to you"
-                          : context.l10n?.pleasePutThe4DigitSentToYou ??
+                          : context.l10n?.pleasePutThe6DigitSentToYou ??
                               "Please put the 6 digits sent to you",
                       style: styleW400S14.copyWith(color: ColorRes.grey6),
                       textAlign: TextAlign.center,

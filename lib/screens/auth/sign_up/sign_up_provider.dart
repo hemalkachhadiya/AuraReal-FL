@@ -114,7 +114,11 @@ class SignUpProvider extends ChangeNotifier {
       emailError =
           navigatorKey.currentState?.context.l10n?.invalidEmail ??
           "Enter a valid email address";
-    } else {
+    } else if (email.hasSpaces()) {
+      emailError =
+          navigatorKey.currentState?.context.l10n?.emailShouldNotContainSpace ??
+              "Email should not contain spaces";
+    }else {
       emailError = "";
     }
 

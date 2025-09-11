@@ -233,6 +233,18 @@ abstract class AppLocalizations {
   /// **'Please put your mobile number to reset your password'**
   String get pleasePutYourMobileNumberToReset;
 
+  /// No description provided for @emailShouldNotContainSpace.
+  ///
+  /// In en, this message translates to:
+  /// **'Email should not contain spaces'**
+  String get emailShouldNotContainSpace;
+
+  /// No description provided for @pleasePutYourMobileNumberToVerify.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your mobile number to verify your account'**
+  String get pleasePutYourMobileNumberToVerify;
+
   /// No description provided for @sms.
   ///
   /// In en, this message translates to:

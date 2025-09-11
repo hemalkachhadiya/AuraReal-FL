@@ -95,6 +95,8 @@
   "checkYourPhone": "تحقق من هاتفك",
   "fullNameMinLength": "يجب أن يكون الاسم الكامل مكونًا من 3 أحرف على الأقل",
   "fullNameNoSpecialChars": "يجب ألا يحتوي الاسم الكامل على رموز خاصة",
+  "pleasePutYourMobileNumberToVerify": "يرجى إدخال رقم الهاتف المحمول للتحقق من حسابك",
+  "emailShouldNotContainSpace": "يجب ألا يحتوي البريد الإلكتروني على مسافات",
   "@cameraPermissionContent": {
     "description": "رسالة طلب إذن الكاميرا"
   }

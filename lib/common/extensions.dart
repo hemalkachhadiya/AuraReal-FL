@@ -68,6 +68,11 @@ extension ValidationExt on String {
     ).hasMatch(this);
   }
 
+  bool hasSpaces() {
+    return contains(' ');
+  }
+
+
   bool isFullNameValid() {
     return isNotEmpty && trim().length >= 3;
   }

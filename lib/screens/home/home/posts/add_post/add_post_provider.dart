@@ -53,7 +53,7 @@ class AddPostProvider extends ChangeNotifier {
   }
 
   bool canPublish() {
-    return textController.text.trim().isNotEmpty || selectedImage != null;
+    return textController.text.trim().isNotEmpty && selectedImage != null;
   }
 
   ///Create Post PI

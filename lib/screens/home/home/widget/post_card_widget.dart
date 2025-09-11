@@ -91,7 +91,9 @@ class _PostCardState extends State<PostCard> {
                           ),
                           const SizedBox(width: 2),
                           Text(
-                            _localRating.toStringAsFixed(1),
+                            widget.post.userId?.profile?.ratingsAvg
+                                    .toString() ??
+                                "0",
                             style: styleW600S12,
                           ), // Fixed to 1 decimal
                         ],

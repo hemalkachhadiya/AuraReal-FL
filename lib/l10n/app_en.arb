@@ -22,6 +22,8 @@
   "back": "Back",
   "passwordReset": "Password Reset",
   "pleasePutYourMobileNumberToReset": "Please put your mobile number to reset your password",
+  "emailShouldNotContainSpace": "Email should not contain spaces",
+  "pleasePutYourMobileNumberToVerify": "Please enter your mobile number to verify your account",
   "sms": "SMS",
   "email": "Email",
   "send": "Send",

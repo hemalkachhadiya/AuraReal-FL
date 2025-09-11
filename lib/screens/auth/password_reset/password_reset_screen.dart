@@ -107,7 +107,11 @@ class PasswordRestScreen extends StatelessWidget {
                     // Subtitle
                     Center(
                       child: Text(
-                        context.l10n?.pleasePutYourMobileNumberToReset ?? "",
+                        provider.isComeFromSignUp
+                            ? context.l10n?.pleasePutYourMobileNumberToVerify ??
+                                ""
+                            : context.l10n?.pleasePutYourMobileNumberToReset ??
+                                "",
                         style: styleW400S14.copyWith(color: ColorRes.grey6),
                         textAlign: TextAlign.center,
                       ),
@@ -204,7 +208,9 @@ class PasswordRestScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(12),
                           color:
                               provider.selectedMethod == 'Email'
-                                  ? ColorRes.primaryColor.withOpacity(0.05)
+                                  ? ColorRes.primaryColor.withValues(
+                                    alpha: 0.05,
+                                  )
                                   : ColorRes.white,
                         ),
                         child: Row(

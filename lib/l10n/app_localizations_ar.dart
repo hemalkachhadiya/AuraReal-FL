@@ -78,6 +78,12 @@ class AppLocalizationsAr extends AppLocalizations {
   String get pleasePutYourMobileNumberToReset => 'يرجى إدخال رقم الجوال لإعادة تعيين كلمة المرور';
 
   @override
+  String get emailShouldNotContainSpace => 'يجب ألا يحتوي البريد الإلكتروني على مسافات';
+
+  @override
+  String get pleasePutYourMobileNumberToVerify => 'يرجى إدخال رقم الهاتف المحمول للتحقق من حسابك';
+
+  @override
   String get sms => 'رسالة نصية';
 
   @override

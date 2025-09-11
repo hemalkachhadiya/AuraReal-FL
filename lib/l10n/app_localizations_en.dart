@@ -78,6 +78,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pleasePutYourMobileNumberToReset => 'Please put your mobile number to reset your password';
 
   @override
+  String get emailShouldNotContainSpace => 'Email should not contain spaces';
+
+  @override
+  String get pleasePutYourMobileNumberToVerify => 'Please enter your mobile number to verify your account';
+
+  @override
   String get sms => 'SMS';
 
   @override

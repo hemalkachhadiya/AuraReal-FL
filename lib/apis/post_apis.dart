@@ -174,7 +174,8 @@ class PostAPI {
       }
       final headers = {"token": token};
       final response = await ApiService.getApi(
-        url: '${EndPoints.getUserProfileWithPosts}$userId',
+        url:
+            '${EndPoints.getUserProfileWithPosts}$userId&currentUserId=${userData?.id}',
         header: headers,
       );
 
