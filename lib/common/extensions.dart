@@ -21,6 +21,31 @@ extension PostRatingToStars on double {
         return 0; // Handle unexpected values
     }
   }
+
+  double toStarRating() {
+    switch (this) {
+      case 0.02:
+        return 1.0;
+      case 0.04:
+        return 2.0;
+      case 0.06:
+        return 3.0;
+      case 0.08:
+        return 4.0;
+      case 0.10:
+        return 5.0;
+      default:
+        return 0.0; // Handle unexpected values
+    }
+  }
+}
+
+extension DoubleRatingExtension on double {
+  // Existing: raw (0-100) → stars (0-5)
+  double toStars() => this / 20.0; // Rename this from toStarRating()
+
+  // New: stars (0-5) → raw (0-100)
+  double toRawRating() => this * 20.0;
 }
 
 extension StringPathExtension on String {
@@ -29,8 +54,10 @@ extension StringPathExtension on String {
     return replaceAll('\\', '/');
   }
 }
+
 extension IntExtension on int {
   SizedBox get spaceVertical => SizedBox(height: toDouble());
+
   SizedBox get spaceHorizontal => SizedBox(width: toDouble());
 }
 
@@ -39,6 +66,19 @@ extension ValidationExt on String {
     return RegExp(
       r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+\.[a-zA-Z]+$",
     ).hasMatch(this);
+  }
+
+  bool isFullNameValid() {
+    return isNotEmpty && trim().length >= 3;
+  }
+
+  bool hasSpecialCharacters() {
+    // Allow only letters (including Arabic, English), spaces, and common name characters
+    // This regex allows: letters, spaces, hyphens, apostrophes
+    final RegExp nameRegex = RegExp(
+      r"^[a-zA-Z\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF\s\-\'\.]+$",
+    );
+    return !nameRegex.hasMatch(this);
   }
 
   bool isPhoneValid() {
@@ -62,8 +102,7 @@ extension ValidationExt on String {
     // final hasUppercase = contains(RegExp(r'[A-Z]'));
     final hasLowercase = contains(RegExp(r'[a-z]'));
     final hasNumber = contains(RegExp(r'[0-9]'));
-    final hasSymbol =
-    contains(RegExp(r'[!@#\$%^&*(),.?":{}|<>_\[\]\\/~`+=-]'));
+    final hasSymbol = contains(RegExp(r'[!@#\$%^&*(),.?":{}|<>_\[\]\\/~`+=-]'));
 
     return hasMinLength &&
         // hasUppercase &&
@@ -325,7 +364,7 @@ extension IterableExtension<T> on Iterable<T> {
 extension DoubleExtension on double {
   /// prettify
   String get prettify =>
-      // toStringAsFixed guarantees the specified number of fractional
+  // toStringAsFixed guarantees the specified number of fractional
   // digits, so the regular expression is simpler than it would need to
   // be for more general cases.
   toStringAsFixed(2).replaceFirst(RegExp(r'\.?0*$'), '');

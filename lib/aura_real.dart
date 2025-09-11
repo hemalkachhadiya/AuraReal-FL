@@ -93,4 +93,4 @@ export 'package:aura_real/screens/setting/setting/setting_screen.dart';
 export '../screens/auth/create_new_password/create_new_password_screen.dart';
 export 'package:aura_real/apis/post_apis.dart';
 export 'package:aura_real/screens/home/home/posts/add_post/add_post_provider.dart';
-export 'package:aura_real/screens/home/home/widget/star_rates_widget.dart';
+export 'package:aura_real/apis/model/location_model.dart';

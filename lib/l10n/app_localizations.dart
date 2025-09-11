@@ -653,6 +653,18 @@ abstract class AppLocalizations {
   /// **'Password is incorrect'**
   String get passwordIsIncorrect;
 
+  /// No description provided for @fullNameMinLength.
+  ///
+  /// In en, this message translates to:
+  /// **'Full name must be at least 3 characters long'**
+  String get fullNameMinLength;
+
+  /// No description provided for @fullNameNoSpecialChars.
+  ///
+  /// In en, this message translates to:
+  /// **'Full name should not contain special characters'**
+  String get fullNameNoSpecialChars;
+
   /// No description provided for @rateThisPost.
   ///
   /// In en, this message translates to:

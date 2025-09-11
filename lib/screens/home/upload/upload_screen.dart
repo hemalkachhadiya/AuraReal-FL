@@ -16,7 +16,7 @@ class UploadScreen extends StatelessWidget {
 
     // Extract userId from routePost or provide a default/fallback
     final String? userId = routePost?.userId?.id;
-    print("userId======= ${userId}");
+
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<UploadProvider>(
@@ -502,10 +502,7 @@ class UploadScreen extends StatelessWidget {
                               ? 0
                               : provider.postByUserResponse.length + 1,
                       onRefresh:
-                          () => provider.getPostByUserAPI(
-                            resetData: true,
-
-                          ),
+                          () => provider.getPostByUserAPI(resetData: true),
                       emptyWidget: UnKnownScreen(),
                       showEmptyWidget:
                           !provider.loader &&
@@ -540,6 +537,9 @@ class UploadScreen extends StatelessWidget {
                           );
                         }
                         return PostCard(
+                          onRatingSubmitted: (val) {
+                            print("Val========= ${val}");
+                          },
                           post: provider.postByUserResponse[index],
                           onTap: () {},
                         );

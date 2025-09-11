@@ -1,18 +1,47 @@
 import 'package:aura_real/apis/model/post_model.dart';
 import 'package:aura_real/aura_real.dart';
+import 'package:aura_real/screens/home/home/widget/ratins_widget.dart'; // Assuming this is StarRatingWidget
 
-class PostCard extends StatelessWidget {
+class PostCard extends StatefulWidget {
+  // Changed to Stateful for local updates
   final PostModel post;
   final VoidCallback onTap;
-  final VoidCallback? onRateTap;
+  final bool? loading;
+  final Function(double rating)? onRatingSubmitted;
 
-  const PostCard({super.key, required this.post, required this.onTap, this.onRateTap});
+  const PostCard({
+    super.key,
+    required this.post,
+    required this.onTap,
+    this.onRatingSubmitted,
+    this.loading = false,
+  });
+
+  @override
+  _PostCardState createState() => _PostCardState();
+}
+
+class _PostCardState extends State<PostCard> {
+  late double _localRating;
+
+  @override
+  void initState() {
+    super.initState();
+    _localRating = widget.post.postRating ?? 0.0;
+  }
+
+  @override
+  void didUpdateWidget(PostCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.post.postRating != widget.post.postRating) {
+      _localRating = widget.post.postRating ?? 0.0;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final double postRating = post.postRating ?? 0.0;
     return InkWell(
-      onTap: onTap,
+      onTap: widget.onTap,
       child: Column(
         children: [
           Padding(
@@ -33,11 +62,10 @@ class PostCard extends StatelessWidget {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(50),
                     child: CachedImage(
-                      (post.userId != null && post.userId.runtimeType != String)
-                          ? EndPoints.domain +
-                              post.userId!.profile!.profileImage.toString()
-                          : "",
+                      _getProfileImageUrl(),
                       fit: BoxFit.cover,
+
+                      // Add error placeholder if needed
                     ),
                   ),
                 ),
@@ -47,38 +75,65 @@ class PostCard extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     Text(
-                      post.userId?.fullName ?? "Unknown",
+                      widget.post.userId?.fullName ?? "Unknown",
                       style: styleW600S12,
                     ),
                     const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        SvgAsset(
-                          imagePath: AssetRes.starFillIcon,
-                          height: 16,
-                          width: 16,
-                          color: ColorRes.yellowColor,
-                        ),
-                        const SizedBox(width: 2),
-                        Text(postRating.toString(), style: styleW600S12),
-                      ],
-                    ),
+                    if (_localRating > 0) ...[
+                      // Only show if rated
+                      Row(
+                        children: [
+                          SvgAsset(
+                            imagePath: AssetRes.starFillIcon,
+                            height: 16,
+                            width: 16,
+                            color: ColorRes.yellowColor,
+                          ),
+                          const SizedBox(width: 2),
+                          Text(
+                            _localRating.toStringAsFixed(1),
+                            style: styleW600S12,
+                          ), // Fixed to 1 decimal
+                        ],
+                      ),
+                    ],
                   ],
                 ),
               ],
             ),
           ),
           CachedImage(
-            EndPoints.domain + post.postImage.toString().toBackslashPath(),
+            EndPoints.domain + (widget.post.postImage?.toBackslashPath() ?? ''),
             height: 390.0,
             fit: BoxFit.cover,
           ),
           const SizedBox(height: 10),
           // Rating and Actions
           InkWell(
-            onTap: () {
-              showRatingDialog(context, post);
+            onTap: () async {
+              if (widget.loading == true) return; // Prevent if loading
+              print('Rating InkWell tapped - opening dialog');
+              final selectedRating = await showRatingDialog(
+                context,
+                widget.post,
+                loading: widget.loading,
+
+                onSubmit: () {
+                  print('Submit callback executed from PostCard');
+                  // Add API call here if needed
+                },
+              );
+              print('Dialog closed with rating: $selectedRating');
+              if (selectedRating != null) {
+                setState(() {
+                  _localRating = selectedRating; // Optimistic local update
+                });
+                if (widget.onRatingSubmitted != null) {
+                  widget.onRatingSubmitted!(selectedRating);
+                }
+              }
             },
+
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12),
               child: Column(
@@ -87,26 +142,43 @@ class PostCard extends StatelessWidget {
                   Row(
                     children: [
                       StarRatingWidget(
-                        rating: postRating,
+                        rating: _localRating.toStarRating(),
+                        // Use local for immediate feedback
                         size: 20,
                         activeColor: ColorRes.primaryColor,
-                        inactiveColor: ColorRes.primaryColor,
+                        inactiveColor: ColorRes.primaryColor.withOpacity(
+                          0.3,
+                        ), // Faded inactive
                       ),
                       const SizedBox(width: 10),
-                      Text(postRating.toString(), style: styleW700S16),
+                      Text(
+                        widget.post.postRating!.toStarCount().toStringAsFixed(
+                          1,
+                        ),
+                        style: styleW700S16,
+                      ),
                       const Spacer(),
                       SvgAsset(
                         imagePath: AssetRes.commentIcon,
                         height: 22,
                         width: 22,
+                        color: ColorRes.primaryColor,
                       ),
                       const SizedBox(width: 10),
-                      Text(post.commentsCount.toString(), style: styleW700S16),
+                      Text(
+                        (widget.post.commentsCount ?? 0).toString(),
+                        style: styleW700S16,
+                      ),
                     ],
                   ),
                   const SizedBox(height: 10),
-                  if (postRating == 0)
-                    Text(context.l10n?.rateThisPost ?? "", style: styleW400S13),
+                  if (_localRating == 0)
+                    Text(
+                      context.l10n?.rateThisPost ?? "Rate this post",
+                      style: styleW400S13.copyWith(
+                        color: ColorRes.primaryColor,
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -116,64 +188,10 @@ class PostCard extends StatelessWidget {
     );
   }
 
-  void showRatingDialog(BuildContext context, PostModel post) {
-    double selectedRating = post.postRating ?? 0.0;
-
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Rate this Post'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(height: 20),
-              StarRatingWidget(
-                rating: selectedRating,
-                size: 30.0,
-                activeColor: Colors.amber,
-                inactiveColor: Colors.grey,
-                onRatingChanged: (rating) {
-                  selectedRating = rating;
-                },
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed:
-                  selectedRating > 0
-                      ? onRateTap/*() {
-                        // Update rating via provider
-                        // Provider.of<PostsProvider>(
-                        //   context,
-                        //   listen: false,
-                        // ).ratePost(post.id, selectedRating);
-
-                        Navigator.of(context).pop();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Rated $selectedRating stars!'),
-                            duration: const Duration(seconds: 2),
-                          ),
-                        );
-                      }*/
-                      : null,
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size(100, 42),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15),
-                ),
-              ),
-              child: const Text('Submit'),
-            ),
-          ],
-        );
-      },
-    );
+  String _getProfileImageUrl() {
+    if (widget.post.userId?.profile?.profileImage == null) return '';
+    final userId = widget.post.userId;
+    if (userId == null || userId.runtimeType == String) return '';
+    return EndPoints.domain + userId.profile!.profileImage.toString();
   }
 }

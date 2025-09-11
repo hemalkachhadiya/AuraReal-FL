@@ -92,5 +92,7 @@
   "typeYourCityOrArea": "Type your city or area",
   "reset": "Reset",
   "passwordIsIncorrect": "Password is incorrect",
+  "fullNameMinLength": "Full name must be at least 3 characters long",
+  "fullNameNoSpecialChars": "Full name should not contain special characters",
   "rateThisPost": "Rate this Post"
 }

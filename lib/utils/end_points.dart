@@ -42,6 +42,6 @@ class EndPoints {
   static const getUserProfileWithPosts =
       "${baseUrl}getUserProfileWithPosts?userId=";
 
-  static const ratepost =
-      "${baseUrl}ratepost";
+  static const newRatePost = "${baseUrl}ratepost";
+  static const updatePostRating = "${baseUrl}updatePostRating";
 }

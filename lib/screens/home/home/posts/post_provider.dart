@@ -1,4 +1,3 @@
-
 import 'package:aura_real/apis/model/post_model.dart';
 import 'package:aura_real/aura_real.dart';
 
@@ -26,17 +25,12 @@ class PostsProvider extends ChangeNotifier {
   bool loader = false;
   bool _disposed = false;
 
-
   bool get isLoading => _isLoading;
 
   String? get error => _error;
 
   // List<PostModel>? get postListResponse => paginationModel?.list ?? [];
   bool get hasMoreData => paginationModel?.hasMorePages ?? false;
-
-
-
-
 
   /// Get All Post List API with pagination
   Future<void> getAllPostListAPI({
@@ -70,10 +64,12 @@ class PostsProvider extends ChangeNotifier {
         if (resetData || paginationModel == null) {
           paginationModel = model.copyWith();
         } else {
-          final existingIds = paginationModel?.list?.map((e) => e.id).toSet() ?? {};
-          final newItems = (model.list ?? [])
-              .where((e) => !existingIds.contains(e.id))
-              .toList();
+          final existingIds =
+              paginationModel?.list?.map((e) => e.id).toSet() ?? {};
+          final newItems =
+              (model.list ?? [])
+                  .where((e) => !existingIds.contains(e.id))
+                  .toList();
 
           paginationModel = paginationModel?.copyWith(
             list: [...(paginationModel?.list ?? []), ...newItems],
@@ -151,6 +147,48 @@ class PostsProvider extends ChangeNotifier {
 
       notifyListeners();
     }
+    loader = false;
+    notifyListeners();
+  }
+
+  ///RateAPI
+  Future<void> updateRatePostAPI(
+    BuildContext context, {
+    String? postId,
+    String? rating,
+  }) async {
+    if (userData == null || userData?.id == null) return;
+    print("post id 11====== ${postId}");
+    print("rating id 11====== ${rating}");
+    loader = true;
+    notifyListeners();
+    final result = await PostAPI.updateRatePostAPI(
+      postId: postId.toString(),
+      rating: rating.toString(),
+    );
+
+    await getAllPostListAPI(resetData: true,showLoader: true);
+
+    if (result) {}
+    loader = false;
+    notifyListeners();
+  }
+
+  ///New Rate API
+  Future<void> newRatePostAPI(
+    BuildContext context, {
+    String? postId,
+    String? rating,
+  }) async {
+    if (userData == null || userData?.id == null) return;
+    loader = true;
+    notifyListeners();
+    final result = await PostAPI.newRatePostAPI(
+      postId: postId.toString(),
+      newRating: rating.toString(),
+    );
+    await getAllPostListAPI(resetData: true,showLoader: true);
+    if (result) {}
     loader = false;
     notifyListeners();
   }

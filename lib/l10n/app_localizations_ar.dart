@@ -288,5 +288,11 @@ class AppLocalizationsAr extends AppLocalizations {
   String get passwordIsIncorrect => 'كلمة المرور غير صحيحة';
 
   @override
+  String get fullNameMinLength => 'يجب أن يكون الاسم الكامل مكونًا من 3 أحرف على الأقل';
+
+  @override
+  String get fullNameNoSpecialChars => 'يجب ألا يحتوي الاسم الكامل على رموز خاصة';
+
+  @override
   String get rateThisPost => 'قيم هذه المشاركة';
 }

@@ -93,7 +93,15 @@ class SignUpProvider extends ChangeNotifier {
       fullNameError =
           navigatorKey.currentState?.context.l10n?.fullNameIsRequired ??
           "Full name is required";
-    } else {
+    } else if (!fullName.isFullNameValid()) {
+      fullNameError =
+      fullName.isEmpty
+          ? (navigatorKey.currentState?.context.l10n?.fullNameIsRequired ?? "Full name is required")
+          : (navigatorKey.currentState?.context.l10n?.fullNameMinLength ?? "Full name must be at least 3 characters long");
+    }else if (fullName.hasSpecialCharacters()) {
+      fullNameError = navigatorKey.currentState?.context.l10n?.fullNameNoSpecialChars ??
+          "Full name should not contain special characters";
+    }else {
       fullNameError = "";
     }
 

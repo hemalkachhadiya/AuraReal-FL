@@ -2,22 +2,20 @@ import 'package:aura_real/aura_real.dart';
 
 /// ---------- Helpers to encode / decode AppResponse2 ----------
 AppResponse2<T> appResponseFromJson2<T>(
-    String str, {
-      T Function(dynamic)? converter,
-      String dataKey = 'posts',
-    }) =>
-    AppResponse2.fromJson(
-      json.decode(str),
-      converter: converter,
-      dataKey: dataKey,
-    );
+  String str, {
+  T Function(dynamic)? converter,
+  String dataKey = 'posts',
+}) => AppResponse2.fromJson(
+  json.decode(str),
+  converter: converter,
+  dataKey: dataKey,
+);
 
 String appResponseToJson2<T>(
-    AppResponse2<T> response, {
-      Map<String, dynamic> Function(T)? converter,
-      String dataKey = 'posts',
-    }) =>
-    json.encode(response.toJson(converter: converter, dataKey: dataKey));
+  AppResponse2<T> response, {
+  Map<String, dynamic> Function(T)? converter,
+  String dataKey = 'posts',
+}) => json.encode(response.toJson(converter: converter, dataKey: dataKey));
 
 /// ---------- AppResponse2 for API Structure ----------
 class AppResponse2<T> {
@@ -40,10 +38,10 @@ class AppResponse2<T> {
   });
 
   factory AppResponse2.fromJson(
-      Map<String, dynamic> json, {
-        T Function(dynamic)? converter,
-        String dataKey = 'posts',
-      }) {
+    Map<String, dynamic> json, {
+    T Function(dynamic)? converter,
+    String dataKey = 'posts',
+  }) {
     List<T>? parsedList;
 
     // Helper function to safely convert dynamic to int
@@ -58,7 +56,8 @@ class AppResponse2<T> {
     if (json[dataKey] != null) {
       if (json[dataKey] is List) {
         if (converter != null) {
-          parsedList = (json[dataKey] as List).map((item) => converter(item)).toList();
+          parsedList =
+              (json[dataKey] as List).map((item) => converter(item)).toList();
         } else {
           try {
             parsedList = json[dataKey] as List<T>;
@@ -66,10 +65,14 @@ class AppResponse2<T> {
             parsedList = null;
           }
         }
-      } else if (json[dataKey] is Map<String, dynamic> && json[dataKey]['posts'] is List) {
+      } else if (json[dataKey] is Map<String, dynamic> &&
+          json[dataKey]['posts'] is List) {
         final postsData = json[dataKey] as Map<String, dynamic>;
         if (converter != null) {
-          parsedList = (postsData['posts'] as List).map((item) => converter(item)).toList();
+          parsedList =
+              (postsData['posts'] as List)
+                  .map((item) => converter(item))
+                  .toList();
         } else {
           try {
             parsedList = postsData['posts'] as List<T>;
@@ -130,16 +133,15 @@ class AppResponse2<T> {
     int? totalPosts,
     List<T>? list,
     Profile? profile,
-  }) =>
-      AppResponse2<T>(
-        success: success ?? this.success,
-        message: message ?? this.message,
-        currentPage: currentPage ?? this.currentPage,
-        totalPages: totalPages ?? this.totalPages,
-        totalPosts: totalPosts ?? this.totalPosts,
-        list: list ?? this.list,
-        profile: profile ?? this.profile,
-      );
+  }) => AppResponse2<T>(
+    success: success ?? this.success,
+    message: message ?? this.message,
+    currentPage: currentPage ?? this.currentPage,
+    totalPages: totalPages ?? this.totalPages,
+    totalPosts: totalPosts ?? this.totalPosts,
+    list: list ?? this.list,
+    profile: profile ?? this.profile,
+  );
 
   bool get isSuccess => success == true;
 
@@ -152,6 +154,7 @@ class AppResponse2<T> {
 
   int get itemsCount => totalPosts ?? (list?.length ?? 0);
 }
+
 //
 // /// ---------- Helpers to encode / decode AppResponse2 ----------
 // AppResponse2<T> appResponseFromJson2<T>(

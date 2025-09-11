@@ -288,5 +288,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get passwordIsIncorrect => 'Password is incorrect';
 
   @override
+  String get fullNameMinLength => 'Full name must be at least 3 characters long';
+
+  @override
+  String get fullNameNoSpecialChars => 'Full name should not contain special characters';
+
+  @override
   String get rateThisPost => 'Rate this Post';
 }

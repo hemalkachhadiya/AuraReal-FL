@@ -93,6 +93,8 @@
   "reset": "إعادة تعيين",
   "passwordIsIncorrect": "كلمة المرور غير صحيحة",
   "checkYourPhone": "تحقق من هاتفك",
+  "fullNameMinLength": "يجب أن يكون الاسم الكامل مكونًا من 3 أحرف على الأقل",
+  "fullNameNoSpecialChars": "يجب ألا يحتوي الاسم الكامل على رموز خاصة",
   "@cameraPermissionContent": {
     "description": "رسالة طلب إذن الكاميرا"
   }

@@ -1,5 +1,4 @@
 import 'package:aura_real/aura_real.dart';
-import 'package:aura_real/common/methods.dart';
 import 'package:aura_real/common/widgets/common_widget.dart';
 
 class AppTextField extends StatelessWidget {
@@ -66,7 +65,12 @@ class AppTextField extends StatelessWidget {
   Widget build(BuildContext context) {
     final localization = AppLocalizations.of(context);
     final isArabic = localization?.localeName == 'ar';
+// Determine input formatters: auto-deny spaces for email, or use provided ones
+    List<TextInputFormatter> effectiveFormatters = [];
 
+    if (textInputType == TextInputType.emailAddress) {
+      effectiveFormatters.add(FilteringTextInputFormatter.deny(RegExp(r'\s')));
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

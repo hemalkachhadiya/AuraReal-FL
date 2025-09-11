@@ -139,8 +139,32 @@ class HomeScreen extends StatelessWidget {
                               }
 
                               return PostCard(
+                                loading: provider.loader,
+                                onRatingSubmitted: (rate) {
+                                  var rating =
+                                      DoubleRatingExtension(rate).toStars();
+
+                                  if (provider
+                                          .postListResponse[index]
+                                          .postRating!
+                                          .toStarCount() ==
+                                      0) {
+                                    provider.newRatePostAPI(
+                                      context,
+                                      postId:
+                                          provider.postListResponse[index].id,
+                                      rating: rating.toString(),
+                                    );
+                                  } else {
+                                    provider.updateRatePostAPI(
+                                      context,
+                                      postId:
+                                          provider.postListResponse[index].id,
+                                      rating: rating.toString(),
+                                    );
+                                  }
+                                },
                                 post: provider.postListResponse[index],
-                                onRateTap: () {},
                                 onTap: () {
                                   context.navigator.pushNamed(
                                     UploadScreen.routeName,

@@ -11,7 +11,6 @@ import 'package:mime/mime.dart';
 
 class PostAPI {
   ///Create Post
-
   static Future<http.Response?> createPostAPI({
     required double latitude,
     required double longitude,
@@ -201,31 +200,50 @@ class PostAPI {
     }
   }
 
-  static Future<bool> ratePostAPI({
+  ///Update Rate API
+  static Future<bool> updateRatePostAPI({
     required String postId,
     required String rating,
   }) async {
     try {
-      final response = await ApiService.postApi(
-        url: EndPoints.ratepost,
-        body: {"postId": postId, "rating": rating},
+      final response = await ApiService.putApi(
+        url: EndPoints.updatePostRating,
+        body: {"postId": postId, "newRating": rating, "userId": userData?.id},
       );
       if (response == null) {
         showCatchToast('No response from server', null);
         return false;
       }
 
-      if (kDebugMode) {
-        print("BODY: ${jsonEncode({"postId": postId, "rating": rating})}");
+      final model = appResponseFromJson(response.body);
+
+      if (model.success == true) {
+        showSuccessToast(model.message ?? "Message Form Register API");
+        return true;
+      } else {
+        return false;
       }
-      if (kDebugMode) {
-        print("res 112233: ${response.body}");
+    } catch (exception, stack) {
+      showCatchToast(exception, stack);
+    }
+    return false;
+  }
+
+  ///New Rate API
+  static Future<bool> newRatePostAPI({
+    required String postId,
+    required String newRating,
+  }) async {
+    try {
+      final response = await ApiService.postApi(
+        url: EndPoints.newRatePost,
+        body: {"postId": postId, "rating": newRating, "userId": userData?.id},
+      );
+      if (response == null) {
+        showCatchToast('No response from server', null);
+        return false;
       }
       final model = appResponseFromJson(response.body);
-      if (kDebugMode) {
-        print("model.data");
-      }
-
       if (model.success == true) {
         showSuccessToast(model.message ?? "Message Form Register API");
         return true;
