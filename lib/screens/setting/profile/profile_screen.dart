@@ -25,8 +25,12 @@ class ProfileScreen extends StatelessWidget {
               vertical: 15.ph,
             ),
             child: SubmitButton(
+              bgColor:
+                  provider.isFormValid ? ColorRes.primaryColor : ColorRes.grey3,
               title: context.l10n?.update ?? "",
-              onTap: () {},
+              onTap: () {
+                provider.userUpdateAPI();
+              },
             ),
           ),
           body: SafeArea(
@@ -81,11 +85,10 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   30.ph.spaceVertical,
                   AppTextField(
-                    controller: TextEditingController(
-                      text: userData?.fullName ?? "",
-                    ),
-                    // error: provider.fullNameError,
+                    controller: provider.fullNameController,
+
                     hintText: context.l10n?.fullName ?? "",
+                    error: provider.fullNameError,
                     prefixIcon: Padding(
                       padding: const EdgeInsets.all(18.0),
                       child: SvgAsset(
@@ -96,21 +99,20 @@ class ProfileScreen extends StatelessWidget {
                       ),
                     ),
                     isMandatory: true,
-                    readOnly: true,
+
                     textInputType: TextInputType.name,
                     fillColor: ColorRes.lightGrey2,
                     borderRadius: 40.pw,
                     onChanged: (value) {
+                      provider.onFullNameChanged(value);
                       // provider.onFullNameChanged(value, context);
                     },
                   ),
                   20.ph.spaceVertical,
 
                   AppTextField(
-                    controller: TextEditingController(
-                      text: userData?.email ?? "",
-                    ),
-
+                    controller: provider.emailController,
+                    error: provider.emailError,
                     // error: provider.emailError,
                     hintText: context.l10n?.emailAddress ?? "",
                     prefixIcon: Padding(
@@ -124,24 +126,22 @@ class ProfileScreen extends StatelessWidget {
                     ),
 
                     isMandatory: true,
-                    readOnly: true,
+                    // readOnly: true,
                     textInputType: TextInputType.emailAddress,
                     fillColor: ColorRes.lightGrey2,
                     borderRadius: 40.pw,
                     onChanged: (value) {
                       // provider.onEmailChanged(value, context);
-
+                      provider.onEmailChanged(value);
                       // Handle text change
                     },
                   ),
                   20.ph.spaceVertical,
 
                   AppTextField(
-                    controller: TextEditingController(
-                      text: userData?.phoneNumber ?? "",
-                    ),
+                    controller: provider.mobileController,
 
-                    // error: provider.emailError,
+                    error: provider.mobileError,
                     hintText: context.l10n?.mobileNumber ?? "",
                     prefixIcon: Padding(
                       padding: const EdgeInsets.all(18.0),
@@ -154,11 +154,12 @@ class ProfileScreen extends StatelessWidget {
                     ),
 
                     isMandatory: true,
-                    readOnly: true,
+                    // readOnly: true,
                     textInputType: TextInputType.phone,
                     fillColor: ColorRes.lightGrey2,
                     borderRadius: 40.pw,
                     onChanged: (value) {
+                      provider.onMobileChanged(value);
                       // provider.onEmailChanged(value, context);
 
                       // Handle text change
@@ -174,6 +175,4 @@ class ProfileScreen extends StatelessWidget {
       },
     );
   }
-
-
 }
