@@ -13,6 +13,7 @@ class UploadProvider extends ChangeNotifier {
   }
 
   AppResponse2<PostModel>? paginationModel;
+  Profile? profileData;
 
   List<PostModel> get postByUserResponse => paginationModel?.list ?? [];
   bool _disposed = false;
@@ -56,7 +57,13 @@ class UploadProvider extends ChangeNotifier {
         page: currentPage + 1, // API expects 1-based indexing
         pageSize: pageSize,
       );
-
+      if (kDebugMode) {
+        print("Model get by user profile ======== ${model?.profile}");
+        if (model?.profile != null) {
+          profileData = model?.profile;
+          print("Profile Rating ------- ${profileData?.ratingsAvg}");
+        }
+      }
       if (model != null) {
         if (resetData || paginationModel == null) {
           paginationModel = model.copyWith();

@@ -33,7 +33,7 @@ class SvgAsset extends StatelessWidget {
         fit: fit ?? BoxFit.contain,
         alignment: alignment ?? Alignment.center,
         colorFilter:
-        color == null ? null : ColorFilter.mode(color!, BlendMode.srcIn),
+            color == null ? null : ColorFilter.mode(color!, BlendMode.srcIn),
       ),
     );
   }
@@ -70,25 +70,25 @@ class SvgNetwork extends StatelessWidget {
     return ClipRRect(
       borderRadius: BorderRadius.circular(borderRadius ?? 0),
       child:
-      url == null
-          ? _errorWidgetBox()
-          : SvgPicture.network(
-        url.toString(),
-        height: height,
-        width: width,
-        fit: fit ?? BoxFit.contain,
-        alignment: alignment ?? Alignment.center,
-        // placeholderBuilder: (con) {
-        //   return CustomShimmer(
-        //     height: loadingHeight ?? height,
-        //     width: loadingWidth ?? width,
-        //   );
-        // },
-        colorFilter:
-        color == null
-            ? null
-            : ColorFilter.mode(color!, BlendMode.srcIn),
-      ),
+          url == null
+              ? _errorWidgetBox()
+              : SvgPicture.network(
+                url.toString(),
+                height: height,
+                width: width,
+                fit: fit ?? BoxFit.contain,
+                alignment: alignment ?? Alignment.center,
+                // placeholderBuilder: (con) {
+                //   return CustomShimmer(
+                //     height: loadingHeight ?? height,
+                //     width: loadingWidth ?? width,
+                //   );
+                // },
+                colorFilter:
+                    color == null
+                        ? null
+                        : ColorFilter.mode(color!, BlendMode.srcIn),
+              ),
     );
   }
 
@@ -157,35 +157,35 @@ class FileImg extends StatelessWidget {
   final ProgressIndicatorBuilder? progressIndicatorBuilder;
 
   const FileImg(
-      this.file, {
-        super.key,
-        this.height,
-        this.width,
-        this.loadingHeight,
-        this.loadingWidth,
-        this.fit,
-        this.borderRadius,
-        this.errorWidget,
-        this.skipBaseUrl = false,
-        this.progressIndicatorBuilder,
-      });
+    this.file, {
+    super.key,
+    this.height,
+    this.width,
+    this.loadingHeight,
+    this.loadingWidth,
+    this.fit,
+    this.borderRadius,
+    this.errorWidget,
+    this.skipBaseUrl = false,
+    this.progressIndicatorBuilder,
+  });
 
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(borderRadius ?? 0),
       child:
-      file == null
-          ? _errorWidgetBox()
-          : Image.file(
-        file!,
-        height: height,
-        width: width,
-        fit: fit ?? BoxFit.cover,
-        errorBuilder: (con, str, obj) {
-          return _errorWidgetBox();
-        },
-      ),
+          file == null
+              ? _errorWidgetBox()
+              : Image.file(
+                file!,
+                height: height,
+                width: width,
+                fit: fit ?? BoxFit.cover,
+                errorBuilder: (con, str, obj) {
+                  return _errorWidgetBox();
+                },
+              ),
     );
   }
 
@@ -223,19 +223,19 @@ class CachedImage extends StatelessWidget {
   final Map<String, String>? headers;
 
   const CachedImage(
-      this.url, {
-        super.key,
-        this.height,
-        this.width,
-        this.loadingHeight,
-        this.loadingWidth,
-        this.fit,
-        this.borderRadius,
-        this.errorWidget,
-        this.skipBaseUrl = false,
-        this.progressIndicatorBuilder,
-        this.headers,
-      });
+    this.url, {
+    super.key,
+    this.height,
+    this.width,
+    this.loadingHeight,
+    this.loadingWidth,
+    this.fit,
+    this.borderRadius,
+    this.errorWidget,
+    this.skipBaseUrl = false,
+    this.progressIndicatorBuilder,
+    this.headers,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -248,26 +248,26 @@ class CachedImage extends StatelessWidget {
     return ClipRRect(
       borderRadius: BorderRadius.circular(borderRadius ?? 0),
       child:
-      url == null
-          ? _errorWidgetBox()
-          : CachedNetworkImage(
-        imageUrl: updatedUrl,
-        height: height,
-        width: width,
-        fit: fit ?? BoxFit.cover,
-        httpHeaders: headers,
-        errorWidget: (con, str, obj) {
-          return _errorWidgetBox();
-        },
-        progressIndicatorBuilder:
-        progressIndicatorBuilder ??
-                (con, str, progress) {
-              return CustomShimmer(
-                height: loadingHeight ?? height,
-                width: loadingWidth ?? width,
-              );
-            },
-      ),
+          url == null
+              ? _errorWidgetBox()
+              : CachedNetworkImage(
+                imageUrl: updatedUrl,
+                height: height,
+                width: width,
+                fit: fit ?? BoxFit.cover,
+                httpHeaders: headers,
+                errorWidget: (con, str, obj) {
+                  return _errorWidgetBox();
+                },
+                progressIndicatorBuilder:
+                    progressIndicatorBuilder ??
+                    (con, str, progress) {
+                      return CustomShimmer(
+                        height: loadingHeight ?? height,
+                        width: loadingWidth ?? width,
+                      );
+                    },
+              ),
     );
   }
 

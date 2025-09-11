@@ -1,23 +1,15 @@
 import 'package:aura_real/apis/model/post_model.dart';
 import 'package:aura_real/aura_real.dart';
+import 'package:aura_real/screens/home/home/widget/star_rates_widget.dart';
 
 class PostCard extends StatelessWidget {
   final PostModel post;
-  final Profile profile;
   final VoidCallback onTap;
 
-  const PostCard({
-    super.key,
-    required this.post,
-    required this.onTap,
-    required this.profile,
-  });
+  const PostCard({super.key, required this.post, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    print(
-      "EndPoints.domain + post.postImage.toString()${EndPoints.domain + post.postImage.toString().toBackslashPath()}",
-    );
     final double postRating = post.postRating as double;
     return InkWell(
       onTap: onTap,
@@ -40,9 +32,9 @@ class PostCard extends StatelessWidget {
                   padding: EdgeInsets.all(2),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(50),
-                    child: CachedImage(
+                    child: CachedImage(post.userId!.profile!=null?
                       EndPoints.domain +
-                          post.userId!.profile!.profileImage.toString(),
+                          post.userId!.profile!.profileImage.toString():"",
                     ),
                   ),
                 ),
@@ -81,43 +73,39 @@ class PostCard extends StatelessWidget {
           ),
           10.ph.spaceVertical,
           // Rating and Actions
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    StarRatingWidget(
-                      rating: postRating,
-                      // Use the extension to convert rating to star count                      size: 20,
-                      activeColor: ColorRes.primaryColor,
-                      inactiveColor: ColorRes.primaryColor,
-                    ),
-                    10.pw.spaceHorizontal,
-                    Text(post.postRating.toString(), style: styleW700S16),
-                    const Spacer(),
-
-                    SvgAsset(
-                      imagePath: AssetRes.commentIcon,
-                      height: 22,
-                      width: 22,
-                    ),
-                    10.pw.spaceHorizontal,
-                    Text(post.commentsCount.toString(), style: styleW700S16),
-                  ],
-                ),
-                10.ph.spaceVertical,
-                InkWell(
-                  onTap: () {
-                    _showRatingDialog(context);
-                  },
-                  child: Text(
-                    context.l10n?.rateThisPost ?? "",
-                    style: styleW400S13,
+          InkWell(
+            onTap: () {
+              showRatingDialog(context);
+            },
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      StarRatingWidget(
+                        rating: postRating,
+                        // Use the extension to convert rating to star count                      size: 20,
+                        activeColor: ColorRes.primaryColor,
+                        inactiveColor: ColorRes.primaryColor,
+                      ),
+                      10.pw.spaceHorizontal,
+                      Text(post.postRating.toString(), style: styleW700S16),
+                      const Spacer(),
+                      SvgAsset(
+                        imagePath: AssetRes.commentIcon,
+                        height: 22,
+                        width: 22,
+                      ),
+                      10.pw.spaceHorizontal,
+                      Text(post.commentsCount.toString(), style: styleW700S16),
+                    ],
                   ),
-                ),
-              ],
+                  10.ph.spaceVertical,
+                  Text(context.l10n?.rateThisPost ?? "", style: styleW400S13),
+                ],
+              ),
             ),
           ),
         ],
@@ -125,7 +113,7 @@ class PostCard extends StatelessWidget {
     );
   }
 
-  void _showRatingDialog(BuildContext context) {
+  void showRatingDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -134,32 +122,39 @@ class PostCard extends StatelessWidget {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                'How would you rate ${post.userId?.profile?.username}\'s post?',
-              ),
-              const SizedBox(height: 20),
-              InteractiveStarRating(
-                initialRating: 5,
-                onRatingChanged: (rating) {
-                  // Provider.of<PostsProvider>(
-                  //   context,
-                  //   listen: false,
-                  // ).ratePost(post.id, rating);
-                  Navigator.of(context).pop();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Rated $rating stars!'),
-                      duration: const Duration(seconds: 2),
-                    ),
-                  );
-                },
-              ),
+              20.ph.spaceVertical,
+              // StarRatingWidget(
+              //   rating: 5,
+              //   // Use the extension to convert rating to star count                      size: 20,
+              //   activeColor: ColorRes.primaryColor,
+              //   inactiveColor: ColorRes.primaryColor,
+              // ),
+              Rating2Screen(),
+
+              // InteractiveStarRating(
+              //   initialRating: 5,
+              //   onRatingChanged: (rating) {
+              //     // Provider.of<PostsProvider>(
+              //     //   context,
+              //     //   listen: false,
+              //     // ).ratePost(post.id, rating);
+              //     Navigator.of(context).pop();
+              //     ScaffoldMessenger.of(context).showSnackBar(
+              //       SnackBar(
+              //         content: Text('Rated $rating stars!'),
+              //         duration: const Duration(seconds: 2),
+              //       ),
+              //     );
+              //   },
+              // ),
             ],
           ),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
+            SubmitButton(
+              onTap: () {},
+              title: context.l10n?.submit ?? "",
+              height: 42.ph,
+              raduis: 15,
             ),
           ],
         );

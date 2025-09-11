@@ -1,9 +1,9 @@
 class EndPoints {
   /// LOCAL URL
-  // static const domain = "http://192.168.1.23:4000/";
+  static const domain = "http://192.168.1.23:4000/";
 
   ///Live URL
-  static const domain = "https://aurarealapi.smarttechnica.com/";
+  // static const domain = "https://aurarealapi.smarttechnica.com/";
 
   /// Base URL
   static const baseUrl = "${domain}api/v1/";
@@ -11,9 +11,6 @@ class EndPoints {
   /// ------------------------------------ Socket -------------------------------
   static const WebSocketurl =
       "http://localhost:4000/socket.io/?EIO=4&transport=websocket";
-
-
-
 
   /// ------------------------------------ Auth -------------------------------
   static const register = "${baseUrl}user/register";
@@ -44,4 +41,7 @@ class EndPoints {
   static const getPostByUSer = "${baseUrl}getpostsbyuser?userId";
   static const getUserProfileWithPosts =
       "${baseUrl}getUserProfileWithPosts?userId=";
+
+  static const ratepost =
+      "${baseUrl}ratepost";
 }

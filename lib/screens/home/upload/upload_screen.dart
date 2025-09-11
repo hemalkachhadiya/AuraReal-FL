@@ -1,6 +1,7 @@
 import 'dart:ui' as ui;
 import 'package:aura_real/aura_real.dart';
 import 'package:aura_real/apis/model/post_model.dart';
+
 class UploadScreen extends StatelessWidget {
   final PostModel? post;
 
@@ -161,7 +162,9 @@ class UploadScreen extends StatelessWidget {
                                           ),
                                           10.pw.spaceHorizontal,
                                           Text(
-                                            "5.0",
+                                            provider.profileData?.ratingsAvg
+                                                    .toString() ??
+                                                "0.0",
                                             style: styleW700S16.copyWith(
                                               color: ColorRes.white,
                                             ),
@@ -171,7 +174,7 @@ class UploadScreen extends StatelessWidget {
                                       10.ph.spaceVertical,
                                       // Name
                                       Text(
-                                        post?.userId?.fullName ?? "",
+                                        provider.profileData?.username ?? "",
                                         style: styleW700S24.copyWith(
                                           color: ColorRes.white,
                                         ),
@@ -199,9 +202,10 @@ class UploadScreen extends StatelessWidget {
                                                     8.pw.spaceHorizontal,
                                                     Expanded(
                                                       child: Text(
-                                                        isArabic
-                                                            ? "مرحباً، أناند"
-                                                            : "Hi, Anand",
+                                                        provider
+                                                                .profileData
+                                                                ?.bio ??
+                                                            "-",
                                                         maxLines: 1,
                                                         style: styleW500S12
                                                             .copyWith(
@@ -225,7 +229,10 @@ class UploadScreen extends StatelessWidget {
                                                     8.pw.spaceHorizontal,
                                                     Expanded(
                                                       child: Text(
-                                                        "Adison@gmail.com",
+                                                        provider
+                                                                .profileData
+                                                                ?.email ??
+                                                            "-",
                                                         style: styleW500S12
                                                             .copyWith(
                                                               color:
@@ -247,7 +254,10 @@ class UploadScreen extends StatelessWidget {
                                                     ),
                                                     8.pw.spaceHorizontal,
                                                     Text(
-                                                      "www.anad.com",
+                                                      provider
+                                                              .profileData
+                                                              ?.website ??
+                                                          "-",
                                                       maxLines: 1,
                                                       style: styleW500S12
                                                           .copyWith(
@@ -268,7 +278,11 @@ class UploadScreen extends StatelessWidget {
                                               Column(
                                                 children: [
                                                   Text(
-                                                    "12.5M",
+                                                    provider
+                                                            .profileData
+                                                            ?.followersCount
+                                                            .toString() ??
+                                                        "0.0",
                                                     style: styleW700S16
                                                         .copyWith(
                                                           color: ColorRes.white,
@@ -288,7 +302,11 @@ class UploadScreen extends StatelessWidget {
                                               Column(
                                                 children: [
                                                   Text(
-                                                    "12.5M",
+                                                    provider
+                                                            .profileData
+                                                            ?.ratingsAvg
+                                                            .toString() ??
+                                                        "",
                                                     style: styleW700S16
                                                         .copyWith(
                                                           color: ColorRes.white,
@@ -308,7 +326,11 @@ class UploadScreen extends StatelessWidget {
                                               Column(
                                                 children: [
                                                   Text(
-                                                    "12.5M",
+                                                    provider
+                                                            .profileData
+                                                            ?.totalPosts
+                                                            .toString() ??
+                                                        "",
                                                     style: styleW700S16
                                                         .copyWith(
                                                           color: ColorRes.white,
@@ -353,8 +375,15 @@ class UploadScreen extends StatelessWidget {
                                     padding: EdgeInsets.all(2),
                                     child: ClipRRect(
                                       borderRadius: BorderRadius.circular(50),
-                                      child: AssetsImg(
-                                        imagePath: AssetRes.notificationUserImg,
+                                      child: CachedImage(
+                                        provider.profileData?.profileImage !=
+                                                null
+                                            ? EndPoints.domain +
+                                                provider
+                                                    .profileData!
+                                                    .profileImage!
+                                                    .toBackslashPath()
+                                            : "",
                                       ),
                                     ),
                                   ),
@@ -503,14 +532,8 @@ class UploadScreen extends StatelessWidget {
                           );
                         }
                         return PostCard(
-                          profile: Profile(),
                           post: provider.postByUserResponse[index],
-                          onTap: () {
-                            context.navigator.pushNamed(
-                              UploadScreen.routeName,
-                              arguments: provider.postByUserResponse[index],
-                            );
-                          },
+                          onTap: () {},
                         );
                       },
                     ),

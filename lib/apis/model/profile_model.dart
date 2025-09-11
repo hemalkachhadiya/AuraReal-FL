@@ -1,6 +1,7 @@
 class Profile {
   final String? username;
   final String? profileImage;
+  final String? email;
   final String? bio;
   final int? followersCount;
   final int? totalPosts;
@@ -13,6 +14,7 @@ class Profile {
   Profile({
     this.username,
     this.profileImage,
+    this.email,
     this.bio,
     this.followersCount,
     this.totalPosts,
@@ -26,6 +28,7 @@ class Profile {
   factory Profile.fromJson(Map<String, dynamic> json) => Profile(
     username: json['username'] as String?,
     profileImage: json['profile_image'] as String?,
+    email: json['email'] as String?,
     bio: json['bio'] as String?,
     followersCount: json['followers_count'] as int?,
     totalPosts: json['total_posts'] as int?,
@@ -39,6 +42,7 @@ class Profile {
   Map<String, dynamic> toJson() => {
     'username': username,
     'profile_image': profileImage,
+    'email': email,
     'bio': bio,
     'followers_count': followersCount,
     'total_posts': totalPosts,
@@ -53,6 +57,7 @@ class Profile {
   Profile copyWith({
     String? username,
     String? profileImage,
+    String? email,
     String? bio,
     int? followersCount,
     int? totalPosts,
@@ -64,6 +69,7 @@ class Profile {
   }) => Profile(
     username: username ?? this.username,
     profileImage: profileImage ?? this.profileImage,
+    email: email ?? this.email,
     bio: bio ?? this.bio,
     followersCount: followersCount ?? this.followersCount,
     totalPosts: totalPosts ?? this.totalPosts,
@@ -77,6 +83,7 @@ class Profile {
   // Helper getters for safe access with default values
   String get safeUsername => username ?? 'Unknown';
   String get safeProfileImage => profileImage ?? '';
+  String get safeEmail => email ?? '';
   String get safeBio => bio ?? '';
   int get safeFollowersCount => followersCount ?? 0;
   int get safeTotalPosts => totalPosts ?? 0;

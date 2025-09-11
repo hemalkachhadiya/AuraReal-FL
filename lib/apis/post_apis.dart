@@ -1,3 +1,4 @@
+import 'package:aura_real/apis/app_response.dart';
 import 'package:aura_real/apis/app_response_2.dart';
 import 'package:aura_real/apis/model/file_data_model.dart';
 import 'package:aura_real/apis/model/multipart_list_model.dart';
@@ -160,52 +161,6 @@ class PostAPI {
     }
   }
 
-  // static Future<AppResponse2<PostModel>?> getAllPostListAPI({
-  //   int page = 1,
-  //   int pageSize = 10,
-  // }) async {
-  //   try {
-  //     String token = PrefService.getString(PrefKeys.token);
-  //     var latitude = PrefService.getDouble(PrefKeys.latitude);
-  //     var longitude = PrefService.getDouble(PrefKeys.longitude);
-  //     if (token.startsWith('"') && token.endsWith('"')) {
-  //       token = token.substring(1, token.length - 1);
-  //     }
-  //
-  //     // final headers = {"token": token};
-  //     final headers = {"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4YmU4OGI5NWIzMmU0Y2MxYzA3OWM3NSIsImlhdCI6MTc1NzMzNDM1NSwiZXhwIjoxNzU3OTM5MTU1fQ.lxyp1jx-A_id1aSYWw8DHjLoR169ofFG8T9Ox6eNYHE"};
-  //
-  //     final response = await ApiService.getApi(
-  //       url: EndPoints.getAllPostAPI,
-  //       // queryParams: {"latitude": latitude, "longitude": longitude},
-  //       header: headers,
-  //     );
-  //
-  //     if (response == null) {
-  //       showCatchToast('No response from server', null);
-  //       return null;
-  //     }
-  //
-  //     final model = appResponseFromJson2<PostModel>(
-  //       response.body,
-  //       converter:
-  //           (dynamic data) => PostModel.fromJson(data as Map<String, dynamic>),
-  //       dataKey: 'posts',
-  //     );
-  //
-  //     if (model.isSuccess) {
-  //       showSuccessToast(model.message ?? "Posts fetched successfully");
-  //       return model;
-  //     } else {
-  //       showCatchToast(model.message ?? "Failed to fetch posts", null);
-  //       return null;
-  //     }
-  //   } catch (exception, stack) {
-  //     showCatchToast(exception, stack);
-  //     return null;
-  //   }
-  // }
-
   ///Get Post By USer
   static Future<AppResponse2<PostModel>?> getPostByUserAPI({
     int page = 1,
@@ -221,6 +176,8 @@ class PostAPI {
         return null;
       }
 
+      print("API GET BY USER POST ${response.body}");
+
       final model = appResponseFromJson2<PostModel>(
         response.body,
         converter:
@@ -229,8 +186,9 @@ class PostAPI {
       );
 
       if (model.isSuccess) {
-        print("Profile model======== ${model.profile}");
-        showSuccessToast(model.message ?? "Posts fetched successfully");
+
+        print("Profile model======== ${model.profile?.username}");
+        // showSuccessToast(model.message ?? "Posts fetched successfully");
         return model;
       } else {
         showCatchToast(model.message ?? "Failed to fetch posts", null);
@@ -240,5 +198,42 @@ class PostAPI {
       showCatchToast(exception, stack);
       return null;
     }
+  }
+
+  static Future<bool> ratePostAPI({
+    required String postId,
+    required String rating,
+  }) async {
+    try {
+      final response = await ApiService.postApi(
+        url: EndPoints.ratepost,
+        body: {"postId": postId, "rating": rating},
+      );
+      if (response == null) {
+        showCatchToast('No response from server', null);
+        return false;
+      }
+
+      if (kDebugMode) {
+        print("BODY: ${jsonEncode({"postId": postId, "rating": rating})}");
+      }
+      if (kDebugMode) {
+        print("res 112233: ${response.body}");
+      }
+      final model = appResponseFromJson(response.body);
+      if (kDebugMode) {
+        print("model.data");
+      }
+
+      if (model.success == true) {
+        showSuccessToast(model.message ?? "Message Form Register API");
+        return true;
+      } else {
+        return false;
+      }
+    } catch (exception, stack) {
+      showCatchToast(exception, stack);
+    }
+    return false;
   }
 }

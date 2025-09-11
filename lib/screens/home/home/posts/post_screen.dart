@@ -141,7 +141,6 @@ class HomeScreen extends StatelessWidget {
 
                               return PostCard(
                                 post: provider.postListResponse[index],
-                                profile: Profile(),
                                 onTap: () {
                                   context.navigator.pushNamed(
                                     UploadScreen.routeName,

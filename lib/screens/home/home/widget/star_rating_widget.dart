@@ -1,5 +1,4 @@
 import 'package:aura_real/aura_real.dart';
-import 'package:flutter/material.dart';
 
 class StarRatingWidget extends StatelessWidget {
   final double rating;
@@ -26,6 +25,7 @@ class StarRatingWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
+      spacing: 12.pw,
       mainAxisAlignment: alignment,
       children: List.generate(totalStars, (index) {
         return GestureDetector(
@@ -38,22 +38,20 @@ class StarRatingWidget extends StatelessWidget {
             child: SvgAsset(
               imagePath:
                   index < rating.floor()
-                      ? AssetRes.starIcon
-                      : index < rating
                       ? AssetRes.starFillIcon
+                      : index < rating
+                      ? AssetRes.halfStarIcon
                       : AssetRes.starUnFillIcon,
               width: size,
               height: size,
-              color: index < rating ? activeColor : inactiveColor,
-            ) /*Icon(
-              index < rating.floor()
-                  ? Icons.star
-                  : index < rating
-                  ? Icons.star_half
-                  : Icons.star_border,
-              size: size,
-              color: index < rating ? activeColor : inactiveColor,
-            )*/,
+
+              color:
+                  index < rating
+                      ? null
+                      : index < rating.floor()
+                      ? activeColor
+                      : inactiveColor,
+            ),
           ),
         );
       }),
@@ -99,6 +97,7 @@ class _InteractiveStarRatingState extends State<InteractiveStarRating> {
       children: List.generate(widget.totalStars, (index) {
         return GestureDetector(
           onTap: () {
+            print("check-------");
             setState(() {
               _currentRating = index + 1;
             });

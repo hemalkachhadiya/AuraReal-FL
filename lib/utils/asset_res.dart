@@ -53,6 +53,7 @@ class AssetRes {
   static const informationIcon = "${_icons}information_icon.svg";
   static const logoutIcon = "${_icons}logout_icon.svg";
   static const editIcon = "${_icons}edit_icon.svg";
+  static const halfStarIcon = "${_icons}half_star_icon.svg";
 
   ///__________________________________ temps __________________________________///
   static const post_1 = "${_temp}post_1.png";
