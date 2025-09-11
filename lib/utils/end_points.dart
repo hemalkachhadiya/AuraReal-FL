@@ -23,12 +23,14 @@ class EndPoints {
   static const requestPasswordReset = "${baseUrl}requestPasswordReset";
   static const verifyPasswordResetOTP = "${baseUrl}verifyPasswordResetOTP";
   static const resetPassword = "${baseUrl}resetPassword";
+  static const changePassword = "${baseUrl}changePassword";
 
   /// ------------------------------------ Google Login -------------------------------
   static const googleLogin = "${baseUrl}google-login";
 
   /// ------------------------------------ User Profile -------------------------------
   static const getUserProfile = "${baseUrl}getuserprofile?userId=";
+  static const updateUserProfile = "${baseUrl}updateUser";
 
   /// ------------------------------------ Location -------------------------------
 
@@ -42,6 +44,10 @@ class EndPoints {
   static const getUserProfileWithPosts =
       "${baseUrl}getUserProfileWithPosts?userId=";
 
-  static const ratepost =
-      "${baseUrl}ratepost";
+  static const ratepost = "${baseUrl}ratepost";
+
+  /// ------------------------------------ Follow and UnFollow User Profile -------------------------------
+
+  static const follow = "${baseUrl}follow";
+  static const unfollow = "${baseUrl}unfollow";
 }

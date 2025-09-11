@@ -107,29 +107,23 @@ class ChangePasswordProvider extends ChangeNotifier {
 
   /// Submit password change
   Future<void> onChangePasswordTap(BuildContext context) async {
+    if (userData == null || userData?.id == null) return;
     if (!validate(context)) return;
 
     loader = true;
     notifyListeners();
 
     try {
-      // TODO: Call API to change password
-      await Future.delayed(const Duration(seconds: 2));
-
+      final result = await AuthApis.changePasswordAPI(
+        userId: userData!.id!,
+        oldPassword: '${currentPasswordController.text.trim()}',
+        newPassword: '${confirmPasswordController.text.trim()}',
+      );
+      if (result) {
+        Navigator.pop(context);
+      }
       loader = false;
       notifyListeners();
-
-      // context.showSuccessDialog(
-      //   title: context.l10n?.passwordChanged ?? "Password Changed",
-      //   description: context.l10n?.yourPasswordHasBeenSuccessfullyChanged ?? "Your password has been successfully changed.",
-      //   onTap: () {
-      //     Navigator.pop(context);
-      //     context.navigator.pushNamedAndRemoveUntil(
-      //       SignInScreen.routeName,
-      //           (_) => false,
-      //     );
-      //   },
-      // );
     } catch (e) {
       loader = false;
       notifyListeners();

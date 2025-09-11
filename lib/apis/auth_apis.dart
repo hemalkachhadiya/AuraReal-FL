@@ -244,6 +244,45 @@ class AuthApis {
     }
   }
 
+  static Future<Profile?> userUpdateProfile({
+    required String userId,
+    required String fullName,
+    required String email,
+    required String phoneNumber,
+  }) async {
+    try {
+      final response = await ApiService.putApi(
+        url: EndPoints.updateUserProfile,
+        body: {
+          "userId": userId,
+          "fullName": fullName,
+          "email": email,
+          "phoneNumber": phoneNumber,
+        },
+      );
+
+      if (response == null) {
+        showCatchToast('No response from server', null);
+        return null;
+      }
+      final responseBody = jsonDecode(response.body);
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        print("Res Body Data ${responseBody['profile']}");
+        if (responseBody['profile'] != null && responseBody != null) {
+          // showSuccessToast(responseBody['message'] ?? 'Login successful');
+          await PrefService.set(
+            PrefKeys.userData,
+            jsonEncode(responseBody['data']),
+          );
+          return Profile.fromJson(responseBody['profile']);
+        }
+      }
+    } catch (exception, stack) {
+      showCatchToast(exception, stack);
+      return null;
+    }
+  }
+
   ///Request Password API
   static Future<bool?> reqPasswordResetAPI({required String email}) async {
     try {
@@ -319,6 +358,131 @@ class AuthApis {
       }
     } catch (exception, stack) {
       showCatchToast(exception, stack);
+      return false;
+    }
+  }
+
+  //change password
+  static Future<bool> changePasswordAPI({
+    required String userId,
+    required String oldPassword,
+    required String newPassword,
+  }) async {
+    try {
+      final response = await ApiService.postApi(
+        url: EndPoints.changePassword,
+        body: {
+          "userId": userId,
+          "oldPassword": oldPassword,
+          "newPassword": newPassword,
+        },
+      );
+
+      if (response == null) {
+        showCatchToast("No response from server", null);
+        return false;
+      }
+
+      final responseBody = jsonDecode(response.body) as Map<String, dynamic>;
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        // Success
+        showSuccessToast(
+          responseBody['message'] ?? 'Password changed successfully',
+        );
+        return true;
+      } else {
+        // Failure
+        showCatchToast(responseBody['message'] ?? 'Something went wrong', null);
+        return false;
+      }
+    } catch (exception, stack) {
+      showCatchToast(exception, stack);
+      return false;
+    }
+  }
+
+  ///FollowUserProfile API
+  static Future<bool> followUserProfile({
+    required String followUserId,
+    required String userId,
+  }) async {
+    try {
+      final response = await ApiService.postApi(
+        url: EndPoints.follow,
+        body: {"followUserId": followUserId, "userId": userId},
+      );
+
+      if (response == null) {
+        showCatchToast("No response from server", null);
+        return false;
+      }
+
+      final responseBody = jsonDecode(response.body);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        showSuccessToast(responseBody['message'] ?? 'Follow successful');
+        return true;
+      } else {
+        showCatchToast(responseBody['message'] ?? 'Failed', null);
+        return false;
+      }
+    } catch (e, s) {
+      showCatchToast(e, s);
+      return false;
+    }
+  }
+
+  //   ///UnFollowUserProfile API
+  // static Future unfollowUserProfile({
+  //   required String followUserId,
+  //   required String userId,
+  // }) async {
+  //   try {
+  //     final response = await ApiService.postApi(
+  //       url: EndPoints.unfollow,
+  //       body: {"userId": userId, "followUserId": followUserId},
+  //     );
+  //     if (response == null) {
+  //       showCatchToast('No response from server', null);
+  //       return false;
+  //     }
+  //     final responseBody = jsonDecode(response.body);
+  //     if (response.statusCode == 200 || response.statusCode == 201) {
+  //       showSuccessToast(responseBody['message'] ?? 'Follow successful');
+  //       return true;
+  //     }
+  //   } catch (exception, stack) {
+  //     showCatchToast(exception, stack);
+  //     return false;
+  //   }
+  // }
+  static Future<bool> unfollowUserProfile({
+    required String followUserId,
+    required String userId,
+  }) async {
+    try {
+      final response = await ApiService.postApi(
+        url: EndPoints.unfollow,
+        body: {"unfollowUserId": followUserId, "userId": userId},
+      );
+
+      if (response == null) {
+        showCatchToast("No response from server", null);
+        return false;
+      }
+
+      final responseBody = jsonDecode(response.body);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        showSuccessToast(responseBody['message'] ?? 'Follow successful');
+        return true;
+      } else {
+        showCatchToast(responseBody['message'] ?? 'Failed', null);
+        return false;
+      }
+    } catch (e, s) {
+      showCatchToast(e, s);
       return false;
     }
   }

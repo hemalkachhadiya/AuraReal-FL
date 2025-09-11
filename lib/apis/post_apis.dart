@@ -167,10 +167,16 @@ class PostAPI {
     int pageSize = 10,
     String? userId,
   }) async {
+    String token = PrefService.getString(PrefKeys.token);
     print("userId======== ${userId}");
     try {
+      if (token.startsWith('"') && token.endsWith('"')) {
+        token = token.substring(1, token.length - 1);
+      }
+      final headers = {"token": token};
       final response = await ApiService.getApi(
         url: '${EndPoints.getUserProfileWithPosts}$userId',
+        header: headers,
       );
 
       if (response == null) {

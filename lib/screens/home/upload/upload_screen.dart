@@ -420,8 +420,12 @@ class UploadScreen extends StatelessWidget {
                               color: Colors.transparent,
                               child: InkWell(
                                 borderRadius: BorderRadius.circular(15),
-                                onTap: () {
-                                  // Handle follow action
+                                onTap: () async {
+                                  if (provider.isFollowing) {
+                                    await provider.unfollowUserProfile(context);
+                                  } else {
+                                    await provider.followUserProfile(context);
+                                  }
                                 },
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
@@ -502,10 +506,7 @@ class UploadScreen extends StatelessWidget {
                               ? 0
                               : provider.postByUserResponse.length + 1,
                       onRefresh:
-                          () => provider.getPostByUserAPI(
-                            resetData: true,
-
-                          ),
+                          () => provider.getPostByUserAPI(resetData: true),
                       emptyWidget: UnKnownScreen(),
                       showEmptyWidget:
                           !provider.loader &&
