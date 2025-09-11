@@ -165,10 +165,12 @@ class PostAPI {
   static Future<AppResponse2<PostModel>?> getPostByUserAPI({
     int page = 1,
     int pageSize = 10,
+    String? userId,
   }) async {
+    print("userId======== ${userId}");
     try {
       final response = await ApiService.getApi(
-        url: '${EndPoints.getUserProfileWithPosts}${userData!.id!}',
+        url: '${EndPoints.getUserProfileWithPosts}$userId',
       );
 
       if (response == null) {
@@ -186,7 +188,6 @@ class PostAPI {
       );
 
       if (model.isSuccess) {
-
         print("Profile model======== ${model.profile?.username}");
         // showSuccessToast(model.message ?? "Posts fetched successfully");
         return model;

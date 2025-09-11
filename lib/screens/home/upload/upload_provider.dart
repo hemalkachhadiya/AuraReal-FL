@@ -4,7 +4,9 @@ import 'package:aura_real/apis/post_apis.dart';
 import 'package:aura_real/aura_real.dart';
 
 class UploadProvider extends ChangeNotifier {
-  UploadProvider() {
+  final String userId;
+
+  UploadProvider(this.userId) {
     init();
   }
 
@@ -56,6 +58,7 @@ class UploadProvider extends ChangeNotifier {
       final model = await PostAPI.getPostByUserAPI(
         page: currentPage + 1, // API expects 1-based indexing
         pageSize: pageSize,
+        userId: userId,
       );
       if (kDebugMode) {
         print("Model get by user profile ======== ${model?.profile}");

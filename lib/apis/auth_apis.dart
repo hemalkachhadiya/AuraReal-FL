@@ -22,7 +22,7 @@ class AuthApis {
           "fullName": fullName,
           "password": password,
           "phoneNumber": phoneNumber,
-          "is_otp_type": "0",
+          "is_otp_type": otpType,
         },
       );
       if (response == null) {

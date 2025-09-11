@@ -14,12 +14,17 @@ class UploadScreen extends StatelessWidget {
     final PostModel? routePost =
         post ?? (ModalRoute.of(context)?.settings.arguments as PostModel?);
 
+    // Extract userId from routePost or provide a default/fallback
+    final String? userId = routePost?.userId?.id;
+    print("userId======= ${userId}");
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider<UploadProvider>(create: (c) => UploadProvider()),
-        ChangeNotifierProvider<PostsProvider>(
-          create: (c) => PostsProvider(), // Ensure PostsProvider is initialized
+        ChangeNotifierProvider<UploadProvider>(
+          create:
+              (c) =>
+                  UploadProvider(userId ?? ''), // Pass userId to UploadProvider
         ),
+        ChangeNotifierProvider<PostsProvider>(create: (c) => PostsProvider()),
       ],
       child: UploadScreen(post: routePost),
     );
@@ -497,7 +502,10 @@ class UploadScreen extends StatelessWidget {
                               ? 0
                               : provider.postByUserResponse.length + 1,
                       onRefresh:
-                          () => provider.getPostByUserAPI(resetData: true),
+                          () => provider.getPostByUserAPI(
+                            resetData: true,
+
+                          ),
                       emptyWidget: UnKnownScreen(),
                       showEmptyWidget:
                           !provider.loader &&

@@ -4,9 +4,8 @@ class PostModel {
   final Location? location;
   final GeoLocation? geoLocation;
   final String? id;
-  final dynamic userId; // Changed to dynamic to handle String or UserId
+  final UserId? userId;
   final String? content;
-
   final String? postImage;
   final int? privacyLevel;
   final String? locationId;
@@ -42,7 +41,7 @@ class PostModel {
     Location? location,
     GeoLocation? geoLocation,
     String? id,
-    dynamic userId, // Changed to dynamic
+    UserId? userId,
     String? content,
     String? postImage,
     int? privacyLevel,
@@ -81,11 +80,7 @@ class PostModel {
       geoLocation:
       json['geo_location'] != null ? GeoLocation.fromJson(json['geo_location']) : null,
       id: json['_id'] as String?,
-      userId: json['user_id'] is String
-          ? json['user_id'] as String?
-          : json['user_id'] != null
-          ? UserId.fromJson(json['user_id'])
-          : null,
+      userId: json['user_id'] != null ? UserId.fromJson(json['user_id']) : null,
       content: json['content'] as String?,
       postImage: json['post_image'] as String?,
       privacyLevel: json['privacy_level'] as int?,
@@ -123,7 +118,7 @@ class PostModel {
       'location': location?.toJson(),
       'geo_location': geoLocation?.toJson(),
       '_id': id,
-      'user_id': userId is UserId ? userId?.toJson() : userId,
+      'user_id': userId?.toJson(),
       'content': content,
       'post_image': postImage,
       'privacy_level': privacyLevel,
