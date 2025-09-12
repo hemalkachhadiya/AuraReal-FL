@@ -290,46 +290,46 @@ class PostAPI {
     return false;
   }
 
-  static Future<AppResponse2<PostModel>?> getAllCommentListAPI({
-    int page = 1,
-    int pageSize = 10,
-  }) async {
-    // String token = PrefService.getString(PrefKeys.token);
-    // try {
-    //   if (token.startsWith('"') && token.endsWith('"')) {
-    //     token = token.substring(1, token.length - 1);
-    //   }
-    //
-    //   final headers = {"token": token};
-
-      final response = await ApiService.getApi(
-        url: EndPoints.getcomments,
-
-      );
-
-      if (response == null) {
-        showCatchToast('No response from server', null);
-        return null;
-      }
-
-      final model = appResponseFromJson2<CommentModel>(
-        response.body,
-        converter:
-            (dynamic data) => CommentModel.fromJson(data as Map<String, dynamic>),
-        dataKey: 'comments',
-      );
-
-      if (model.isSuccess) {
-        showSuccessToast(model.message ?? "Posts fetched successfully");
-        return model;
-      } else {
-        showCatchToast(model.message ?? "Failed to fetch posts", null);
-        return null;
-      }
-    } catch (exception, stack) {
-      showCatchToast(exception, stack);
-      return null;
-    }
-  }
+  // static Future<AppResponse2<PostModel>?> getAllCommentListAPI({
+  //   int page = 1,
+  //   int pageSize = 10,
+  // }) async {
+  //   // String token = PrefService.getString(PrefKeys.token);
+  //   // try {
+  //   //   if (token.startsWith('"') && token.endsWith('"')) {
+  //   //     token = token.substring(1, token.length - 1);
+  //   //   }
+  //   //
+  //   //   final headers = {"token": token};
+  //
+  //     final response = await ApiService.getApi(
+  //       url: EndPoints.getcomments,
+  //
+  //     );
+  //
+  //     if (response == null) {
+  //       showCatchToast('No response from server', null);
+  //       return null;
+  //     }
+  //
+  //     final model = appResponseFromJson2<CommentModel>(
+  //       response.body,
+  //       converter:
+  //           (dynamic data) => CommentModel.fromJson(data as Map<String, dynamic>),
+  //       dataKey: 'comments',
+  //     );
+  //
+  //     if (model.isSuccess) {
+  //       showSuccessToast(model.message ?? "Posts fetched successfully");
+  //       return model;
+  //     } else {
+  //       showCatchToast(model.message ?? "Failed to fetch posts", null);
+  //       return null;
+  //     }
+  //   } catch (exception, stack) {
+  //     showCatchToast(exception, stack);
+  //     return null;
+  //   }
+  // }
 
 }
