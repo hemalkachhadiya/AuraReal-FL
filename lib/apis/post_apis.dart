@@ -262,4 +262,31 @@ class PostAPI {
     }
     return false;
   }
+
+  ///Comment Post API
+  static Future<bool> commentOnPostAPI({
+    required String postId,
+    required String content,
+  }) async {
+    try {
+      final response = await ApiService.postApi(
+        url: EndPoints.createcomment,
+        body: {"post_id": postId, "content": content, "user_id": userData?.id},
+      );
+      if (response == null) {
+        showCatchToast('No response from server', null);
+        return false;
+      }
+      final model = appResponseFromJson(response.body);
+      if (model.success == true) {
+        showSuccessToast(model.message ?? "Message Form Comment API");
+        return true;
+      } else {
+        return false;
+      }
+    } catch (exception, stack) {
+      showCatchToast(exception, stack);
+    }
+    return false;
+  }
 }

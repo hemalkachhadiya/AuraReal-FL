@@ -23,7 +23,7 @@
   "passwordReset": "Password Reset",
   "pleasePutYourMobileNumberToReset": "Please put your mobile number to reset your password",
   "emailShouldNotContainSpace": "Email should not contain spaces",
-  "pleasePutYourMobileNumberToVerify": "Please enter your mobile number to verify your account",
+  "pleasePutYourMobileNumberToVerify": "Please select SMS or Email to verify your account",
   "sms": "SMS",
   "email": "Email",
   "send": "Send",
@@ -96,5 +96,10 @@
   "passwordIsIncorrect": "Password is incorrect",
   "fullNameMinLength": "Full name must be at least 3 characters long",
   "fullNameNoSpecialChars": "Full name should not contain special characters",
+  "addComment": "Add Comment On",
+  "writeComment": "Write a comment...",
+  "typeYourComment": "Type your comment here...",
+  "postComment": "Post Comment",
+  "incorrectPassword": "Incorrect password",
   "rateThisPost": "Rate this Post"
 }

@@ -81,7 +81,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get emailShouldNotContainSpace => 'يجب ألا يحتوي البريد الإلكتروني على مسافات';
 
   @override
-  String get pleasePutYourMobileNumberToVerify => 'يرجى إدخال رقم الهاتف المحمول للتحقق من حسابك';
+  String get pleasePutYourMobileNumberToVerify => 'يرجى اختيار الرسائل القصيرة أو البريد الإلكتروني للتحقق من حسابك';
 
   @override
   String get sms => 'رسالة نصية';
@@ -298,6 +298,21 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get fullNameNoSpecialChars => 'يجب ألا يحتوي الاسم الكامل على رموز خاصة';
+
+  @override
+  String get addComment => 'إضافة تعليق على';
+
+  @override
+  String get writeComment => 'اكتب تعليقاً...';
+
+  @override
+  String get typeYourComment => 'اكتب تعليقك هنا...';
+
+  @override
+  String get postComment => 'نشر التعليق';
+
+  @override
+  String get incorrectPassword => 'كلمة المرور غير صحيحة';
 
   @override
   String get rateThisPost => 'قيم هذه المشاركة';

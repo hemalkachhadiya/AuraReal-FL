@@ -75,6 +75,13 @@ class GetLocationService {
 
     if (permission == LocationPermission.deniedForever) {
       if (context.mounted) {
+        // Instead of just showing a toast, navigate to YourLocationScreen
+        context.navigator.pushReplacementNamed(
+          YourLocationScreen.routeName,
+          arguments: const YourLocationScreen(isComeFromSplash: true),
+        );
+
+        // (Optional) You can still show a snackbar if you want feedback
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text(
@@ -89,6 +96,23 @@ class GetLocationService {
       }
       return (null, null, "Location permissions are permanently denied");
     }
+
+    // if (permission == LocationPermission.deniedForever) {
+    //   if (context.mounted) {
+    //     ScaffoldMessenger.of(context).showSnackBar(
+    //       SnackBar(
+    //         content: const Text(
+    //           "Location permissions are permanently denied. Enable in settings.",
+    //         ),
+    //         action: SnackBarAction(
+    //           label: "Settings",
+    //           onPressed: () => Geolocator.openAppSettings(),
+    //         ),
+    //       ),
+    //     );
+    //   }
+    //   return (null, null, "Location permissions are permanently denied");
+    // }
 
     // Get current position
     try {

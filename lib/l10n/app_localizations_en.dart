@@ -81,7 +81,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get emailShouldNotContainSpace => 'Email should not contain spaces';
 
   @override
-  String get pleasePutYourMobileNumberToVerify => 'Please enter your mobile number to verify your account';
+  String get pleasePutYourMobileNumberToVerify => 'Please select SMS or Email to verify your account';
 
   @override
   String get sms => 'SMS';
@@ -298,6 +298,21 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get fullNameNoSpecialChars => 'Full name should not contain special characters';
+
+  @override
+  String get addComment => 'Add Comment On';
+
+  @override
+  String get writeComment => 'Write a comment...';
+
+  @override
+  String get typeYourComment => 'Type your comment here...';
+
+  @override
+  String get postComment => 'Post Comment';
+
+  @override
+  String get incorrectPassword => 'Incorrect password';
 
   @override
   String get rateThisPost => 'Rate this Post';

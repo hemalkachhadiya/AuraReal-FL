@@ -10,7 +10,6 @@ class DashboardProvider extends ChangeNotifier {
     await GetLocationService.getCurrentLocation(
       navigatorKey.currentState!.context,
     );
-
   }
 
   int _selectedIndex = 0;
@@ -37,6 +36,4 @@ class DashboardProvider extends ChangeNotifier {
         return 'Home';
     }
   }
-
-
 }

@@ -1,6 +1,5 @@
 import 'package:aura_real/aura_real.dart';
 import 'package:aura_real/common/widgets/common_widget.dart';
-import 'package:flutter/services.dart'; // Required for TextInputFormatter
 
 class AppTextField extends StatelessWidget {
   const AppTextField({
@@ -72,9 +71,11 @@ class AppTextField extends StatelessWidget {
 
     if (textInputType == TextInputType.emailAddress) {
       effectiveFormatters.add(FilteringTextInputFormatter.deny(RegExp(r'\s')));
-    } else if (textInputType == TextInputType.name) {
-      // Allow only alphanumeric characters and optionally underscore/hyphen for usernames
-      effectiveFormatters.add(FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9_-]')));
+    }  else if (textInputType == TextInputType.name) {
+      // Allow letters, numbers, underscore, hyphen, and space
+      effectiveFormatters.add(
+        FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9_\-\s]')),
+      );
     }
 
     return Column(

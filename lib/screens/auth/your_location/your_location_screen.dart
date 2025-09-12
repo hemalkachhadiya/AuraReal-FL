@@ -27,19 +27,31 @@ class YourLocationScreen extends StatefulWidget {
   State<YourLocationScreen> createState() => _YourLocationScreenState();
 }
 
-class _YourLocationScreenState extends State<YourLocationScreen> with WidgetsBindingObserver {
+class _YourLocationScreenState extends State<YourLocationScreen>
+    with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
     // Register the observer for lifecycle changes
     WidgetsBinding.instance.addObserver(this);
     // Check permissions initially
-    // WidgetsBinding.instance.addPostFrameCallback((_) {
-    //   if (mounted) {
-    //     Provider.of<YourLocationProvider>(navigatorKey.currentState!.context, listen: false)
-    //         .checkPermissionsAfterSettings(navigatorKey.currentState!.context);
-    //   }
-    // });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        Builder(
+          builder: (BuildContext newContext) {
+            Provider.of<YourLocationProvider>(
+              newContext,
+              listen: false,
+            ).checkPermissionsAfterSettings(newContext);
+            Provider.of<YourLocationProvider>(
+              newContext,
+              listen: false,
+            ).checkPermissionsAfterSettings(newContext);
+            return Container(); // Return an empty widget as this is just for context
+          },
+        );
+      }
+    });
   }
 
   @override
@@ -55,14 +67,16 @@ class _YourLocationScreenState extends State<YourLocationScreen> with WidgetsBin
     if (state == AppLifecycleState.resumed && mounted) {
       Builder(
         builder: (BuildContext newContext) {
-          Provider.of<YourLocationProvider>(newContext, listen: false)
-              .checkPermissionsAfterSettings(newContext);
+          Provider.of<YourLocationProvider>(
+            newContext,
+            listen: false,
+          ).checkPermissionsAfterSettings(newContext);
           return Container(); // Return an empty widget as this is just for context
         },
       );
-
     }
   }
+
   // @override
   // void didChangeAppLifecycleState(AppLifecycleState state) {
   //   super.didChangeAppLifecycleState(state);
@@ -82,7 +96,6 @@ class _YourLocationScreenState extends State<YourLocationScreen> with WidgetsBin
   Widget build(BuildContext context) {
     return Consumer<YourLocationProvider>(
       builder: (context, provider, child) {
-        print("provider.isComeFromSplash===== ${provider.isComeFromSplash}");
         return Scaffold(
           backgroundColor: Theme.of(context).colorScheme.surface,
           body: Stack(
@@ -124,7 +137,9 @@ class _YourLocationScreenState extends State<YourLocationScreen> with WidgetsBin
                         onTap: () async {
                           await provider.allowLocation(context);
                         },
-                        title: context.l10n?.allowLocationAccess ?? "Allow Location Access",
+                        title:
+                            context.l10n?.allowLocationAccess ??
+                            "Allow Location Access",
                       ),
                       12.ph.spaceVertical,
                       TextButton(
@@ -151,7 +166,8 @@ class _YourLocationScreenState extends State<YourLocationScreen> with WidgetsBin
               ),
               if (provider.isLoading)
                 Container(
-                  color: Colors.black.withOpacity(0.5), // Semi-transparent background
+                  color: Colors.black.withOpacity(0.5),
+                  // Semi-transparent background
                   child: Center(
                     child: CircularProgressIndicator(
                       valueColor: AlwaysStoppedAnimation<Color>(
@@ -171,25 +187,30 @@ class _YourLocationScreenState extends State<YourLocationScreen> with WidgetsBin
     final controller = TextEditingController();
     return showDialog<String>(
       context: context,
-      builder: (_) => AlertDialog(
-        title: Text(context.l10n?.interLocationManually ?? "Enter Location"),
-        content: TextField(
-          controller: controller,
-          decoration: InputDecoration(
-            hintText: context.l10n?.typeYourCityOrArea ?? "Type your city or area",
+      builder:
+          (_) => AlertDialog(
+            title: Text(
+              context.l10n?.interLocationManually ?? "Enter Location",
+            ),
+            content: TextField(
+              controller: controller,
+              decoration: InputDecoration(
+                hintText:
+                    context.l10n?.typeYourCityOrArea ??
+                    "Type your city or area",
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, null),
+                child: Text(context.l10n?.cancel ?? "Cancel"),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context, controller.text.trim()),
+                child: Text(context.l10n?.save ?? "Save"),
+              ),
+            ],
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, null),
-            child: Text(context.l10n?.cancel ?? "Cancel"),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, controller.text.trim()),
-            child: Text(context.l10n?.save ?? "Save"),
-          ),
-        ],
-      ),
     );
   }
 }

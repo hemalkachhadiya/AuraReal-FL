@@ -242,7 +242,7 @@ abstract class AppLocalizations {
   /// No description provided for @pleasePutYourMobileNumberToVerify.
   ///
   /// In en, this message translates to:
-  /// **'Please enter your mobile number to verify your account'**
+  /// **'Please select SMS or Email to verify your account'**
   String get pleasePutYourMobileNumberToVerify;
 
   /// No description provided for @sms.
@@ -676,6 +676,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Full name should not contain special characters'**
   String get fullNameNoSpecialChars;
+
+  /// No description provided for @addComment.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Comment On'**
+  String get addComment;
+
+  /// No description provided for @writeComment.
+  ///
+  /// In en, this message translates to:
+  /// **'Write a comment...'**
+  String get writeComment;
+
+  /// No description provided for @typeYourComment.
+  ///
+  /// In en, this message translates to:
+  /// **'Type your comment here...'**
+  String get typeYourComment;
+
+  /// No description provided for @postComment.
+  ///
+  /// In en, this message translates to:
+  /// **'Post Comment'**
+  String get postComment;
+
+  /// No description provided for @incorrectPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Incorrect password'**
+  String get incorrectPassword;
 
   /// No description provided for @rateThisPost.
   ///

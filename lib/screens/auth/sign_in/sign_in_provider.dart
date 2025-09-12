@@ -51,10 +51,12 @@ class SignInProvider extends ChangeNotifier {
   }
 
   void onEmailChanged(String value) {
+    emailError = ""; // Clear email error on change
     validate(navigatorKey.currentState!.context);
   }
 
   void onPasswordChanged(String value) {
+    pwdError = ""; // Clear password error on change
     validate(navigatorKey.currentState!.context);
   }
 
@@ -95,35 +97,20 @@ class SignInProvider extends ChangeNotifier {
     return emailError.isEmpty && pwdError.isEmpty;
   }
 
-  GoogleLoginRes? googleLoginUserData;
 
-  bool _isLocationEnabled = false;
-  String? _error;
-
-  Future checkLocation() async {
-    final (isEnabled, error) = await GetLocationService.checkLocationService();
-    _isLocationEnabled = isEnabled;
-    _error = error;
-    if (!_isLocationEnabled && _error != null) {
-      final (newEnabled, newError) =
-          await GetLocationService.requestLocationPermission();
-      _isLocationEnabled = newEnabled;
-      _error = newError;
-    }
-    notifyListeners();
-  }
-
+  /// Handle login tap and display password error for 402
   Future<void> onLoginTap(BuildContext context) async {
     if (!isFormValid) return;
     if (isFormValid) {
       loader = true;
       notifyListeners();
+
       final result = await AuthApis.loginAPI(
         email: emailController.text,
         password: passwordController.text,
       );
 
-      if (result != null) {
+      if (result.loginRes != null) {
         if (context.mounted) {
           await PrefService.set(PrefKeys.email, emailController.text);
 
@@ -146,14 +133,21 @@ class SignInProvider extends ChangeNotifier {
             if (context.mounted) {
               context.navigator.pushReplacementNamed(
                 YourLocationScreen.routeName,
-                arguments: {'isComeFromSplash': true}, // Pass the flag
+                arguments: {'isComeFromSplash': true},
               );
             }
           }
         }
       } else {
-        print("result=========== ${result}");
-        if (context.mounted) {
+        print("result=========== ${result.loginRes}");
+        print("isInCorrectPassword========= ${result.isInCorrectPassword}");
+
+        if (result.isInCorrectPassword) {
+          pwdError =
+              context.l10n?.incorrectPassword ??
+              "Incorrect password"; // Set password error
+          notifyListeners(); // Update UI to show error
+        } else if (!result.isInCorrectPassword && context.mounted) {
           context.navigator.pushNamed(
             SignUpScreen.routeName,
             arguments: {
@@ -162,12 +156,31 @@ class SignInProvider extends ChangeNotifier {
             },
           );
         }
+        // No navigation for 402; toast is already shown in loginAPI
       }
 
       loader = false;
       notifyListeners();
     }
   }
+
+  Future<void> checkLocation() async {
+    final (isEnabled, error) = await GetLocationService.checkLocationService();
+    _isLocationEnabled = isEnabled;
+    _error = error;
+    if (!_isLocationEnabled && _error != null) {
+      final (newEnabled, newError) =
+          await GetLocationService.requestLocationPermission();
+      _isLocationEnabled = newEnabled;
+      _error = newError;
+    }
+    notifyListeners();
+  }
+
+  GoogleLoginRes? googleLoginUserData;
+
+  bool _isLocationEnabled = false;
+  String? _error;
 
   Future<void> googleSignIn(BuildContext context) async {
     final FirebaseAuth auth = FirebaseAuth.instance;

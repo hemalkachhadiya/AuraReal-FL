@@ -86,7 +86,8 @@ class RatingScreen extends StatelessWidget {
                                           provider.setMode('camera');
                                         },
                                         style: styleW500S14.copyWith(
-                                          color: provider.getCameraTabTextColor(),
+                                          color:
+                                              provider.getCameraTabTextColor(),
                                         ),
                                         bgColor: provider.getCameraTabBgColor(),
                                         raduis: 10,
@@ -123,7 +124,7 @@ class RatingScreen extends StatelessWidget {
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Flexible(
+                                  Expanded(
                                     child: InkWell(
                                       onTap: () {
                                         openCustomDialog(
@@ -142,66 +143,76 @@ class RatingScreen extends StatelessWidget {
                                               context.l10n?.send ?? "",
                                         );
                                       },
-                                      child: Column(
-                                        children: [
-                                          Text(
-                                            isArabic
-                                                ? "كادين شلايفر"
-                                                : "Kadin Schleifer",
-                                            overflow: TextOverflow.ellipsis,
-                                            maxLines: 2,
-                                            style: styleW700S20.copyWith(
-                                              color: ColorRes.white,
-                                            ),
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          color: ColorRes.primaryColor
+                                              .withValues(alpha: 0.1),
+                                          borderRadius: BorderRadius.circular(
+                                            15,
                                           ),
-                                          8.pw.spaceHorizontal,
-                                          // Rating Section
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              Text(
-                                                "(8.84/10)",
-                                                style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 14,
-                                                  fontWeight: FontWeight.w500,
-                                                ),
-                                              ),
-                                              8.pw.spaceHorizontal,
-                                              StarRatingWidget(
-                                                rating: 4.5,
-                                                size: 16,
-                                                activeColor:
-                                                    ColorRes.yellowColor,
-                                                inactiveColor: Colors.grey,
-                                              ),
-                                              8.pw.spaceHorizontal,
-                                              Text(
-                                                "5.0",
-                                                style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 14,
-                                                  fontWeight: FontWeight.w700,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-
-                                          20.ph.spaceVertical,
-
-                                          // Rate Button
-                                          SizedBox(
-                                            width: 80.pw,
-                                            child: SubmitButton(
-                                              title: context.l10n?.rate ?? "",
-                                              height: 28.ph,
-                                              style: styleW500S12.copyWith(
+                                        ),
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: 10,
+                                          vertical: 8,
+                                        ),
+                                        child: Column(
+                                          children: [
+                                            Text(
+                                              isArabic
+                                                  ? "كادين شلايفر"
+                                                  : "Kadin Schleifer",
+                                              overflow: TextOverflow.ellipsis,
+                                              maxLines: 2,
+                                              style: styleW700S20.copyWith(
                                                 color: ColorRes.white,
                                               ),
                                             ),
-                                          ),
-                                        ],
+                                            9.pw.spaceVertical,
+                                            // Rating Section
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Text(
+                                                  "(8.84/10)",
+                                                  style: styleW700S12.copyWith(
+                                                    color: ColorRes.white,
+                                                  ),
+                                                ),
+                                                8.pw.spaceHorizontal,
+                                                StarRatingWidget(
+                                                  rating: 4.5,
+                                                  size: 10,
+                                                  space: 8,
+                                                  activeColor:
+                                                      ColorRes.yellowColor,
+                                                  inactiveColor: Colors.grey,
+                                                ),
+                                                8.pw.spaceHorizontal,
+                                                Text(
+                                                  "5.0",
+                                                  style: styleW700S12.copyWith(
+                                                    color: ColorRes.white,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+
+                                            5.ph.spaceVertical,
+
+                                            // Rate Button
+                                            SizedBox(
+                                              width: 80.pw,
+                                              child: SubmitButton(
+                                                title: context.l10n?.rate ?? "",
+                                                height: 28.ph,
+                                                style: styleW500S12.copyWith(
+                                                  color: ColorRes.white,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -224,6 +235,7 @@ class RatingScreen extends StatelessWidget {
                                         ),
                                       ),
                                       10.ph.spaceVertical,
+
                                       SizedBox(
                                         width: 120.pw,
                                         child: SubmitButton2(
@@ -252,16 +264,23 @@ class RatingScreen extends StatelessWidget {
                                     width: 60,
                                     height: 60,
                                     decoration: BoxDecoration(
-                                      color: Colors.black.withValues(alpha: 0.5),
+                                      color: Colors.black.withValues(
+                                        alpha: 0.4,
+                                      ),
                                       shape: BoxShape.circle,
                                       border: Border.all(
-                                        color: Colors.white.withValues(alpha: 0.3),
+                                        color: Colors.white.withValues(
+                                          alpha: 0.4,
+                                        ),
                                       ),
                                     ),
-                                    child: Icon(
-                                      Icons.flash_on,
-                                      color: Colors.white,
-                                      size: 30,
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(19),
+                                      child: SvgAsset(
+                                        imagePath: AssetRes.flashIcon,
+                                        width: 19,
+                                        height: 19,
+                                      ),
                                     ),
                                   ),
 
@@ -283,11 +302,7 @@ class RatingScreen extends StatelessWidget {
                                           width: 4,
                                         ),
                                       ),
-                                      child: Icon(
-                                        Icons.camera_alt,
-                                        color: ColorRes.primaryColor,
-                                        size: 35,
-                                      ),
+                                      child: Container(),
                                     ),
                                   ),
 
@@ -296,16 +311,23 @@ class RatingScreen extends StatelessWidget {
                                     width: 60,
                                     height: 60,
                                     decoration: BoxDecoration(
-                                      color: Colors.black.withValues(alpha: 0.5),
+                                      color: Colors.black.withValues(
+                                        alpha: 0.5,
+                                      ),
                                       shape: BoxShape.circle,
                                       border: Border.all(
-                                        color: Colors.white.withValues(alpha: 0.3),
+                                        color: Colors.white.withValues(
+                                          alpha: 0.3,
+                                        ),
                                       ),
                                     ),
-                                    child: Icon(
-                                      Icons.photo_library,
-                                      color: Colors.white,
-                                      size: 25,
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(19),
+                                      child: SvgAsset(
+                                        imagePath: AssetRes.cameraIcon3,
+                                        width: 19,
+                                        height: 19,
+                                      ),
                                     ),
                                   ),
                                 ],

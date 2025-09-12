@@ -5,6 +5,13 @@ import 'package:aura_real/screens/auth/sign_in/model/google_login_response_model
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
+class LoginResult {
+  final LoginRes? loginRes;
+  final bool isInCorrectPassword;
+
+  LoginResult({this.loginRes, this.isInCorrectPassword = false});
+}
+
 class AuthApis {
   ///Register API
   static Future<bool> registerAPI({
@@ -113,7 +120,7 @@ class AuthApis {
   }
 
   ///Login API
-  static Future<LoginRes?> loginAPI({
+  static Future<LoginResult> loginAPI({
     required String password,
     required String email,
   }) async {
@@ -121,12 +128,17 @@ class AuthApis {
       final response = await ApiService.postApi(
         url: EndPoints.login,
         body: {"email": email, "password": password},
+        is402Response: false, // Initial value, will be overridden by response
       );
+
       if (response == null) {
         showCatchToast('No response from server', null);
-        return null;
+        return LoginResult(isInCorrectPassword: false); // Return default result
       }
+
       final responseBody = jsonDecode(response.body);
+      print("isInCorrectPassword====== false"); // Initial state
+
       if (response.statusCode == 200 || response.statusCode == 201) {
         if (responseBody['data'] != null && responseBody != null) {
           await PrefService.set(
@@ -140,14 +152,72 @@ class AuthApis {
           );
 
           showSuccessToast(responseBody['message'] ?? 'Login successful');
-          return LoginRes.fromJson(responseBody['data']);
+          return LoginResult(loginRes: LoginRes.fromJson(responseBody['data']));
         }
+      } else if (response.statusCode == 402) {
+        return LoginResult(isInCorrectPassword: true);
+      } else {
+        showCatchToast(responseBody['message'] ?? 'Login failed', null);
+        return LoginResult(isInCorrectPassword: false);
       }
+
+      // Default return to satisfy non-nullable type (should not reach here)
+      return LoginResult(isInCorrectPassword: false);
     } catch (exception, stack) {
-      showCatchToast(exception, stack);
-      return null;
+      showCatchToast(exception.toString(), stack);
+      return LoginResult(isInCorrectPassword: false); // Return on exception
     }
   }
+
+  // static Future<LoginRes?> loginAPI({
+  //   required String password,
+  //   required String email,
+  //   required bool isInCorrectPassword  , // Default to false
+  // }) async {
+  //   try {
+  //     final response = await ApiService.postApi(
+  //       url: EndPoints.login,
+  //       body: {"email": email, "password": password},
+  //       is402Response: isInCorrectPassword,
+  //     );
+  //
+  //     if (response == null) {
+  //       showCatchToast('No response from server', null);
+  //       return null;
+  //     }
+  //
+  //     final responseBody = jsonDecode(response.body);
+  //     print("isInCorrectPassword====== $isInCorrectPassword");
+  //
+  //     if (response.statusCode == 200 || response.statusCode == 201) {
+  //       if (responseBody['data'] != null && responseBody != null) {
+  //         await PrefService.set(
+  //           PrefKeys.userData,
+  //           jsonEncode(responseBody['data']),
+  //         );
+  //
+  //         await PrefService.set(
+  //           PrefKeys.token,
+  //           jsonEncode(responseBody['data']['token']),
+  //         );
+  //
+  //         showSuccessToast(responseBody['message'] ?? 'Login successful');
+  //         return LoginRes.fromJson(responseBody['data']);
+  //       }
+  //     } else if (response.statusCode == 402) {
+  //       showCatchToast(responseBody['message'], null);
+  //       isInCorrectPassword = true; // Set flag for incorrect credentials
+  //       print("is In corrct Password========= ${isInCorrectPassword}");
+  //       return null;
+  //     } else {
+  //       showCatchToast(responseBody['message'] ?? 'Login failed', null);
+  //       return null;
+  //     }
+  //   } catch (exception, stack) {
+  //     showCatchToast(exception.toString(), stack);
+  //     return null;
+  //   }
+  // }
 
   ///Google Login API
   static Future<GoogleLoginRes?> googleAPI({

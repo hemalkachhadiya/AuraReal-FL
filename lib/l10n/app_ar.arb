@@ -95,8 +95,13 @@
   "checkYourPhone": "تحقق من هاتفك",
   "fullNameMinLength": "يجب أن يكون الاسم الكامل مكونًا من 3 أحرف على الأقل",
   "fullNameNoSpecialChars": "يجب ألا يحتوي الاسم الكامل على رموز خاصة",
-  "pleasePutYourMobileNumberToVerify": "يرجى إدخال رقم الهاتف المحمول للتحقق من حسابك",
+  "pleasePutYourMobileNumberToVerify": "يرجى اختيار الرسائل القصيرة أو البريد الإلكتروني للتحقق من حسابك",
   "emailShouldNotContainSpace": "يجب ألا يحتوي البريد الإلكتروني على مسافات",
+  "addComment": "إضافة تعليق على",
+  "writeComment": "اكتب تعليقاً...",
+  "typeYourComment": "اكتب تعليقك هنا...",
+  "postComment": "نشر التعليق",
+  "incorrectPassword": "كلمة المرور غير صحيحة",
   "@cameraPermissionContent": {
     "description": "رسالة طلب إذن الكاميرا"
   }

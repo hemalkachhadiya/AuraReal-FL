@@ -176,6 +176,12 @@ TextStyle styleW700S16 = TextStyle(
   fontWeight: FontWeight.w700,
 );
 
+TextStyle styleW700S12 = TextStyle(
+  color: ColorRes.black2,
+  fontSize: 12,
+  fontFamily: AssetRes.poppins,
+  fontWeight: FontWeight.w700,
+);
 TextStyle styleW700S14 = TextStyle(
   color: ColorRes.black2,
   fontSize: 14,

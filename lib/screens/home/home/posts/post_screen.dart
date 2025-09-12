@@ -164,6 +164,14 @@ class HomeScreen extends StatelessWidget {
                                     );
                                   }
                                 },
+                                onCommentSubmitted: (val) {
+                                  print("value comment ========= ${val}");
+                                  provider.commentPostAPI(
+                                    context,
+                                    postId: provider.postListResponse[index].id,
+                                    content: val.toString(),
+                                  );
+                                },
                                 post: provider.postListResponse[index],
                                 onTap: () {
                                   context.navigator.pushNamed(
@@ -176,6 +184,7 @@ class HomeScreen extends StatelessWidget {
                           ),
                         ),
                       ),
+                      25.ph.spaceVertical,
                     ],
                   ),
                 ),

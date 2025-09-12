@@ -67,15 +67,21 @@ class SubmitButton2 extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     // Center content horizontally
                     children: [
+                      2.pw.spaceHorizontal,
                       if (icon != null) // Conditionally show icon
                         SvgAsset(imagePath: icon ?? "", color: ColorRes.white),
                       if (icon != null) 8.0.spaceHorizontal,
                       // Spacing between icon and text
-                      Text(
-                        title ?? '',
-                        style:
-                            style ??
-                            styleW600S10.copyWith(color: ColorRes.white),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.all(2.0),
+                          child: Text(
+                            title ?? '',
+                            style:
+                                style ??
+                                styleW600S10.copyWith(color: ColorRes.white),
+                          ),
+                        ),
                       ),
                     ],
                   ),

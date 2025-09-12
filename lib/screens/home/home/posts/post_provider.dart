@@ -29,7 +29,6 @@ class PostsProvider extends ChangeNotifier {
 
   String? get error => _error;
 
-  // List<PostModel>? get postListResponse => paginationModel?.list ?? [];
   bool get hasMoreData => paginationModel?.hasMorePages ?? false;
 
   /// Get All Post List API with pagination
@@ -124,14 +123,6 @@ class PostsProvider extends ChangeNotifier {
     var city = PrefService.getString(PrefKeys.city);
     var country = PrefService.getString(PrefKeys.country);
     var state = PrefService.getString(PrefKeys.state);
-    print("Get Profile ---- ${userData?.id}");
-    print("Get latitude ---- ${latitude} ${longitude}");
-    print("Get location ---- ${location}");
-    print("Get city ---- ${city}");
-    print("Get country ---- ${country}");
-    print("Get state ---- ${state}");
-
-    print("PrefKeys.latitude ---- ${PrefKeys.latitude}");
     final result = await AuthApis.postLocationAPI(
       longitude: double.parse(longitude.toString()),
       latitude: double.parse(latitude.toString()),
@@ -141,10 +132,6 @@ class PostsProvider extends ChangeNotifier {
       state: state,
     );
     if (result != null) {
-      print("Location Id    ${result.id}");
-      print("Location address    ${result.address}");
-      print("Location userId    ${result.userId}");
-
       notifyListeners();
     }
     loader = false;
@@ -158,17 +145,13 @@ class PostsProvider extends ChangeNotifier {
     String? rating,
   }) async {
     if (userData == null || userData?.id == null) return;
-    print("post id 11====== ${postId}");
-    print("rating id 11====== ${rating}");
     loader = true;
     notifyListeners();
     final result = await PostAPI.updateRatePostAPI(
       postId: postId.toString(),
       rating: rating.toString(),
     );
-
-    await getAllPostListAPI(resetData: true,showLoader: true);
-
+    await getAllPostListAPI(resetData: true, showLoader: true);
     if (result) {}
     loader = false;
     notifyListeners();
@@ -187,7 +170,26 @@ class PostsProvider extends ChangeNotifier {
       postId: postId.toString(),
       newRating: rating.toString(),
     );
-    await getAllPostListAPI(resetData: true,showLoader: true);
+    await getAllPostListAPI(resetData: true, showLoader: true);
+    if (result) {}
+    loader = false;
+    notifyListeners();
+  }
+
+  ///Comment Post API
+  Future<void> commentPostAPI(
+    BuildContext context, {
+    String? postId,
+    String? content,
+  }) async {
+    if (userData == null || userData?.id == null) return;
+    loader = true;
+    notifyListeners();
+    final result = await PostAPI.commentOnPostAPI(
+      postId: postId.toString(),
+      content: content.toString(),
+    );
+    await getAllPostListAPI(resetData: true, showLoader: true);
     if (result) {}
     loader = false;
     notifyListeners();

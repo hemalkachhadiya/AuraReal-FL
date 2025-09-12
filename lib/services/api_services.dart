@@ -53,6 +53,7 @@ class ApiService {
     required String url,
     Map<String, String>? header,
     dynamic body,
+    bool? is402Response, // Reintroduced parameter
   }) async {
     try {
       header = header ?? appHeader();
@@ -71,12 +72,13 @@ class ApiService {
       );
       bool isExpired = await isTokenExpire(response);
       handleError(response);
-      if (!isExpired) {
+      if (!isExpired || response.statusCode == 402) {
         return response;
       }
     } catch (e) {
       debugPrint(e.toString());
     }
+
     return null;
   }
 

@@ -5,7 +5,7 @@ class Profile {
   final String? bio;
   final int? followersCount;
   final int? totalPosts;
-  final int? ratingsAvg;
+  final double? ratingsAvg;
   final String? dateOfBirth;
   final int? gender;
   final String? website;
@@ -32,7 +32,9 @@ class Profile {
     bio: json['bio'] as String?,
     followersCount: json['followers_count'] as int?,
     totalPosts: json['total_posts'] as int?,
-    ratingsAvg: json['ratings_avg'] as int?,
+    ratingsAvg: (json['ratings_avg'] is int
+        ? (json['ratings_avg'] as int).toDouble()
+        : json['ratings_avg'] as double?),
     dateOfBirth: json['date_of_birth'] as String?,
     gender: json['gender'] as int?,
     website: json['website'] as String?,
@@ -61,7 +63,7 @@ class Profile {
     String? bio,
     int? followersCount,
     int? totalPosts,
-    int? ratingsAvg,
+    double? ratingsAvg,
     String? dateOfBirth,
     int? gender,
     String? website,
@@ -80,6 +82,7 @@ class Profile {
     lastSeen: lastSeen ?? this.lastSeen, // Added last_seen field
   );
 
+
   // Helper getters for safe access with default values
   String get safeUsername => username ?? 'Unknown';
   String get safeProfileImage => profileImage ?? '';
@@ -87,7 +90,7 @@ class Profile {
   String get safeBio => bio ?? '';
   int get safeFollowersCount => followersCount ?? 0;
   int get safeTotalPosts => totalPosts ?? 0;
-  int get safeRatingsAvg => ratingsAvg ?? 0;
+  double get safeRatingsAvg => ratingsAvg ?? 0.0;
   String get safeDateOfBirth => dateOfBirth ?? '';
   int get safeGender => gender ?? 0;
   String get safeWebsite => website ?? '';

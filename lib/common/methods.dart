@@ -1,6 +1,7 @@
+import 'package:aura_real/apis/model/post_model.dart';
 import 'package:aura_real/aura_real.dart';
 import 'package:aura_real/screens/auth/sign_in/model/login_response_model.dart';
-
+import 'package:aura_real/screens/home/home/widget/comments_widget.dart';
 
 Future<void> logoutUser() async {
   await PrefService.removeKey(PrefKeys.token);
@@ -100,32 +101,6 @@ String generateCustomString(DateTime dateTime) {
   return result;
 }
 
-/// Generates an encoded token hash using token, secret, and timestamp
-// String generateTokenHash({String? dateTime}) {
-//   final timestamp = (dateTime ?? DateTime.now()).toString();
-//   final rawStr =
-//       '${userData?.token?.token ?? ""}&${userData?.token?.appSecret ?? ""}&$timestamp';
-//
-//
-//   return calculateMd5(rawStr);
-// }
-
-// String generateCustomString(DateTime dateTime) {
-//   // Get current timestamp in milliseconds
-//   String timestamp = dateTime.millisecondsSinceEpoch.toString();
-//
-//   // Reverse timestamp
-//   String timestampReversed = timestamp.split('').reversed.join();
-//
-//   // Create the original string
-//   String str = '$timestamp&-api-&$timestampReversed';
-//
-//   // Compute the encoded MD5 + timestamp
-//   String result = calculateMd5(str) + timestamp;
-//
-//   return result;
-// }
-
 Future<void> requestPermissions() async {
   await [
     Permission.location,
@@ -135,7 +110,26 @@ Future<void> requestPermissions() async {
   ].request();
 }
 
-Future<void>  fetchLocation(BuildContext context) async {
+// Function to open the comment bottom sheet
+Future<T?> openCommentBottomSheet<T>({
+  required BuildContext context,
+  required PostModel post,
+  Function(String)? onCommentSubmitted,
+}) async {
+  return await showModalBottomSheet<T>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (context) {
+      return CommentBottomSheetContent(
+        post: post,
+        onCommentSubmitted: onCommentSubmitted,
+      );
+    },
+  );
+}
+
+Future<void> fetchLocation(BuildContext context) async {
   final (lat, lon, error) = await GetLocationService.getCurrentLatLon(context);
   if (lat != null && lon != null) {
     // Use latitude and longitude (e.g., save to PrefService or navigate)
@@ -144,9 +138,7 @@ Future<void>  fetchLocation(BuildContext context) async {
     if (context.mounted) {
       context.navigator.pushReplacementNamed(DashboardScreen.routeName);
     }
-  } else {
-
-  }
+  } else {}
 }
 
 Future<File?> compressImage(File? file, {double? requestedSize}) async {

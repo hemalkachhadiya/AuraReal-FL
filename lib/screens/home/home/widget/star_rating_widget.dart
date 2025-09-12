@@ -2,6 +2,7 @@ import 'package:aura_real/aura_real.dart';
 
 class StarRatingWidget extends StatefulWidget {
   final double rating;
+  final double space;
   final double size;
   final Color activeColor;
   final Color inactiveColor;
@@ -11,6 +12,7 @@ class StarRatingWidget extends StatefulWidget {
     super.key,
     this.rating = 0.0,
     this.size = 20.0,
+    this.space = 12.0,
     this.activeColor = Colors.amber,
     this.inactiveColor = Colors.grey,
     this.onRatingChanged,
@@ -32,18 +34,21 @@ class _StarRatingWidgetState extends State<StarRatingWidget> {
   @override
   Widget build(BuildContext context) {
     return Row(
-      spacing: 12,
+      spacing: widget.space,
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(5, (index) {
         return InkWell(
-          onTap:  (widget.onRatingChanged!=null)?() {
-            setState(() {
-              _rating = index + 1.0;
-            });
-            if (widget.onRatingChanged != null) {
-              widget.onRatingChanged!(_rating);
-            }
-          }:null,
+          onTap:
+              (widget.onRatingChanged != null)
+                  ? () {
+                    setState(() {
+                      _rating = index + 1.0;
+                    });
+                    if (widget.onRatingChanged != null) {
+                      widget.onRatingChanged!(_rating);
+                    }
+                  }
+                  : null,
           child: SvgAsset(
             imagePath:
                 index < _rating.floor()
