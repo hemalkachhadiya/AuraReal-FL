@@ -29,7 +29,7 @@ class ProfileScreen extends StatelessWidget {
                   provider.isFormValid ? ColorRes.primaryColor : ColorRes.grey3,
               title: context.l10n?.update ?? "",
               onTap: () {
-                provider.userUpdateAPI();
+                provider.userUpdateAPI(context);
               },
             ),
           ),

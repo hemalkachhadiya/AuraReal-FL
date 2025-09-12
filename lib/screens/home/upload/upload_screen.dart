@@ -285,7 +285,7 @@ class UploadScreen extends StatelessWidget {
                                                   Text(
                                                     provider
                                                             .profileData
-                                                            ?.followersCount
+                                                            ?.followingCount
                                                             .toString() ??
                                                         "0.0",
                                                     style: styleW700S16
@@ -438,7 +438,9 @@ class UploadScreen extends StatelessWidget {
                                     ),
                                     SizedBox(width: 6.pw),
                                     Text(
-                                      isArabic ? "متابعة" : "Follow",
+                                      provider.isFollowing
+                                          ? (isArabic ? "متابع" : "Following")
+                                          : (isArabic ? "متابعة" : "Follow"),
                                       style: TextStyle(
                                         color: ColorRes.white,
                                         fontSize: 12,

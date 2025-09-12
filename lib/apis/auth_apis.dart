@@ -134,6 +134,8 @@ class AuthApis {
             jsonEncode(responseBody['data']),
           );
 
+          debugPrint('````````````````>>>>>>>${responseBody['data']}');
+
           await PrefService.set(
             PrefKeys.token,
             jsonEncode(responseBody['data']['token']),
@@ -165,22 +167,22 @@ class AuthApis {
       }
       final responseBody = jsonDecode(response.body);
       if (response.statusCode == 200 || response.statusCode == 201) {
-        print("Res Body Data ${responseBody['user']}");
-        if (responseBody['user'] != null && responseBody != null) {
+        print("Res Body Data ${responseBody['data']}");
+        if (responseBody['data'] != null && responseBody != null) {
           await PrefService.set(
             PrefKeys.userData,
-            jsonEncode(responseBody['user']),
+            jsonEncode(responseBody['data']),
           );
 
           await PrefService.set(
             PrefKeys.token,
-            jsonEncode(responseBody['user']['token']),
+            jsonEncode(responseBody['data']['token']),
           );
 
           showSuccessToast(
             responseBody['message'] ?? 'Google Login successful',
           );
-          return GoogleLoginRes.fromJson(responseBody['user']);
+          return GoogleLoginRes.fromJson(responseBody['data']);
         }
       }
     } catch (exception, stack) {
@@ -244,7 +246,7 @@ class AuthApis {
     }
   }
 
-  static Future<Profile?> userUpdateProfile({
+  static Future<bool> userUpdateProfile({
     required String userId,
     required String fullName,
     required String email,
@@ -262,26 +264,76 @@ class AuthApis {
       );
 
       if (response == null) {
-        showCatchToast('No response from server', null);
-        return null;
+        showCatchToast("No response from server", null);
+        return false;
       }
-      final responseBody = jsonDecode(response.body);
+
+      final responseBody = jsonDecode(response.body) as Map<String, dynamic>;
+
+      print('${responseBody}');
+
       if (response.statusCode == 200 || response.statusCode == 201) {
-        print("Res Body Data ${responseBody['profile']}");
-        if (responseBody['profile'] != null && responseBody != null) {
-          // showSuccessToast(responseBody['message'] ?? 'Login successful');
-          await PrefService.set(
-            PrefKeys.userData,
-            jsonEncode(responseBody['data']),
-          );
-          return Profile.fromJson(responseBody['profile']);
-        }
+        print('~!~~~~~?${responseBody['user']}');
+        await PrefService.set(
+          PrefKeys.userData,
+          jsonEncode(responseBody['user']),
+        );
+        // Success
+        showSuccessToast(
+          responseBody['message'] ?? 'User updated successfully',
+        );
+        return true;
+      } else {
+        // Failure
+        showCatchToast(responseBody['message'] ?? 'Something went wrong', null);
+        return false;
       }
     } catch (exception, stack) {
       showCatchToast(exception, stack);
-      return null;
+      return false;
     }
   }
+
+  // static Future<> userUpdateProfile({
+  //   required String userId,
+  //   required String fullName,
+  //   required String email,
+  //   required String phoneNumber,
+  // }) async {
+  //   try {
+  //     final response = await ApiService.putApi(
+  //       url: EndPoints.updateUserProfile,
+  //       body: {
+  //         "userId": userId,
+  //         "fullName": fullName,
+  //         "email": email,
+  //         "phoneNumber": phoneNumber,
+  //       },
+  //     );
+
+  //     if (response == null) {
+  //       showCatchToast('No response from server', null);
+  //       return null;
+  //     }
+  //     final responseBody = jsonDecode(response.body);
+  //     if (response.statusCode == 200 || response.statusCode == 201) {
+  //       print("Res Body Data ${responseBody['user']}");
+  //       if (responseBody['user'] != null && responseBody != null) {
+  //         showSuccessToast(
+  //           responseBody['message'] ?? 'User updated successfully',
+  //         );
+  //         await PrefService.set(
+  //           PrefKeys.userData,
+  //           jsonEncode(responseBody['data']),
+  //         );
+  //         return Profile.fromJson(responseBody['user']);
+  //       }
+  //     }
+  //   } catch (exception, stack) {
+  //     showCatchToast(exception, stack);
+  //     return null;
+  //   }
+  // }
 
   ///Request Password API
   static Future<bool?> reqPasswordResetAPI({required String email}) async {

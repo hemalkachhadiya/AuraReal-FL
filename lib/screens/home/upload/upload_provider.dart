@@ -142,6 +142,7 @@ class UploadProvider extends ChangeNotifier {
 
   AppResponse2<PostModel>? paginationModel;
   Profile? profileData;
+  bool isFollowing = false;
 
   List<PostModel> get postByUserResponse => paginationModel?.list ?? [];
   bool _disposed = false;
@@ -190,6 +191,7 @@ class UploadProvider extends ChangeNotifier {
         print("Model get by user profile ======== ${model?.profile}");
         if (model?.profile != null) {
           profileData = model?.profile;
+          isFollowing = profileData?.is_following ?? false;
           print("Profile Rating ------- ${profileData?.ratingsAvg}");
         }
       }
@@ -222,45 +224,99 @@ class UploadProvider extends ChangeNotifier {
     }
   }
 
-  bool isFollowing = false;
-
-  Future<void> followUserProfile(BuildContext context) async {
-    if (userData == null || userData?.id == null) return;
+  Future<bool> followUserProfile(BuildContext context) async {
+    if (userData == null || userData?.id == null) return false;
 
     loader = true;
-    // notifyListeners();
+    notifyListeners();
 
     final result = await AuthApis.followUserProfile(
       followUserId: userId,
       userId: userData!.id!,
     );
 
+    loader = false;
+
     if (result) {
       isFollowing = true;
+
+      if (profileData != null) {
+        profileData!.followingCount = (profileData!.followingCount ?? 0) + 1;
+      }
+
+      notifyListeners();
+      return true;
     }
 
-    loader = false;
-    // notifyListeners();
+    notifyListeners();
+    return false;
   }
 
-  Future<void> unfollowUserProfile(BuildContext context) async {
-    if (userData == null || userData?.id == null) return;
+  Future<bool> unfollowUserProfile(BuildContext context) async {
+    if (userData == null || userData?.id == null) return false;
 
-    loader = true;
-    // notifyListeners();
+    // loader = true;
+    // // notifyListeners();
 
     final result = await AuthApis.unfollowUserProfile(
       followUserId: userId,
       userId: userData!.id!,
     );
 
+    loader = false;
+
     if (result) {
       isFollowing = false;
+
+      if (profileData != null && (profileData!.followingCount ?? 0) > 0) {
+        profileData!.followingCount = (profileData!.followingCount ?? 0) - 1;
+      }
+
+      notifyListeners();
+      return true;
     }
 
-    loader = false;
-    // notifyListeners();
+    notifyListeners();
+    return false;
   }
+
+  // Future<void> followUserProfile(BuildContext context) async {
+  //   if (userData == null || userData?.id == null) return;
+
+  //   loader = true;
+  //   // notifyListeners();
+
+  //   final result = await AuthApis.followUserProfile(
+  //     followUserId: userId,
+  //     userId: userData!.id!,
+  //   );
+
+  //   if (result) {
+  //     isFollowing = true;
+  //   }
+
+  //   loader = false;
+  //   // notifyListeners();
+  // }
+
+  // Future<void> unfollowUserProfile(BuildContext context) async {
+  //   if (userData == null || userData?.id == null) return;
+
+  //   loader = true;
+  //   // notifyListeners();
+
+  //   final result = await AuthApis.unfollowUserProfile(
+  //     followUserId: userId,
+  //     userId: userData!.id!,
+  //   );
+
+  //   if (result) {
+  //     isFollowing = false;
+  //   }
+
+  //   loader = false;
+  //   // notifyListeners();
+  // }
 
   // Future<void> followUserProfile(BuildContext context) async {
   //   if (userData == null || userData?.id == null) return;
