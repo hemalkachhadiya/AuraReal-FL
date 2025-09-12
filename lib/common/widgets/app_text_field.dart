@@ -1,5 +1,6 @@
 import 'package:aura_real/aura_real.dart';
 import 'package:aura_real/common/widgets/common_widget.dart';
+import 'package:flutter/services.dart'; // Required for TextInputFormatter
 
 class AppTextField extends StatelessWidget {
   const AppTextField({
@@ -65,19 +66,24 @@ class AppTextField extends StatelessWidget {
   Widget build(BuildContext context) {
     final localization = AppLocalizations.of(context);
     final isArabic = localization?.localeName == 'ar';
-// Determine input formatters: auto-deny spaces for email, or use provided ones
+
+    // Determine input formatters: auto-deny spaces for email, restrict special characters for username
     List<TextInputFormatter> effectiveFormatters = [];
 
     if (textInputType == TextInputType.emailAddress) {
       effectiveFormatters.add(FilteringTextInputFormatter.deny(RegExp(r'\s')));
+    } else if (textInputType == TextInputType.name) {
+      // Allow only alphanumeric characters and optionally underscore/hyphen for usernames
+      effectiveFormatters.add(FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9_-]')));
     }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         /// Header
         if (header != null)
           Padding(
-            padding: EdgeInsets.only(bottom: 8.ph), // Reduced padding to match screenshot
+            padding: EdgeInsets.only(bottom: 8.ph),
             child: isMandatory
                 ? RichText(
               text: TextSpan(
@@ -103,16 +109,17 @@ class AppTextField extends StatelessWidget {
 
         Container(
           decoration: BoxDecoration(
-            color: Color(0xffF7F8F8), // Light gray background
-            borderRadius: BorderRadius.circular(borderRadius ?? 40.ph), // Default to 40.ph
+            color: Color(0xffF7F8F8),
+            borderRadius: BorderRadius.circular(borderRadius ?? 40.ph),
           ),
           child: TextField(
             style: styleW500S14.copyWith(color: ColorRes.black2),
             controller: controller,
             onTapOutside: (e) => hideKeyboard(context: context),
             keyboardType: textInputType,
+            inputFormatters: effectiveFormatters, // Apply the formatters
             contextMenuBuilder: (context, editableTextState) {
-              return const SizedBox.shrink(); // No context menu
+              return const SizedBox.shrink();
             },
             textInputAction: textInputAction ?? TextInputAction.next,
             onChanged: onChanged,
@@ -125,7 +132,7 @@ class AppTextField extends StatelessWidget {
             obscuringCharacter: "*",
             readOnly: readOnly,
             textAlign: textAlign ??
-                (isArabic ? TextAlign.right : TextAlign.left), // Dynamic text alignment
+                (isArabic ? TextAlign.right : TextAlign.left),
             buildCounter: (
                 BuildContext context, {
                   required int currentLength,
@@ -136,8 +143,8 @@ class AppTextField extends StatelessWidget {
             },
             decoration: InputDecoration(
               hintText: hintText,
-              fillColor: fillColor ?? Color(0xffF7F8F8), // Match container background
-              isDense: isDense ?? true, // Match compact design
+              fillColor: fillColor ?? Color(0xffF7F8F8),
+              isDense: isDense ?? true,
               filled: true,
               hintStyle: styleW400S14.copyWith(
                 color: (error ?? '').isNotEmpty
@@ -146,9 +153,8 @@ class AppTextField extends StatelessWidget {
               ),
               contentPadding: customPadding ??
                   EdgeInsets.symmetric(horizontal: 16.pw, vertical: 12),
-              // Increased padding
               border: customBorder ??
-                  inputBorder(borderRadius: borderRadius ?? 40.ph), // Updated radius
+                  inputBorder(borderRadius: borderRadius ?? 40.ph),
               focusedBorder: (customBorder ?? inputBorder(borderRadius: borderRadius ?? 40.ph)).copyWith(
                 borderSide: BorderSide(color: ColorRes.primaryColor),
               ),
@@ -157,8 +163,6 @@ class AppTextField extends StatelessWidget {
               focusedErrorBorder: customBorder ?? inputBorder(borderRadius: borderRadius ?? 40.ph),
               enabledBorder: customBorder ?? inputBorder(borderRadius: borderRadius ?? 40.ph),
               prefixIcon: prefixIcon,
-
-              // prefixIcon: prefixIcon,
               suffixIconConstraints: BoxConstraints(
                 maxWidth: maxWidth ?? 48,
                 maxHeight: 48,
@@ -184,7 +188,7 @@ class AppTextField extends StatelessWidget {
 
   InputBorder inputBorder({double? borderRadius}) {
     return OutlineInputBorder(
-      borderRadius: BorderRadius.circular(borderRadius ?? 40.ph), // Default to 40.ph
+      borderRadius: BorderRadius.circular(borderRadius ?? 40.ph),
       borderSide: BorderSide(
         color: (error ?? '').isNotEmpty
             ? ColorRes.red
