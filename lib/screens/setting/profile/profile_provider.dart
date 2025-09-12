@@ -115,7 +115,7 @@ class ProfileProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> userUpdateAPI() async {
+  Future<void> userUpdateAPI(BuildContext context) async {
     if (!isFormValid) return;
     if (isFormValid) {
       if (userData == null || userData?.id == null) return;
@@ -128,11 +128,8 @@ class ProfileProvider extends ChangeNotifier {
         phoneNumber: mobileController.text.trim(),
         userId: userData?.id ?? "",
       );
-      if (result != null) {
-        profileData = result;
-        print("profileData    $profileData");
-
-        notifyListeners();
+      if (result) {
+        Navigator.pop(context);
       }
       loader = false;
       notifyListeners();
