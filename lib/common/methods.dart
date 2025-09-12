@@ -1,7 +1,5 @@
 import 'package:aura_real/apis/model/post_model.dart';
 import 'package:aura_real/aura_real.dart';
-import 'package:aura_real/screens/auth/sign_in/model/login_response_model.dart';
-import 'package:aura_real/screens/home/home/widget/comments_widget.dart';
 
 Future<void> logoutUser() async {
   await PrefService.removeKey(PrefKeys.token);
@@ -128,6 +126,22 @@ Future<T?> openCommentBottomSheet<T>({
     },
   );
 }
+
+// Function to open Comments Bottom Sheet specifically
+// void openCommentsBottomSheet(
+//   BuildContext context, {
+//   required List<Comment> comments,
+// }) {
+//   openCustomDraggableBottomSheet(
+//     context,
+//     customChild: CommentsContent(comments: comments),
+//     showButtons: false,
+//     initialChildSize: 0.7,
+//     minChildSize: 0.5,
+//     maxChildSize: 1.0,
+//     padding: EdgeInsets.zero,
+//   );
+// }
 
 Future<void> fetchLocation(BuildContext context) async {
   final (lat, lon, error) = await GetLocationService.getCurrentLatLon(context);

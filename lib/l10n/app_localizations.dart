@@ -707,6 +707,12 @@ abstract class AppLocalizations {
   /// **'Incorrect password'**
   String get incorrectPassword;
 
+  /// No description provided for @comments.
+  ///
+  /// In en, this message translates to:
+  /// **'Comments'**
+  String get comments;
+
   /// No description provided for @rateThisPost.
   ///
   /// In en, this message translates to:

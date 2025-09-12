@@ -48,6 +48,7 @@ class EndPoints {
   static const updatePostRating = "${baseUrl}updatePostRating";
 
   static const createcomment = "${baseUrl}createcomment";
+  static const getcomments = "${baseUrl}getcomments";
 
   /// ------------------------------------ Follow and UnFollow User Profile -------------------------------
 

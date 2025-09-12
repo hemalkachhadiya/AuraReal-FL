@@ -4,6 +4,7 @@ export 'package:aura_real/constants/constants.dart';
 export 'package:aura_real/constants/routes_manager.dart';
 export 'package:aura_real/l10n/app_localizations.dart';
 export 'package:oktoast/oktoast.dart';
+export 'package:aura_real/apis/model/comment_model.dart';
 export 'package:provider/provider.dart';
 export 'package:aura_real/app/app_provider.dart';
 export 'package:aura_real/utils/responsive_utils.dart';
@@ -94,3 +95,8 @@ export '../screens/auth/create_new_password/create_new_password_screen.dart';
 export 'package:aura_real/apis/post_apis.dart';
 export 'package:aura_real/screens/home/home/posts/add_post/add_post_provider.dart';
 export 'package:aura_real/apis/model/location_model.dart';
+export 'package:aura_real/common/widgets/opwn_custom_dragable_bottom_sheet.dart';
+export 'package:aura_real/screens/auth/sign_in/model/login_response_model.dart';
+// export 'package:aura_real/screens/home/home/widget/comment_content.dart';
+export 'package:aura_real/screens/home/home/widget/comments_widget.dart';
+export 'package:aura_real/screens/home/home/widget/ratins_widget.dart'; // Assuming this is StarRatingWidget

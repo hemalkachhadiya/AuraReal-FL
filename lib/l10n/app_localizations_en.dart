@@ -315,5 +315,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get incorrectPassword => 'Incorrect password';
 
   @override
+  String get comments => 'Comments';
+
+  @override
   String get rateThisPost => 'Rate this Post';
 }

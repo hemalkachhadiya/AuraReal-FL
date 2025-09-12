@@ -315,5 +315,8 @@ class AppLocalizationsAr extends AppLocalizations {
   String get incorrectPassword => 'كلمة المرور غير صحيحة';
 
   @override
+  String get comments => 'التعليقات';
+
+  @override
   String get rateThisPost => 'قيم هذه المشاركة';
 }

@@ -1,8 +1,6 @@
 import 'package:aura_real/apis/model/post_model.dart';
 import 'package:aura_real/aura_real.dart';
-import 'package:aura_real/common/widgets/app_custom_bottom_sheet.dart';
-import 'package:aura_real/screens/home/home/widget/comments_widget.dart';
-import 'package:aura_real/screens/home/home/widget/ratins_widget.dart'; // Assuming this is StarRatingWidget
+import 'package:aura_real/screens/home/home/widget/comment_content.dart';
 
 class PostCard extends StatefulWidget {
   // Changed to Stateful for local updates
@@ -34,35 +32,6 @@ class _PostCardState extends State<PostCard> {
     super.initState();
     _localRating = widget.post.postRating ?? 0.0;
     _commentString = widget.post.content ?? "";
-  }
-
-  // Simplified version using the built-in buttons
-  Future<T?> openCommentBottomSheetSimple<T>({
-    required BuildContext context,
-    required PostModel post,
-  }) async {
-    final TextEditingController controller = TextEditingController();
-
-    return await openCustomBottomSheet<T>(
-      context,
-      title: "Add Comment",
-      subtitle: "Comment on ${post.userId?.fullName ?? "Unknown"}'s post",
-      customChild: TextField(
-        controller: controller,
-        maxLines: 4,
-        decoration: InputDecoration(
-          hintText: "Type your comment here...",
-          border: OutlineInputBorder(),
-        ),
-      ),
-      cancelBtnTitle: "Cancel",
-      confirmBtnTitle: "Post",
-      onCancelTap: () => Navigator.of(context).pop(),
-      onConfirmTap: () {
-        final comment = controller.text.trim();
-        if (comment.isNotEmpty) {}
-      },
-    );
   }
 
   @override
@@ -200,47 +169,26 @@ class _PostCardState extends State<PostCard> {
                       const Spacer(),
                       InkWell(
                         onTap: () async {
-                          // final comment =
-                          //     await openCommentBottomSheetSimple<String>(
-                          //       context: context,
-                          //       post: widget.post,
-                          //     );
-                          // if (comment != null) {
-                          //   // Handle the comment
-                          //   print('Comment: $comment');
-                          // }
-                          openCommentBottomSheet(
-                            context: context,
-                            post: widget.post,
-                            onCommentSubmitted: (comment) {
-                              // Handle the submitted comment
-                              print('New comment: $comment');
-                              if (widget.onCommentSubmitted != null) {
-                                widget.onCommentSubmitted!(comment);
-                              }
-                            },
-                          );
 
-                          ///
-                          // openCommentBottomSheet(
-                          //   context: context,
-                          //   post: widget.post,
-                          //   onCommentSubmitted: () {
-                          //     // Refresh the post list or update comment count
-                          //
-                          //     print(
-                          //       'Comment submitted for post 11 : ${widget.post.id}',
-                          //     );
-                          //     print("Comment ----- $_commentString");
-                          //
-                          //     print("Contect ===== ${widget.post.content}");
-                          //     if (widget.onCommentSubmitted != null) {
-                          //       widget.onCommentSubmitted!(_commentString);
-                          //     }
-                          //     setState(() {});
-                          //     // You can call a callback to refresh the posts list
-                          //   },
-                          // );
+                          openCustomDraggableBottomSheet(
+                            context,
+                            title: context.l10n?.comments ?? "",
+                            customChild: CommentsWidget(
+                              post: widget.post,
+                              onCommentSubmitted: (val) {
+                                print("val -------- ${val}");
+                                if (widget.onCommentSubmitted != null) {
+                                  widget.onCommentSubmitted!(val);
+                                }
+                              },
+                            ),
+                            showButtons: false,
+                            borderRadius: 20,
+                            padding: const EdgeInsets.all(0),
+                            initialChildSize: 0.8,
+                            minChildSize: 0.4,
+                            maxChildSize: 0.95,
+                          ); // openCustomDraggableBottomSheet(
                         },
                         child: Row(
                           children: [
