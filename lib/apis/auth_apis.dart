@@ -543,7 +543,7 @@ class AuthApis {
       final responseBody = jsonDecode(response.body);
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        showSuccessToast(responseBody['message'] ?? 'Follow successful');
+        // showSuccessToast(responseBody['message'] ?? 'Follow successful');
         return true;
       } else {
         showCatchToast(responseBody['message'] ?? 'Failed', null);
@@ -597,7 +597,7 @@ class AuthApis {
       final responseBody = jsonDecode(response.body);
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        showSuccessToast(responseBody['message'] ?? 'Follow successful');
+        // showSuccessToast(responseBody['message'] ?? 'Follow successful');
         return true;
       } else {
         showCatchToast(responseBody['message'] ?? 'Failed', null);

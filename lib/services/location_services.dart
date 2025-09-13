@@ -225,7 +225,9 @@ class GetLocationService {
         return {"error": "Address not found"};
       }
     } catch (e) {
-      debugPrint("Error: $e");
+      print("Location Service Error");
+      // debugPrint("Error: $e");
+
       return {"error": "Error fetching address"};
     }
   }

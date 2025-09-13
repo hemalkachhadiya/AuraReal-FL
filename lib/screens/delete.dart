@@ -1,550 +1,738 @@
-import 'package:aura_real/apis/app_response_2.dart';
-import 'package:aura_real/apis/model/file_data_model.dart';
-import 'package:aura_real/apis/model/multipart_list_model.dart';
 import 'package:aura_real/aura_real.dart';
-import 'package:aura_real/apis/model/post_model.dart';
-import 'package:http/http.dart' as http;
-import 'package:http/http.dart' show Response;
-import 'package:http_parser/http_parser.dart';
-import 'package:mime/mime.dart';
+import 'package:flip_card/flip_card.dart';
+import 'package:map_location_picker/map_location_picker.dart';
 
-class PostAPI {
-  ///Create Post
-  // static Future<PostModel?> createPostAPI({
-  //   required double latitude,
-  //   required double longitude,
-  //   required String content,
-  //   required String locationId,
-  //   required String postImg,
-  // }) async {
-  //     if (locationId.startsWith('"') && locationId.endsWith('"')) {
-  //       locationId = locationId.substring(1, locationId.length - 1);
-  //     }
-  //   try {
-  //     var request = http.MultipartRequest(
-  //       'POST',
-  //       Uri.parse(EndPoints.createPostAPI),
-  //     );
-  //
-  //     print("API ==================== 1");
-  //     // Add headers
-  //     request.headers.addAll({'Content-Type': 'multipart/form-data'});
-  //     if (postImg.isNotEmpty) {
-  //       File file = File(postImg);
-  //       if (await file.exists()) {
-  //         request.files.add(
-  //           await http.MultipartFile.fromPath('postImg', postImg),
-  //         );
-  //       } else {
-  //         print("File does not exist: $postImg");
-  //         showCatchToast('File not found', null);
-  //         return null;
-  //       }
-  //     }
-  //     // Add form fields
-  //     request.fields['user_id'] = userData?.id.toString() ?? '';
-  //     request.fields['latitude'] = latitude.toString();
-  //     request.fields['longitude'] = longitude.toString();
-  //     request.fields['content'] = content;
-  //     request.fields['privacy_level'] = '0';
-  //     request.fields['location_id'] = locationId;
-  //     print("API ==================== 2");
-  //
-  //
-  //
-  //
-  //     final response = await ApiService.postWithMultipartAPI(
-  //       url: EndPoints.createPostAPI,
-  //       body: request,
-  //     );
-  //
-  //     if (kDebugMode) {
-  //       print("Create Post BODY ====== ${request.fields}");
-  //     }
-  //     if (response == null) {
-  //       showCatchToast('No response from server', null);
-  //       return null;
-  //     }
-  //
-  //     if (kDebugMode) {
-  //       print("Create Post Status: ${response.statusCode}");
-  //       print("Create Post -- ${response.body}");
-  //     }
-  //
-  //     if (response.statusCode == 200 || response.statusCode == 201) {
-  //       try {
-  //         final responseBody = jsonDecode(response.body);
-  //         if (kDebugMode) {
-  //           print("Res Body Data $responseBody");
-  //         }
-  //         if (responseBody['location'] != null && responseBody != null) {
-  //           return PostModel.fromJson(responseBody['post']);
-  //         }
-  //       } catch (e) {
-  //         print("JSON Parse Error: $e");
-  //         showCatchToast('Invalid response format', null);
-  //         return null;
-  //       }
-  //     } else {
-  //       print("Server Error: ${response.statusCode} - ${response.body}");
-  //       showCatchToast('Server error: ${response.statusCode}', null);
-  //       return null;
-  //     }
-  //     return null;
-  //   } catch (exception, stack) {
-  //     print("Exception: $exception\nStack: $stack");
-  //     showCatchToast(exception, stack);
-  //     return null;
-  //   }
-  // }
-  ///
-  static Future<http.Response?> createPostAPI1({
-    required double latitude,
-    required double longitude,
-    required String content,
-    required String locationId,
-    required String postImg,
-  }) async {
-    try {
-      // Clean up locationId if it starts and ends with quotes
-      if (locationId.startsWith('"') && locationId.endsWith('"')) {
-        locationId = locationId.substring(1, locationId.length - 1);
-      }
+class RatingScreen extends StatelessWidget {
+  const RatingScreen({super.key});
 
-      // Create a MultipartRequest
-      var request = http.MultipartRequest(
-        'POST',
-        Uri.parse(EndPoints.createPostAPI),
-      );
+  static const routeName = "rating_screen";
 
-      // Helper function to add fields if valid
-      void addFieldIfValid(
-          Map<String, String> fields,
-          String key,
-          dynamic value,
-          ) {
-        if (value != null &&
-            value.toString().trim().isNotEmpty &&
-            value.toString() != 'null') {
-          fields[key] = value.toString();
-        }
-      }
+  static Widget builder(BuildContext context) {
+    return ChangeNotifierProvider<RatingProvider>(
+      create: (context) => RatingProvider(),
+      child: const ChatScreen(),
+    );
+  }
 
-      // Add fields to the request
-      addFieldIfValid(request.fields, 'user_id', userData?.id);
-      addFieldIfValid(request.fields, 'latitude', latitude);
-      addFieldIfValid(request.fields, 'longitude', longitude);
-      addFieldIfValid(request.fields, 'content', content);
-      addFieldIfValid(request.fields, 'privacy_level', '0');
-      addFieldIfValid(request.fields, 'location_id', locationId);
+  @override
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider(
+      create: (_) => RatingProvider(),
+      child: const _RatingScreenContent(), // move logic into another widget
+    );
+  }
+}
 
-      debugPrint('------> createPost api request.body----->${request.fields}');
+class _RatingScreenContent extends StatelessWidget {
+  const _RatingScreenContent();
 
-      // Helper function to get media type
-      MediaType? getMediaType(String filePath) {
-        final mimeType = lookupMimeType(filePath);
-        if (mimeType != null) {
-          final parts = mimeType.split('/');
-          return MediaType(parts[0], parts[1]);
-        }
-        return MediaType('application', 'octet-stream');
-      }
+  @override
+  Widget build(BuildContext context) {
+    final appProvider = Provider.of<AppProvider>(context, listen: true);
+    final isArabic = appProvider.locale?.languageCode == 'ar';
 
-      // Add image file if it exists
-      File imageFile = File(postImg);
-      if (await imageFile.exists()) {
-        final mediaType = getMediaType(postImg);
-        request.files.add(
-          await http.MultipartFile.fromPath(
-            'postImg',
-            postImg,
-            contentType: mediaType,
+    return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      body: SafeArea(
+        child: Directionality(
+          textDirection: isArabic ? TextDirection.rtl : TextDirection.ltr,
+          child: Consumer<RatingProvider>(
+            builder: (context, provider, child) {
+              return Center(
+                child: FlipCard(
+                  direction: FlipDirection.HORIZONTAL,
+                  flipOnTouch: false,
+                  controller: provider.flipController,
+                  front: _buildCameraView(context, provider, isArabic),
+                  back: _buildMapView(context, provider),
+                ),
+              );
+            },
           ),
-        );
-      } else {
-        debugPrint('Image file not found at: $postImg');
-      }
-
-      // Call the postWithMultipartAPI service
-      final response = await ApiService.postWithMultipartAPI(
-        url: EndPoints.createPostAPI,
-        body: request,
-      );
-
-      if (response != null) {
-        debugPrint('------> createPost api response.body----->${response.body}');
-        debugPrint('------> createPost api response.body----->${jsonDecode(response.body)['post']}');
-        debugPrint('------> createPost api response.statusCode----->${response.statusCode}');
-        final model = appResponseFromJson2<PostModel>(
-          response.body,
-          converter:
-              (dynamic data) => PostModel.fromJson(data as Map<String, dynamic>),
-          dataKey: 'posts',
-        );
-        return response;
-      } else {
-        debugPrint('Failed to create post: No response received');
-        return null;
-      }
-    } catch (e) {
-      debugPrint('Exception in createPostAPI1: $e');
-      return null;
-    }
+        ),
+      ),
+    );
   }
-  ///
-  // static Future<AppResponse2<PostModel>?> createPostAPI({
-  //   required Map<String, String> body,
-  //   File? profileImage,
-  //   List<String> interestList = const [],
-  // }) async {
-  //   try {
-  //     Response? response;
-  //
-  //     response = await ApiService.multipartApi(
-  //       method: 'PATCH',
-  //       files:
-  //       profileImage != null
-  //           ? [FileDataModel(keyName: "image", filePath: profileImage.path)]
-  //           : [],
-  //       url: EndPoints.createPostAPI,
-  //       body: body,
-  //       multipartList: [
-  //         MultipartListModel(keyName: "interests", valueList: interestList),
-  //       ],
-  //     );
-  //
-  //     if (response == null) {
-  //       showErrorMsg(
-  //         'Update Profile Response failed: No response from server',
-  //       );
-  //       return null;
-  //     }
-  //
-  //     final responseModel = appResponseFromJson2(
-  //       response.body,
-  //       converter: (data) => PostModel.fromJson(data),
-  //     );
-  //
-  //     // if (responseModel.status ?? false) {
-  //     //   final message = responseModel.message ?? "Profile Updated successfully";
-  //     //   showSuccessToast(message);
-  //     //   return responseModel;
-  //     // } else {
-  //     //   final errorMessage =
-  //     //       responseModel.message ?? "Update Profile Response failed";
-  //     //   showErrorMsg(errorMessage);
-  //     //   return null;
-  //     // }
-  //   } catch (e, stack) {
-  //     showCatchToast(e, stack, msg: "Exception: ${e.toString()}");
-  //     return null;
-  //   }
-  // }
-  ///
-  // static Future<PostModel?> createPostAPI({
-  //   required double latitude,
-  //   required double longitude,
-  //   required String content,
-  //   required String locationId,
-  //   required String postImg,
-  // }) async {
-  //   try {
-  //     var request = http.MultipartRequest(
-  //       'POST',
-  //       Uri.parse(EndPoints.createPostAPI),
-  //     );
-  //
-  //     print("API ==================== 1");
-  //     // Add headers
-  //     // request.headers.addAll(appHeader() ?? {});
-  //
-  //     // Add form fields
-  //     request.fields['user_id'] = userData?.id.toString() ?? '';
-  //      request.fields['latitude'] = latitude.toString();
-  //      request.fields['longitude'] = longitude.toString();
-  //     request.fields['content'] = content;
-  //     request.fields['privacy_level'] = '0';
-  //      request.fields['location_id'] = locationId.toString();
-  //
-  //     print("API ==================== 2");
-  //
-  //     // Add file if it exists and is valid
-  //     if (postImg.isNotEmpty) {
-  //       File file = File(postImg);
-  //       if (await file.exists()) {
-  //         String? mimeType = lookupMimeType(postImg);
-  //         int fileSize = await file.length();
-  //         print("File path: $postImg");
-  //         print("File exists: ${await file.exists()}");
-  //         print("File MIME type: $mimeType");
-  //         print("File size: $fileSize bytes");
-  //         if (mimeType != null && mimeType.startsWith('image/')) {
-  //           print(
-  //             "Uploading file: $postImg, MIME: $mimeType, Size: $fileSize bytes",
-  //           );
-  //           request.files.add(
-  //             await http.MultipartFile.fromPath('postImg', postImg),
-  //           );
-  //         } else {
-  //           print("Invalid file type: $mimeType");
-  //           showCatchToast(
-  //             'Please select a valid image file (e.g., JPG, PNG)',
-  //             null,
-  //           );
-  //           return null;
-  //         }
-  //       } else {
-  //         print("File does not exist: $postImg");
-  //         showCatchToast('File not found', null);
-  //         return null;
-  //       }
-  //     }
-  //     print("API ==================== 3");
-  //     String token = PrefService.getString(PrefKeys.token);
-  //     if (token.startsWith('"') && token.endsWith('"')) {
-  //       token = token.substring(1, token.length - 1);
-  //     }
-  //
-  //     final headers = {"token": token};
-  //     final response = await ApiService.postWithMultipartAPI(
-  //       url: EndPoints.createPostAPI,
-  //       body: request,
-  //       header: headers,
-  //     );
-  //
-  //     if (kDebugMode) {
-  //       print("Create Post BODY ====== ${request.fields}");
-  //     }
-  //     if (response == null) {
-  //       showCatchToast('No response from server', null);
-  //       return null;
-  //     }
-  //
-  //     if (kDebugMode) {
-  //       print("Create Post Status: ${response.statusCode}");
-  //       print("Create Post -- ${response.body}");
-  //     }
-  //
-  //     if (response.statusCode == 200 || response.statusCode == 201) {
-  //       try {
-  //         final responseBody = jsonDecode(response.body);
-  //         if (kDebugMode) {
-  //           print("Res Body Data $responseBody");
-  //         }
-  //         if (responseBody['location'] != null &&
-  //             responseBody['post'] != null) {
-  //           return PostModel.fromJson(responseBody['post']);
-  //         } else {
-  //           showCatchToast('Invalid response format', null);
-  //           return null;
-  //         }
-  //       } catch (e) {
-  //         print("JSON Parse Error: $e");
-  //         showCatchToast('Failed to parse server response', null);
-  //         return null;
-  //       }
-  //     } else {
-  //       print("Server Error: ${response.statusCode} - ${response.body}");
-  //       String errorMessage =
-  //           response.statusCode == 500
-  //               ? 'Invalid file type or server error'
-  //               : 'Server error: ${response.statusCode}';
-  //       showCatchToast(errorMessage, null);
-  //       return null;
-  //     }
-  //   } catch (exception, stack) {
-  //     print("Exception: $exception\nStack: $stack");
-  //     showCatchToast(exception.toString(), stack);
-  //     return null;
-  //   }
-  // }
-  ///Success Work
-  static Future createPostAPI({
-    // required BuildContext context,
-    // required ProgressLoader pl,
-    required double latitude,
-    required double longitude,
-    required String content,
-    required String locationId,
-    required String postImg,
-  }) async {
-    debugPrint("__________________");
-    if (locationId.startsWith('"') && locationId.endsWith('"')) {
-      locationId = locationId.substring(1, locationId.length - 1);
-    }
-    http.MultipartRequest? request;
 
-    try {
-      request = http.MultipartRequest(
-        'POST',
-        Uri.parse(EndPoints.createPostAPI),
-      );
-      // var request = http.MultipartRequest(
-      //   'POST',
-      //   Uri.parse(EndPoints.createPostAPI),
-      // );
-      void addFieldIfValid(
-          Map<String, String> fields,
-          String key,
-          dynamic value,
-          ) {
-        if (value != null &&
-            value.toString().trim().isNotEmpty &&
-            value.toString() != 'null') {
-          fields[key] = value.toString();
-        }
-      }
+  Widget _buildCameraView(
+      BuildContext context,
+      RatingProvider provider,
+      bool? isArabic,
+      ) {
+    return Container(
+      width: double.infinity,
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Positioned.fill(
+              child: AssetsImg(
+                imagePath: AssetRes.ratingImg, // Replace with your image
+                fit: BoxFit.cover,
+              ),
+            ),
 
-      request.fields['user_id'] = userData?.id.toString() ?? '';
-      request.fields['latitude'] = latitude.toString();
-      request.fields['longitude'] = longitude.toString();
-      request.fields['content'] = content;
-      request.fields['privacy_level'] = '0';
-      request.fields['location_id'] = locationId;
+            // Gradient Overlay
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.transparent,
+                      Colors.black.withValues(alpha: 0.3),
+                      Colors.black.withValues(alpha: 0.7),
+                    ],
+                  ),
+                ),
+              ),
+            ),
 
-      debugPrint('------> createPost api request.body----->${request.fields}');
-      // debugPrint('${}')
+            // Top Controls
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.pw, vertical: 10.ph),
+              child: Consumer<RatingProvider>(
+                builder: (context, provider, child) {
+                  return Column(
+                    children: [
+                      40.ph.spaceVertical,
 
-      MediaType? getMediaType(String filePath) {
-        final mimeType = lookupMimeType(filePath);
-        if (mimeType != null) {
-          final parts = mimeType.split('/');
-          return MediaType(parts[0], parts[1]);
-        }
-        // fallback if mime type is not recognized
-        return MediaType('application', 'octet-stream');
-      }
+                      // Camera/Map Toggle
+                      // Camera/Map Toggle - Updated section for your RatingScreen
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                              color: ColorRes.lightBlue,
+                              borderRadius: BorderRadius.circular(25),
+                              border: Border.all(color: ColorRes.lightBlue),
+                            ),
+                            child: Row(
+                              children: [
+                                // Camera Tab
+                                SizedBox(
+                                  width: 131.pw,
+                                  height: 41.ph,
+                                  child: SubmitButton(
+                                    title: context.l10n?.camera ?? "",
+                                    onTap: () {
+                                      provider.setMode('camera');
+                                      provider.flipController.toggleCard();
+                                    },
+                                    style: styleW500S14.copyWith(
+                                      color: provider.getCameraTabTextColor(),
+                                    ),
+                                    bgColor: provider.getCameraTabBgColor(),
+                                    raduis: 10,
+                                  ),
+                                ),
+                                // Map Tab
+                                SizedBox(
+                                  width: 131.pw,
+                                  height: 41.ph,
+                                  child: SubmitButton(
+                                    raduis: 10,
+                                    title: context.l10n?.map ?? "",
+                                    style: styleW500S14.copyWith(
+                                      color: provider.getMapTabTextColor(),
+                                    ),
+                                    onTap: () {
+                                      provider.setMode('map');
+                                      provider.flipController.toggleCard();
+                                    },
+                                    bgColor: provider.getMapTabBgColor(),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
 
-      File imageFile = File(postImg);
-      if (await imageFile.exists()) {
-        final mediaType = getMediaType(postImg);
-        request.files.add(
-          await http.MultipartFile.fromPath(
-            'postImg',
-            postImg,
-            contentType: mediaType,
+                      Spacer(),
+
+                      // Profile Info Section
+                      Column(
+                        children: [
+                          // Name and Age
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Expanded(
+                                child: InkWell(
+                                  onTap: () {
+                                    openCustomDialog(
+                                      context,
+                                      borderRadius: 30,
+
+                                      title: context.l10n?.sendRating ?? "",
+                                      customChild: StarRatingWidget(
+                                        rating: 5,
+                                        activeColor: ColorRes.primaryColor,
+                                        inactiveColor: ColorRes.primaryColor,
+                                        size: 37,
+                                      ),
+                                      confirmBtnTitle: context.l10n?.send ?? "",
+                                    );
+                                  },
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: ColorRes.primaryColor.withValues(
+                                        alpha: 0.1,
+                                      ),
+                                      borderRadius: BorderRadius.circular(15),
+                                    ),
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 8,
+                                    ),
+                                    child: Column(
+                                      children: [
+                                        Text(
+                                          isArabic!
+                                              ? "كادين شلايفر"
+                                              : "Kadin Schleifer",
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 2,
+                                          style: styleW700S20.copyWith(
+                                            color: ColorRes.white,
+                                          ),
+                                        ),
+                                        9.pw.spaceVertical,
+                                        // Rating Section
+                                        Row(
+                                          mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                          children: [
+                                            Text(
+                                              "(8.84/10)",
+                                              style: styleW700S12.copyWith(
+                                                color: ColorRes.white,
+                                              ),
+                                            ),
+                                            8.pw.spaceHorizontal,
+                                            StarRatingWidget(
+                                              rating: 4.5,
+                                              size: 10,
+                                              space: 8,
+                                              activeColor: ColorRes.yellowColor,
+                                              inactiveColor: Colors.grey,
+                                            ),
+                                            8.pw.spaceHorizontal,
+                                            Text(
+                                              "5.0",
+                                              style: styleW700S12.copyWith(
+                                                color: ColorRes.white,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+
+                                        5.ph.spaceVertical,
+
+                                        // Rate Button
+                                        SizedBox(
+                                          width: 80.pw,
+                                          child: SubmitButton(
+                                            title: context.l10n?.rate ?? "",
+                                            height: 28.ph,
+                                            style: styleW500S12.copyWith(
+                                              color: ColorRes.white,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+
+                              20.pw.spaceHorizontal,
+                              // Action Buttons
+                              Column(
+                                mainAxisAlignment:
+                                MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  SizedBox(
+                                    width: 120.pw,
+                                    child: SubmitButton2(
+                                      raduis: 15,
+                                      height: 45.ph,
+                                      title: context.l10n?.profileVisit ?? "",
+                                      onTap: () {},
+                                      icon: AssetRes.userIcon2,
+                                    ),
+                                  ),
+                                  10.ph.spaceVertical,
+
+                                  SizedBox(
+                                    width: 120.pw,
+                                    child: SubmitButton2(
+                                      height: 45.ph,
+                                      raduis: 15,
+                                      title: context.l10n?.privateChat ?? "",
+                                      onTap: () {},
+                                      icon: AssetRes.msgIcon,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+
+                          40.ph.spaceVertical,
+
+                          // Bottom Control Buttons
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              // Lightning Button
+                              Container(
+                                width: 60,
+                                height: 60,
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withValues(alpha: 0.4),
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: Colors.white.withValues(alpha: 0.4),
+                                  ),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(19),
+                                  child: SvgAsset(
+                                    imagePath: AssetRes.flashIcon,
+                                    width: 19,
+                                    height: 19,
+                                  ),
+                                ),
+                              ),
+
+                              // Camera Button
+                              InkWell(
+                                onTap: () async {
+                                  await checkCameraPermission(context);
+                                  if (context.mounted) {}
+                                },
+                                borderRadius: BorderRadius.circular(80),
+                                child: Container(
+                                  width: 80,
+                                  height: 80,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: ColorRes.primaryColor,
+                                      width: 4,
+                                    ),
+                                  ),
+                                  child: Container(),
+                                ),
+                              ),
+
+                              // Gallery Button
+                              Container(
+                                width: 60,
+                                height: 60,
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withValues(alpha: 0.5),
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: Colors.white.withValues(alpha: 0.3),
+                                  ),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(19),
+                                  child: SvgAsset(
+                                    imagePath: AssetRes.cameraIcon3,
+                                    width: 19,
+                                    height: 19,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          40.ph.spaceVertical,
+                        ],
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
+
+            // if (provider.capturedImage != null)
+            //   Image.file(provider.capturedImage!, height: 300)
+            // else
+            //   const Icon(Icons.camera_alt, size: 80, color: Colors.white),
+            // const SizedBox(height: 20),
+            // ElevatedButton(
+            //   onPressed: () => provider.openCamera(context),
+            //   child: const Text("Open Camera"),
+            // ),
+            // ElevatedButton(
+            //   onPressed: () {
+            //     provider.flipController.toggleCard();
+            //   },
+            //   child: const Text("Show Map"),
+            // ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMapView(BuildContext context, RatingProvider provider) {
+    return Container(
+      color: Colors.white,
+      child: Stack(
+        children: [
+          const GoogleMap(
+            initialCameraPosition: CameraPosition(
+              target: LatLng(37.7749, -122.4194),
+              zoom: 12,
+            ),
           ),
-        );
-      } else {
-        debugPrint('Image file not found at: $postImg');
-      }
-
-      // for (int i = 0; i < imagelist.length; i++) {
-      //   if (imagelist[i] != null) {
-      //     File imageFile = File(imagelist[i]!.path);
-      //     if (await imageFile.exists()) {
-      //       final mediaType = getMediaType(imageFile.path);
-      //       request.files.add(await http.MultipartFile.fromPath(
-      //         'images',
-      //         imageFile.path,
-      //         contentType: mediaType,
-      //       ));
-      //     }
-      //   }
-      // }
-      var response = await request.send();
-
-      var responseData = await http.Response.fromStream(response);
-      debugPrint(responseData.body);
-      var responseBody = jsonDecode(responseData.body);
-
-      print("responseBody--------- $responseBody");
-      if (responseData.headers['content-type']?.contains('application/json') ??
-          false) {
-      } else {
-        debugPrint('JSON ');
-      }
-      debugPrint('------> createPost api response.body----->${response}');
-      debugPrint(
-        '------> createPost api response.statusCode----->${response.statusCode}',
-      );
-      debugPrint(
-        '------> createPost api response.statusCode----->${response.stream}',
-      );
-      if (responseData.statusCode == 200) {}
-    } catch (e) {
-      // await pl.hide();
-    }
-
-    return null;
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: ElevatedButton(
+              onPressed: () {
+                provider.flipController.toggleCard();
+              },
+              child: const Text("Back to Camera"),
+            ),
+          ),
+        ],
+      ),
+    );
   }
+}
 
-  ///Get Post
-  static Future<AppResponse2<PostModel>?> getAllPostListAPI({
-    int page = 1,
-    int pageSize = 10,
-  }) async {
-    try {
-      String token = PrefService.getString(PrefKeys.token);
-      var latitude = PrefService.getDouble(PrefKeys.latitude);
-      var longitude = PrefService.getDouble(PrefKeys.longitude);
-      if (token.startsWith('"') && token.endsWith('"')) {
-        token = token.substring(1, token.length - 1);
-      }
+@override
+Widget build(BuildContext context) {
+  final appProvider = Provider.of<AppProvider>(context, listen: true);
+  final isArabic = appProvider.locale?.languageCode == 'ar';
 
-      final headers = {"token": token};
+  return Scaffold(
+    backgroundColor: Theme.of(context).colorScheme.surface,
+    body: ChangeNotifierProvider<RatingProvider>(
+      create: (context) => RatingProvider(),
+      child: SafeArea(
+        child: Directionality(
+          textDirection: isArabic ? TextDirection.rtl : TextDirection.ltr,
+          child: Stack(
+            children: [
+              // Background Image
+              Positioned.fill(
+                child: AssetsImg(
+                  imagePath: AssetRes.ratingImg, // Replace with your image
+                  fit: BoxFit.cover,
+                ),
+              ),
 
-      final response = await ApiService.getApi(
-        url: EndPoints.getAllPostAPI,
-        queryParams: {"latitude": latitude, "longitude": longitude},
-        header: headers,
-      );
+              // Gradient Overlay
+              Positioned.fill(
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.transparent,
+                        Colors.black.withValues(alpha: 0.3),
+                        Colors.black.withValues(alpha: 0.7),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
 
-      if (response == null) {
-        showCatchToast('No response from server', null);
-        return null;
-      }
+              // Top Controls
+              Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: 20.pw,
+                  vertical: 10.ph,
+                ),
+                child: Consumer<RatingProvider>(
+                  builder: (context, provider, child) {
+                    return Column(
+                      children: [
+                        40.ph.spaceVertical,
 
-      final model = appResponseFromJson2<PostModel>(
-        response.body,
-        converter:
-            (dynamic data) => PostModel.fromJson(data as Map<String, dynamic>),
-        dataKey: 'posts',
-      );
+                        // Camera/Map Toggle
+                        // Camera/Map Toggle - Updated section for your RatingScreen
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              decoration: BoxDecoration(
+                                color: ColorRes.lightBlue,
+                                borderRadius: BorderRadius.circular(25),
+                                border: Border.all(color: ColorRes.lightBlue),
+                              ),
+                              child: Row(
+                                children: [
+                                  // Camera Tab
+                                  SizedBox(
+                                    width: 131.pw,
+                                    height: 41.ph,
+                                    child: SubmitButton(
+                                      title: context.l10n?.camera ?? "",
+                                      onTap: () {
+                                        provider.setMode('camera');
+                                      },
+                                      style: styleW500S14.copyWith(
+                                        color: provider.getCameraTabTextColor(),
+                                      ),
+                                      bgColor: provider.getCameraTabBgColor(),
+                                      raduis: 10,
+                                    ),
+                                  ),
+                                  // Map Tab
+                                  SizedBox(
+                                    width: 131.pw,
+                                    height: 41.ph,
+                                    child: SubmitButton(
+                                      raduis: 10,
+                                      title: context.l10n?.map ?? "",
+                                      style: styleW500S14.copyWith(
+                                        color: provider.getMapTabTextColor(),
+                                      ),
+                                      onTap: () {
+                                        provider.setMode('map');
+                                      },
+                                      bgColor: provider.getMapTabBgColor(),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
 
-      if (model.isSuccess) {
-        showSuccessToast(model.message ?? "Posts fetched successfully");
-        return model;
-      } else {
-        showCatchToast(model.message ?? "Failed to fetch posts", null);
-        return null;
-      }
-    } catch (exception, stack) {
-      showCatchToast(exception, stack);
-      return null;
-    }
-  }
+                        Spacer(),
 
-  ///Get Post By USer
-  static Future<AppResponse2<PostModel>?> getPostByUserAPI({
-    int page = 1,
-    int pageSize = 10,
-  }) async {
-    try {
-      final response = await ApiService.getApi(url: EndPoints.getPostByUSer);
+                        // Profile Info Section
+                        Column(
+                          children: [
+                            // Name and Age
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Expanded(
+                                  child: InkWell(
+                                    onTap: () {
+                                      openCustomDialog(
+                                        context,
+                                        borderRadius: 30,
 
-      if (response == null) {
-        showCatchToast('No response from server', null);
-        return null;
-      }
+                                        title: context.l10n?.sendRating ?? "",
+                                        customChild: StarRatingWidget(
+                                          rating: 5,
+                                          activeColor: ColorRes.primaryColor,
+                                          inactiveColor: ColorRes.primaryColor,
+                                          size: 37,
+                                        ),
+                                        confirmBtnTitle:
+                                        context.l10n?.send ?? "",
+                                      );
+                                    },
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: ColorRes.primaryColor.withValues(
+                                          alpha: 0.1,
+                                        ),
+                                        borderRadius: BorderRadius.circular(15),
+                                      ),
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 10,
+                                        vertical: 8,
+                                      ),
+                                      child: Column(
+                                        children: [
+                                          Text(
+                                            isArabic
+                                                ? "كادين شلايفر"
+                                                : "Kadin Schleifer",
+                                            overflow: TextOverflow.ellipsis,
+                                            maxLines: 2,
+                                            style: styleW700S20.copyWith(
+                                              color: ColorRes.white,
+                                            ),
+                                          ),
+                                          9.pw.spaceVertical,
+                                          // Rating Section
+                                          Row(
+                                            mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                            children: [
+                                              Text(
+                                                "(8.84/10)",
+                                                style: styleW700S12.copyWith(
+                                                  color: ColorRes.white,
+                                                ),
+                                              ),
+                                              8.pw.spaceHorizontal,
+                                              StarRatingWidget(
+                                                rating: 4.5,
+                                                size: 10,
+                                                space: 8,
+                                                activeColor:
+                                                ColorRes.yellowColor,
+                                                inactiveColor: Colors.grey,
+                                              ),
+                                              8.pw.spaceHorizontal,
+                                              Text(
+                                                "5.0",
+                                                style: styleW700S12.copyWith(
+                                                  color: ColorRes.white,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
 
-      final model = appResponseFromJson2<PostModel>(
-        response.body,
-        converter:
-            (dynamic data) => PostModel.fromJson(data as Map<String, dynamic>),
-        dataKey: 'posts',
-      );
+                                          5.ph.spaceVertical,
 
-      if (model.isSuccess) {
-        showSuccessToast(model.message ?? "Posts fetched successfully");
-        return model;
-      } else {
-        showCatchToast(model.message ?? "Failed to fetch posts", null);
-        return null;
-      }
-    } catch (exception, stack) {
-      showCatchToast(exception, stack);
-      return null;
-    }
-  }
+                                          // Rate Button
+                                          SizedBox(
+                                            width: 80.pw,
+                                            child: SubmitButton(
+                                              title: context.l10n?.rate ?? "",
+                                              height: 28.ph,
+                                              style: styleW500S12.copyWith(
+                                                color: ColorRes.white,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+
+                                20.pw.spaceHorizontal,
+                                // Action Buttons
+                                Column(
+                                  mainAxisAlignment:
+                                  MainAxisAlignment.spaceEvenly,
+                                  children: [
+                                    SizedBox(
+                                      width: 120.pw,
+                                      child: SubmitButton2(
+                                        raduis: 15,
+                                        height: 45.ph,
+                                        title: context.l10n?.profileVisit ?? "",
+                                        onTap: () {},
+                                        icon: AssetRes.userIcon2,
+                                      ),
+                                    ),
+                                    10.ph.spaceVertical,
+
+                                    SizedBox(
+                                      width: 120.pw,
+                                      child: SubmitButton2(
+                                        height: 45.ph,
+                                        raduis: 15,
+                                        title: context.l10n?.privateChat ?? "",
+                                        onTap: () {},
+                                        icon: AssetRes.msgIcon,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+
+                            40.ph.spaceVertical,
+
+                            // Bottom Control Buttons
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                // Lightning Button
+                                Container(
+                                  width: 60,
+                                  height: 60,
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withValues(alpha: 0.4),
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: Colors.white.withValues(
+                                        alpha: 0.4,
+                                      ),
+                                    ),
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(19),
+                                    child: SvgAsset(
+                                      imagePath: AssetRes.flashIcon,
+                                      width: 19,
+                                      height: 19,
+                                    ),
+                                  ),
+                                ),
+
+                                // Camera Button
+                                InkWell(
+                                  onTap: () async {
+                                    await checkCameraPermission(context);
+                                    if (context.mounted) {}
+                                  },
+                                  borderRadius: BorderRadius.circular(80),
+                                  child: Container(
+                                    width: 80,
+                                    height: 80,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: ColorRes.primaryColor,
+                                        width: 4,
+                                      ),
+                                    ),
+                                    child: Container(),
+                                  ),
+                                ),
+
+                                // Gallery Button
+                                Container(
+                                  width: 60,
+                                  height: 60,
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withValues(alpha: 0.5),
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: Colors.white.withValues(
+                                        alpha: 0.3,
+                                      ),
+                                    ),
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(19),
+                                    child: SvgAsset(
+                                      imagePath: AssetRes.cameraIcon3,
+                                      width: 19,
+                                      height: 19,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+
+                            40.ph.spaceVertical,
+                          ],
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
 }

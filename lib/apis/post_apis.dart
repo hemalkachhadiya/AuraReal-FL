@@ -120,7 +120,7 @@ class PostAPI {
   ///Get Post
   static Future<AppResponse2<PostModel>?> getAllPostListAPI({
     int page = 1,
-    int pageSize = 10,
+    int pageSize = 5,
   }) async {
     String token = PrefService.getString(PrefKeys.token);
     try {
@@ -132,6 +132,7 @@ class PostAPI {
 
       final response = await ApiService.getApi(
         url: EndPoints.getAllPostAPI,
+        queryParams: {"page": page, "page_size": pageSize},
         header: headers,
       );
 
@@ -148,7 +149,7 @@ class PostAPI {
       );
 
       if (model.isSuccess) {
-        showSuccessToast(model.message ?? "Posts fetched successfully");
+        // showSuccessToast(model.message ?? "Posts fetched successfully");
         return model;
       } else {
         showCatchToast(model.message ?? "Failed to fetch posts", null);
@@ -264,7 +265,7 @@ class PostAPI {
   }
 
   ///Comment Post API
-  static Future<bool> commentOnPostAPI({
+  static Future<Map<String, dynamic>?> commentOnPostAPI({
     required String postId,
     required String content,
   }) async {
@@ -275,20 +276,55 @@ class PostAPI {
       );
       if (response == null) {
         showCatchToast('No response from server', null);
-        return false;
+        return {'success': false, 'response': null};
       }
       final model = appResponseFromJson(response.body);
       if (model.success == true) {
-        showSuccessToast(model.message ?? "Message Form Comment API");
-        return true;
+        showSuccessToast(model.message ?? "Message from Comment API");
+        return {'success': true, 'response': response};
+      } else if (response.statusCode == 400) {
+        // Handle specific 400 error case
+        final errorModel = appResponseFromJson(response.body);
+        if (errorModel.message == "You have already commented on this post") {
+          showErrorMsg(errorModel.message ?? "Error");
+          return {'success': false, 'response': response, 'isDuplicate': true};
+        }
       }
+      // Handle other failure cases
+      showCatchToast(model.message ?? "Failed to comment", null);
+      return {'success': false, 'response': response};
     } catch (exception, stack) {
-      print("Catch Starck=========");
+      print("Catch Stack ======== $stack");
       showCatchToast(exception, stack);
+      return {'success': false, 'response': null};
     }
-    return false;
   }
+  // static Future<bool> commentOnPostAPI({
+  //   required String postId,
+  //   required String content,
+  // }) async {
+  //   try {
+  //     final response = await ApiService.postApi(
+  //       url: EndPoints.createcomment,
+  //       body: {"post_id": postId, "content": content, "user_id": userData?.id},
+  //     );
+  //     if (response == null) {
+  //       showCatchToast('No response from server', null);
+  //       return false;
+  //     }
+  //     final model = appResponseFromJson(response.body);
+  //     if (model.success == true) {
+  //       showSuccessToast(model.message ?? "Message Form Comment API");
+  //       return true;
+  //     }
+  //   } catch (exception, stack) {
+  //     print("Catch Starck=========");
+  //     showCatchToast(exception, stack);
+  //   }
+  //   return false;
+  // }
 
+  ///Get All Comment List
   static Future<AppResponse2<CommentModel>?> getAllCommentListAPI({
     required String postId,
     int page = 1,
@@ -335,7 +371,7 @@ class PostAPI {
       );
 
       if (model.isSuccess) {
-        showSuccessToast(model.message ?? "Comments fetched successfully");
+        // showSuccessToast(model.message ?? "Comments fetched successfully");
         return model;
       } else {
         showCatchToast(model.message ?? "Failed to fetch comments", null);
@@ -347,7 +383,6 @@ class PostAPI {
       return null;
     }
   }
-
   // static Future<AppResponse2<CommentModel>?> getAllCommentListAPI({
   //   int page = 1,
   //   int pageSize = 10,

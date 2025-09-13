@@ -5,6 +5,7 @@ void showErrorMsg(String msg, {BuildContext? context}) {
   debugPrint("Error: $msg");
 }
 
+
 Future<void> showCatchToast(
   dynamic exception,
   StackTrace? stack, {

@@ -53,7 +53,14 @@ class AddPostProvider extends ChangeNotifier {
   }
 
   bool canPublish() {
-    return textController.text.trim().isNotEmpty && selectedImage != null;
+    final isTextValid = textController.text.trim().isNotEmpty;
+    final hasImage = selectedImage != null;
+    print("textController.text====== ${textController.text}");
+    print("selectedImage ====== $selectedImage");
+    print(
+      "canPublish result ====== $isTextValid && $hasImage = ${isTextValid && hasImage}",
+    );
+    return isTextValid && hasImage;
   }
 
   ///Create Post PI
@@ -77,6 +84,7 @@ class AddPostProvider extends ChangeNotifier {
     );
     if (result != null) {
       navigatorKey.currentState?.context.navigator.pop();
+
       notifyListeners();
     }
     loader = false;

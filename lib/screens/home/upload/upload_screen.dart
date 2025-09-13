@@ -49,7 +49,7 @@ class UploadScreen extends StatelessWidget {
                       Stack(
                         children: [
                           Container(
-                            height: 300.ph,
+                            height: 280.ph,
                             width: double.infinity,
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(0),
@@ -367,7 +367,7 @@ class UploadScreen extends StatelessWidget {
                             /// Custom Follow Button
                             Container(
                               width: 100.pw,
-                              height: 48.ph,
+                              height: 40.ph,
                               decoration: BoxDecoration(
                                 color: ColorRes.primaryColor,
                                 borderRadius: BorderRadius.circular(15),
@@ -423,7 +423,7 @@ class UploadScreen extends StatelessWidget {
                             /// Custom Message Button
                             Container(
                               width: 100.pw,
-                              height: 48.ph,
+                              height: 40.ph,
                               decoration: BoxDecoration(
                                 color: ColorRes.primaryColor,
                                 borderRadius: BorderRadius.circular(15),
@@ -465,7 +465,8 @@ class UploadScreen extends StatelessWidget {
                     ],
                   ),
 
-                  25.ph.spaceVertical,
+
+                  // 25.ph.spaceVertical,
                   Expanded(
                     child: Container(
                       decoration: BoxDecoration(color: ColorRes.white),

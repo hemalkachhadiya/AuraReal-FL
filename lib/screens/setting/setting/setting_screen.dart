@@ -222,8 +222,8 @@ class SettingScreen extends StatelessWidget {
                         padding: EdgeInsets.only(left: 25.pw), // Increased space for better separation
                         child: Text(
                           appProvider?.isArabic ?? false
-                              ? "اللغة الحالية (${appProvider?.getLanguageName(appProvider?.locale?.languageCode ?? 'en')})"
-                              : appProvider?.getLanguageName(appProvider?.locale?.languageCode ?? 'en') ?? "English",
+                              ? "اللغة الحالية (${appProvider?.getLanguageName(appProvider.locale?.languageCode ?? 'en')})"
+                              : appProvider?.getLanguageName(appProvider.locale?.languageCode ?? 'en') ?? "English",
                           style: styleW500S14.copyWith(color: ColorRes.primaryColor),
                           overflow: TextOverflow.ellipsis, // Handles long text
                         ),

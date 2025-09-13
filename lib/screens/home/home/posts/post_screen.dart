@@ -19,6 +19,7 @@ class HomeScreen extends StatelessWidget {
       create: (context) => PostsProvider(),
       child: Consumer<PostsProvider>(
         builder: (context, provider, child) {
+          final ScrollController scrollController = ScrollController();
           return StackedLoader(
             loading: provider.loader,
             child: Scaffold(
@@ -97,6 +98,7 @@ class HomeScreen extends StatelessWidget {
                         child: Container(
                           decoration: BoxDecoration(color: ColorRes.white),
                           child: CustomListView(
+                            controller: scrollController, // Add ScrollController
                             itemCount:
                                 provider.loader
                                     ? 0

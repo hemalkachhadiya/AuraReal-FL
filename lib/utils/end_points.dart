@@ -50,6 +50,9 @@ class EndPoints {
   static const createcomment = "${baseUrl}createcomment";
   static const getcomments = "${baseUrl}getcomments";
 
+  /// ------------------------------------ Rating Profile -------------------------------
+  static const getAllUsers = "${baseUrl}getAllUsers";
+
   /// ------------------------------------ Follow and UnFollow User Profile -------------------------------
 
   static const follow = "${baseUrl}follow";

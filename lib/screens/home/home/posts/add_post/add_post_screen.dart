@@ -17,10 +17,7 @@ class AddPostScreen extends StatelessWidget {
     return Consumer<AddPostProvider>(
       builder: (context, provider, child) {
         return Scaffold(
-          backgroundColor: Theme
-              .of(context)
-              .colorScheme
-              .surface,
+          backgroundColor: Theme.of(context).colorScheme.surface,
           bottomNavigationBar: Padding(
             padding: EdgeInsets.symmetric(
               horizontal: Constants.horizontalPadding,
@@ -32,14 +29,13 @@ class AddPostScreen extends StatelessWidget {
               child: SubmitButton(
                 loading: provider.loader,
                 bgColor:
-                (provider.textController.text.isEmpty &&
-                    provider.selectedImage == null)
-                    ? ColorRes.grey3
-                    : ColorRes.primaryColor,
+                    !provider.canPublish()
+                        ? ColorRes.grey3
+                        : ColorRes.primaryColor,
                 onTap:
-                provider.canPublish()
-                    ? () => provider.createPostAPI()
-                    : null,
+                    provider.canPublish()
+                        ? () => provider.createPostAPI()
+                        : null,
 
                 title: context.l10n?.publish ?? "",
               ),
@@ -108,41 +104,41 @@ class AddPostScreen extends StatelessWidget {
                                 // Image section
                                 Expanded(
                                   flex: 2,
-                                  child: Container(
-                                    margin: const EdgeInsets.all(8),
-                                    child:
-                                    provider.selectedImage != null
-                                        ? ClipRRect(
-                                      borderRadius:
-                                      BorderRadius.circular(8),
-                                      child: Image.file(
-                                        provider.selectedImage!,
-                                        fit: BoxFit.cover,
-                                        width: double.infinity,
-                                        height: double.infinity,
-                                      ),
-                                    )
-                                        : GestureDetector(
-                                      onTap: () => provider.pickImage(),
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                          color: Colors.grey.shade100,
-                                          borderRadius:
-                                          BorderRadius.circular(8),
-                                          border: Border.all(
-                                            color: Colors.grey.shade300,
-                                            style: BorderStyle.solid,
-                                          ),
-                                        ),
-                                        child: const Center(
-                                          child: Icon(
-                                            Icons
-                                                .add_photo_alternate_outlined,
-                                            size: 40,
-                                            color: Colors.grey,
-                                          ),
-                                        ),
-                                      ),
+                                  child: GestureDetector(
+                                    onTap: () => provider.pickImage(),
+                                    child: Container(
+                                      margin: const EdgeInsets.all(8),
+                                      child:
+                                          provider.selectedImage != null
+                                              ? ClipRRect(
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
+                                                child: Image.file(
+                                                  provider.selectedImage!,
+                                                  fit: BoxFit.cover,
+                                                  width: double.infinity,
+                                                  height: double.infinity,
+                                                ),
+                                              )
+                                              : Container(
+                                                decoration: BoxDecoration(
+                                                  color: Colors.grey.shade100,
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                  border: Border.all(
+                                                    color: Colors.grey.shade300,
+                                                    style: BorderStyle.solid,
+                                                  ),
+                                                ),
+                                                child: const Center(
+                                                  child: Icon(
+                                                    Icons
+                                                        .add_photo_alternate_outlined,
+                                                    size: 40,
+                                                    color: Colors.grey,
+                                                  ),
+                                                ),
+                                              ),
                                     ),
                                   ),
                                 ),
@@ -172,18 +168,18 @@ class AddPostScreen extends StatelessWidget {
                                   decoration: BoxDecoration(
                                     border: Border.all(
                                       color:
-                                      isSelected
-                                          ? ColorRes.primaryColor
-                                          : Colors.grey.shade300,
+                                          isSelected
+                                              ? ColorRes.primaryColor
+                                              : Colors.grey.shade300,
                                       width: isSelected ? 1 : 1,
                                     ),
                                     borderRadius: BorderRadius.circular(10),
                                     color:
-                                    isSelected
-                                        ? ColorRes.primaryColor.withOpacity(
-                                      0.1,
-                                    )
-                                        : null,
+                                        isSelected
+                                            ? ColorRes.primaryColor.withOpacity(
+                                              0.1,
+                                            )
+                                            : null,
                                   ),
                                   child: Text("#$value", style: styleW500S10),
                                 ),

@@ -173,6 +173,19 @@ class _PostCardState extends State<PostCard> {
                             context,
                             listen: false,
                           );
+
+                          final scrollProvider = Provider.of<PostsProvider>(
+                            context,
+                            listen: false,
+                          );
+                          scrollProvider.saveScrollPosition(
+                            context
+                                    .findAncestorStateOfType<ScrollableState>()
+                                    ?.position
+                                    .pixels ??
+                                0.0,
+                          );
+
                           await postsProvider.getAllCommentListAPI(
                             widget.post.id!,
                             showLoader: true,
@@ -198,21 +211,32 @@ class _PostCardState extends State<PostCard> {
                                   content: val,
                                 );
 
-                                // Refresh the comment list without popping
-                                await postsProvider.getAllCommentListAPI(
-                                  widget.post.id!,
-                                  showLoader: true,
-                                  resetData: true,
-                                );
-                                setState(
-                                  () {},
-                                ); // Trigger UI update in PostCard if needed
+                                navigatorKey.currentState?.context.navigator
+                                    .pop(context);
+
+                                // await postsProvider.getAllCommentListAPI(
+                                //   widget.post.id!,
+                                //   showLoader: true,
+                                //   resetData: true,
+                                // );
                               },
                             ),
                             showButtons: false,
                             borderRadius: 20,
                             padding: const EdgeInsets.all(0),
                           );
+
+                          /// Restore scroll position after operation
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            final scrollableState =
+                                context
+                                    .findAncestorStateOfType<ScrollableState>();
+                            if (scrollableState != null) {
+                              scrollableState.position.jumpTo(
+                                scrollProvider.scrollPosition,
+                              );
+                            }
+                          });
                         },
                         child: Row(
                           children: [

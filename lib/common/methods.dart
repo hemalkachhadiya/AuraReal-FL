@@ -143,6 +143,56 @@ Future<T?> openCommentBottomSheet<T>({
 //   );
 // }
 
+// Check camera permission
+// Future<bool>  checkCameraPermission(BuildContext context) async {
+//   final status = await Permission.camera.status;
+//
+//   if (status.isGranted) {
+//     return true;
+//   }
+//
+//   if (status.isDenied) {
+//     final result = await Permission.camera.request();
+//     return result.isGranted;
+//   }
+//
+//   if (status.isPermanentlyDenied) {
+//     if (context.mounted) {
+//       showPermissionDialog(context);
+//     }
+//     return false;
+//   }
+//
+//   return false;
+// }
+
+// Show permission dialog
+void  showPermissionDialog(BuildContext context) {
+  showDialog(
+    context: context,
+    builder:
+        (context) => AlertDialog(
+      title: Text('Camera Permission Required'),
+      content: Text(
+        'Please enable camera permission in app settings to take photos.',
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text('Cancel'),
+        ),
+        TextButton(
+          onPressed: () {
+            Navigator.pop(context);
+            openAppSettings();
+          },
+          child: Text('Settings'),
+        ),
+      ],
+    ),
+  );
+}
+
 Future<void> fetchLocation(BuildContext context) async {
   final (lat, lon, error) = await GetLocationService.getCurrentLatLon(context);
   if (lat != null && lon != null) {
