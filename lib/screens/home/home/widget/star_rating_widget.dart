@@ -61,7 +61,7 @@ class _StarRatingWidgetState extends State<StarRatingWidget> {
 
             color:
                 index < _rating
-                    ? null
+                    ? widget.inactiveColor
                     : index < _rating
                     ? widget.activeColor
                     : widget.inactiveColor,

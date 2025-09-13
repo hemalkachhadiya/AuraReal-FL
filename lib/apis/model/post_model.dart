@@ -189,13 +189,17 @@ class UserId {
   final Profile? profile;
   final String? id;
   final String? fullName;
+  final String? email;
+  final String? phone_number;
 
-  UserId({this.profile, this.id, this.fullName});
+  UserId( {this.profile, this.id, this.fullName,this.email,this.phone_number,});
 
   UserId copyWith({Profile? profile, String? id, String? fullName}) => UserId(
     profile: profile ?? this.profile,
     id: id ?? this.id,
     fullName: fullName ?? this.fullName,
+    email: fullName ?? this.email,
+    phone_number: fullName ?? this.phone_number,
   );
 
   factory UserId.fromJson(Map<String, dynamic> json) {
@@ -204,10 +208,12 @@ class UserId {
       json['profile'] != null ? Profile.fromJson(json['profile']) : null,
       id: json['_id'] as String?,
       fullName: json['full_name'] as String?,
+      email: json['email'] as String?,
+      phone_number: json['phone_number'] as String?,
     );
   }
 
   Map<String, dynamic> toJson() {
-    return {'profile': profile?.toJson(), '_id': id, 'full_name': fullName};
+    return {'profile': profile?.toJson(), '_id': id, 'full_name': fullName,"email":email,"phone_number":phone_number};
   }
 }

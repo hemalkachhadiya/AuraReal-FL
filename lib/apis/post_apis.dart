@@ -281,32 +281,96 @@ class PostAPI {
       if (model.success == true) {
         showSuccessToast(model.message ?? "Message Form Comment API");
         return true;
-      } else {
-        return false;
       }
     } catch (exception, stack) {
+      print("Catch Starck=========");
       showCatchToast(exception, stack);
     }
     return false;
   }
 
-  // static Future<AppResponse2<PostModel>?> getAllCommentListAPI({
+  static Future<AppResponse2<CommentModel>?> getAllCommentListAPI({
+    required String postId,
+    int page = 1,
+    int pageSize = 10,
+  }) async {
+    String token = PrefService.getString(PrefKeys.token);
+    try {
+      if (token.startsWith('"') && token.endsWith('"')) {
+        token = token.substring(1, token.length - 1);
+      }
+
+      final headers = {"token": token};
+      final queryParams = {
+        'post_id': postId,
+        'page': page.toString(),
+        'page_size': pageSize.toString(),
+      };
+
+      final response = await ApiService.getApi(
+        url: EndPoints.getcomments,
+        header: headers,
+        queryParams: queryParams,
+      );
+
+      if (response == null) {
+        showCatchToast('No response from server', null);
+        return null;
+      }
+
+      // Debug the raw response
+      print('Raw response body: ${response.body}');
+
+      // Decode the response body
+      final decodedBody = jsonDecode(response.body) as Map<String, dynamic>;
+      print('Decoded response: $decodedBody');
+
+      final model = appResponseFromJson2<CommentModel>(
+        response.body, // Ensure consistent string input
+        converter:
+            (dynamic data) =>
+                CommentModel.fromJson(data as Map<String, dynamic>),
+
+        dataKey: 'comments',
+      );
+
+      if (model.isSuccess) {
+        showSuccessToast(model.message ?? "Comments fetched successfully");
+        return model;
+      } else {
+        showCatchToast(model.message ?? "Failed to fetch comments", null);
+        return null;
+      }
+    } catch (exception, stack) {
+      print('Exception in getAllCommentListAPI: $exception\nStack: $stack');
+      showCatchToast(exception, stack);
+      return null;
+    }
+  }
+
+  // static Future<AppResponse2<CommentModel>?> getAllCommentListAPI({
   //   int page = 1,
   //   int pageSize = 10,
+  //   String? postId
   // }) async {
-  //   // String token = PrefService.getString(PrefKeys.token);
-  //   // try {
-  //   //   if (token.startsWith('"') && token.endsWith('"')) {
-  //   //     token = token.substring(1, token.length - 1);
-  //   //   }
-  //   //
-  //   //   final headers = {"token": token};
+  //   try {
+  //     String token = PrefService.getString(PrefKeys.token);
+  //       if (token.startsWith('"') && token.endsWith('"')) {
+  //         token = token.substring(1, token.length - 1);
+  //       }
   //
-  //     final response = await ApiService.getApi(
-  //       url: EndPoints.getcomments,
+  //     //   final headers = {"token": token};
   //
-  //     );
+  //     // final response = await ApiService.getApi(url: EndPoints.getcomments);
+  //     final headers = {"token": token};
+  //     final queryParams = {
+  //       'post_id': postId,
+  //       'page': page.toString(),
+  //       'page_size': pageSize.toString(),
+  //     };
   //
+  //     final uri = Uri.parse(EndPoints.getcomments).replace(queryParameters: queryParams);
+  //     final response = await ApiService.getApi(url: uri.toString(), header: headers);
   //     if (response == null) {
   //       showCatchToast('No response from server', null);
   //       return null;
@@ -315,7 +379,8 @@ class PostAPI {
   //     final model = appResponseFromJson2<CommentModel>(
   //       response.body,
   //       converter:
-  //           (dynamic data) => CommentModel.fromJson(data as Map<String, dynamic>),
+  //           (dynamic data) =>
+  //               CommentModel.fromJson(data as Map<String, dynamic>),
   //       dataKey: 'comments',
   //     );
   //
@@ -331,5 +396,4 @@ class PostAPI {
   //     return null;
   //   }
   // }
-
 }

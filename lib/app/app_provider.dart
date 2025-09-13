@@ -1,4 +1,3 @@
-
 import 'package:aura_real/aura_real.dart';
 
 class AppProvider extends ChangeNotifier {
@@ -18,7 +17,8 @@ class AppProvider extends ChangeNotifier {
   // Initialize app settings
   void init() {
     try {
-      final savedLanguage = PrefService.getString(PrefKeys.localLanguage) ?? 'en_US';
+      final savedLanguage =
+          PrefService.getString(PrefKeys.localLanguage) ?? 'en_US';
       locale = getLanStrToLocale(savedLanguage);
       print('App initialized with language: ${locale?.languageCode}');
     } catch (e) {
@@ -43,7 +43,11 @@ class AppProvider extends ChangeNotifier {
       locale = newLocale;
 
       // Save to preferences
-      await PrefService.set(PrefKeys.localLanguage, getLanLocaleToStr(newLocale));
+      await PrefService.set(
+        PrefKeys.localLanguage,
+        getLanLocaleToStr(newLocale),
+      );
+      print("get print language=======");
 
       print("Language changed successfully to: ${newLocale.languageCode}");
 
@@ -52,11 +56,11 @@ class AppProvider extends ChangeNotifier {
 
       // Small delay before stopping loader
       await Future.delayed(const Duration(milliseconds: 200));
-
     } catch (e) {
       print('Error changing language: $e');
       // Revert locale on error
-      final savedLanguage = PrefService.getString(PrefKeys.localLanguage) ?? 'en_US';
+      final savedLanguage =
+          PrefService.getString(PrefKeys.localLanguage) ?? 'en_US';
       locale = getLanStrToLocale(savedLanguage);
     } finally {
       loader = false;
@@ -112,7 +116,8 @@ class AppProvider extends ChangeNotifier {
   bool get isEnglish => locale?.languageCode == 'en';
 
   // Get text direction based on language
-  TextDirection get textDirection => isArabic ? TextDirection.rtl : TextDirection.ltr;
+  TextDirection get textDirection =>
+      isArabic ? TextDirection.rtl : TextDirection.ltr;
 
   // Reset to default language
   Future<void> resetToDefaultLanguage() async {

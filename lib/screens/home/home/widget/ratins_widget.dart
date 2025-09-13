@@ -55,6 +55,7 @@ Future<double?> showRatingDialog(
                     ),
                   ],
                 ),
+                
                 content: SingleChildScrollView(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -64,7 +65,7 @@ Future<double?> showRatingDialog(
                         rating: selectedRating,
                         size: 30.0,
                         activeColor: ColorRes.primaryColor,
-                        inactiveColor: Colors.grey.withValues(alpha: 0.3),
+                        inactiveColor: ColorRes.primaryColor,
                         onRatingChanged: (rating) {
                           setDialogState(() {
                             selectedRating =

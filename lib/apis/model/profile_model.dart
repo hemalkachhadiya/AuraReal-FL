@@ -1,5 +1,6 @@
 class Profile {
   final String? username;
+  final String? fullName;
   final String? profileImage;
   final String? email;
   final String? bio;
@@ -14,6 +15,7 @@ class Profile {
 
   Profile({
     this.username,
+    this.fullName,
     this.profileImage,
     this.email,
     this.bio,
@@ -29,6 +31,7 @@ class Profile {
 
   factory Profile.fromJson(Map<String, dynamic> json) => Profile(
     username: json['username'] as String?,
+    fullName: json['full_name'] as String?,
     profileImage: json['profile_image'] as String?,
     email: json['email'] as String?,
     bio: json['bio'] as String?,
@@ -47,6 +50,7 @@ class Profile {
 
   Map<String, dynamic> toJson() => {
     'username': username,
+    'full_name': fullName,
     'profile_image': profileImage,
     'email': email,
     'bio': bio,

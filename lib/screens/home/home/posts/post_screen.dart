@@ -166,11 +166,11 @@ class HomeScreen extends StatelessWidget {
                                 },
                                 onCommentSubmitted: (val) {
                                   print("value comment ========= ${val}");
-                                  provider.commentPostAPI(
-                                    context,
-                                    postId: provider.postListResponse[index].id,
-                                    content: val.toString(),
-                                  );
+                                  // provider.commentPostAPI(
+                                  //   context,
+                                  //   postId: provider.postListResponse[index].id,
+                                  //   content: val.toString(),
+                                  // );
                                 },
                                 post: provider.postListResponse[index],
                                 onTap: () {

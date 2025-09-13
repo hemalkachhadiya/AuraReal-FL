@@ -1,4 +1,4 @@
-import 'package:aura_real/aura_real.dart';
+import 'package:aura_real/aura_real.dart'; // Removed duplicate import
 
 class SettingScreen extends StatelessWidget {
   const SettingScreen({super.key});
@@ -14,8 +14,9 @@ class SettingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<SettingProvider>(
-      builder: (context, provider, child) {
+    return Consumer<AppProvider>(
+      builder: (context, appProvider, child) {
+        final isArabic = appProvider.locale?.languageCode == 'ar';
         return Scaffold(
           appBar: AppBar(
             leadingWidth: Constants.horizontalPadding,
@@ -33,7 +34,7 @@ class SettingScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 buildTabWidget(
-                  provider: provider,
+                  provider: null,
                   onTap: () {
                     context.navigator.pushNamed(ProfileScreen.routeName);
                   },
@@ -41,7 +42,7 @@ class SettingScreen extends StatelessWidget {
                   img: AssetRes.user4Icon,
                 ),
                 buildTabWidget(
-                  provider: provider,
+                  provider: null,
                   onTap: () {
                     context.navigator.pushNamed(ChangePasswordScreen.routeName);
                   },
@@ -49,92 +50,42 @@ class SettingScreen extends StatelessWidget {
                   img: AssetRes.lock2Icon,
                 ),
                 buildTabWidget(
-                  provider: provider,
+                  provider: null,
+                  isLanguage: true,
                   onTap: () {
                     context.navigator.pushNamed(LanguageScreen.routeName);
-
-                    // showDialog(
-                    //   context: context,
-                    //   builder: (context) {
-                    //     return AlertDialog(
-                    //       title: Text(context.l10n?.language ?? "Language"),
-                    //       content: Column(
-                    //         mainAxisSize: MainAxisSize.min,
-                    //         children:
-                    //             appProvider.languageList.map((locale) {
-                    //               return ListTile(
-                    //                 title: Text(
-                    //                   locale.languageCode == 'en'
-                    //                       ? 'English'
-                    //                       : 'العربية',
-                    //                   style: TextStyle(
-                    //                     color:
-                    //                         appProvider.locale == locale
-                    //                             ? ColorRes.primaryColor
-                    //                             : null,
-                    //                   ),
-                    //                 ),
-                    //                 onTap: () async {
-                    //                   await appProvider.changeLanguage(locale);
-                    //                   if (context.mounted) {
-                    //                     context.navigator.pop();
-                    //                   }
-                    //                 },
-                    //               );
-                    //             }).toList(),
-                    //       ),
-                    //     );
-                    //   },
-                    // );
                   },
                   title: context.l10n?.language ?? "",
                   img: AssetRes.languageCircleIcon,
+                  appProvider: appProvider,
                 ),
                 buildTabWidget(
-                  provider: provider,
+                  provider: context.read<SettingProvider>(),
                   onTap: () {
-                    provider.toggleNotification(provider.isNotificationEnabled);
+                    context.read<SettingProvider>().toggleNotification(
+                      context.read<SettingProvider>().isNotificationEnabled,
+                    );
                   },
                   title: context.l10n?.notificationsCap ?? "",
                   img: AssetRes.notificationIcon,
                   isSwitch: true,
                 ),
                 buildTabWidget(
-                  provider: provider,
+                  provider: null,
                   onTap: () {},
                   title: context.l10n?.privacyPolicy ?? "",
                   img: AssetRes.informationIcon,
                 ),
                 buildTabWidget(
-                  provider: provider,
+                  provider: null,
                   onTap: () {},
                   title: context.l10n?.termsAndCondition ?? "",
                   img: AssetRes.informationIcon,
                 ),
                 buildTabWidget(
-                  provider: provider,
+                  provider: context.read<SettingProvider>(),
                   onTap: () {
-                    showLogoutDialog(context, provider);
-                    // openCustomDialog(
-                    //                     //   context,
-                    //                     //   borderRadius: 30,
-                    //                     //   title: context.l10n?.logoutSpace ?? "",
-                    //                     //   subtitle: context.l10n?.areYouSureWantToLogOut ?? "",
-                    //                     //   customChild: Container(
-                    //                     //     width: 225.pw,
-                    //                     //     padding: EdgeInsets.only(top: 15.ph),
-                    //                     //     child: SubmitButton(
-                    //                     //       height: 45.ph,
-                    //                     //       loading: provider.loader,
-                    //                     //       title: context.l10n?.logout ?? "2",
-                    //                     //       raduis: 15,
-                    //                     //       onTap: () async {
-                    //                     //         await provider.logoutTap(context);
-                    //                     //       },
-                    //                     //       style: styleW600S12.copyWith(color: ColorRes.white),
-                    //                     //     ),
-                    //                     //   ),
-                    // );
+                    showLogoutDialog(context, context.read<SettingProvider>());
                   },
                   title: context.l10n?.logout ?? "",
                   img: AssetRes.logoutIcon,
@@ -150,92 +101,89 @@ class SettingScreen extends StatelessWidget {
   void showLogoutDialog(BuildContext context, SettingProvider provider) {
     showDialog(
       context: context,
-      barrierDismissible: false, // Prevent closing during logout
-      builder:
-          (context) => AlertDialog(
-            title: Column(
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: Column(
+          children: [
+            Row(
               children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 24,
-                      height: 24,
-                      margin: EdgeInsets.only(bottom: 15),
-                      child: InkWell(
-                        onTap: () {
-                          context.navigator.pop(context);
-                        },
-                        borderRadius: BorderRadius.circular(50),
-                        child: Align(
-                          alignment: Alignment.topLeft,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(50),
-                              color: ColorRes.red,
-                            ),
-                            child: Center(
-                              child: Icon(
-                                Icons.close,
-                                color: ColorRes.white,
-                                size: 15,
-                              ),
-                            ),
+                Container(
+                  width: 24,
+                  height: 24,
+                  margin: EdgeInsets.only(bottom: 15),
+                  child: InkWell(
+                    onTap: () {
+                      context.navigator.pop(context);
+                    },
+                    borderRadius: BorderRadius.circular(50),
+                    child: Align(
+                      alignment: Alignment.topLeft,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(50),
+                          color: ColorRes.red,
+                        ),
+                        child: Center(
+                          child: Icon(
+                            Icons.close,
+                            color: ColorRes.white,
+                            size: 15,
                           ),
                         ),
                       ),
                     ),
-                    Spacer(),
-                  ],
+                  ),
                 ),
-                Text(
-                  context.l10n?.logoutSpace ?? "",
-                  style: styleW700S24,
-                  textAlign: TextAlign.center,
-                ),
+                Spacer(),
               ],
             ),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  context.l10n?.areYouSureWantToLogOut ?? "",
-                  style: styleW400S16.copyWith(color: ColorRes.grey6),
-                  textAlign: TextAlign.center,
-                ),
-                if (provider.loader) ...[
-                  15.ph.spaceVertical,
-                  CircularProgressIndicator(),
-                  15.ph.spaceVertical,
-                ],
-              ],
+            Text(
+              context.l10n?.logoutSpace ?? "",
+              style: styleW700S24,
+              textAlign: TextAlign.center,
             ),
-
-            actions: [
-              Center(
-                child: Consumer<SettingProvider>(
-                  builder: (context, provider, child) {
-                    return Container(
-                      width: 225.pw,
-                      padding: EdgeInsets.only(top: 15.ph),
-                      child: SubmitButton(
-                        height: 45.ph,
-                        loading: provider.loader,
-                        title: context.l10n?.logout ?? "2",
-                        raduis: 15,
-                        onTap:
-                            provider.loader
-                                ? null
-                                : () async {
-                                  await provider.logoutTap(context);
-                                },
-                        style: styleW600S12.copyWith(color: ColorRes.white),
-                      ),
-                    );
-                  },
-                ),
-              ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              context.l10n?.areYouSureWantToLogOut ?? "",
+              style: styleW400S16.copyWith(color: ColorRes.grey6),
+              textAlign: TextAlign.center,
+            ),
+            if (provider.loader) ...[
+              15.ph.spaceVertical,
+              CircularProgressIndicator(),
+              15.ph.spaceVertical,
             ],
+          ],
+        ),
+        actions: [
+          Center(
+            child: Consumer<SettingProvider>(
+              builder: (context, provider, child) {
+                return Container(
+                  width: 225.pw,
+                  padding: EdgeInsets.only(top: 15.ph),
+                  child: SubmitButton(
+                    height: 45.ph,
+                    loading: provider.loader,
+                    title: context.l10n?.logout ?? "2",
+                    raduis: 15,
+                    onTap: provider.loader
+                        ? null
+                        : () async {
+                      await provider.logoutTap(context);
+                    },
+                    style: styleW600S12.copyWith(color: ColorRes.white),
+                  ),
+                );
+              },
+            ),
           ),
+        ],
+      ),
     );
   }
 
@@ -244,7 +192,9 @@ class SettingScreen extends StatelessWidget {
     String? title,
     VoidCallback? onTap,
     bool? isSwitch = false,
+    bool? isLanguage = false,
     SettingProvider? provider,
+    AppProvider? appProvider,
   }) {
     return InkWell(
       borderRadius: BorderRadius.circular(0),
@@ -252,14 +202,36 @@ class SettingScreen extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
         child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             SvgAsset(imagePath: img ?? "", width: 24.pw, height: 24.ph),
             10.pw.spaceHorizontal,
-            Text(
-              title ?? "",
-              style: styleW500S14.copyWith(color: ColorRes.black),
+            Expanded(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    title ?? "",
+                    style: styleW500S14.copyWith(color: ColorRes.black),
+                  ),
+                  if (isLanguage!)
+                    Flexible(
+                      child: Padding(
+                        padding: EdgeInsets.only(left: 25.pw), // Increased space for better separation
+                        child: Text(
+                          appProvider?.isArabic ?? false
+                              ? "اللغة الحالية (${appProvider?.getLanguageName(appProvider?.locale?.languageCode ?? 'en')})"
+                              : appProvider?.getLanguageName(appProvider?.locale?.languageCode ?? 'en') ?? "English",
+                          style: styleW500S14.copyWith(color: ColorRes.primaryColor),
+                          overflow: TextOverflow.ellipsis, // Handles long text
+                        ),
+                      ),
+                    ),
+                ],
+              ),
             ),
-            Spacer(),
             if (isSwitch!)
               SizedBox(
                 width: 44.pw,

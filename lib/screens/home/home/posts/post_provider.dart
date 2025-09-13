@@ -12,12 +12,17 @@ class PostsProvider extends ChangeNotifier {
   }
 
   late final List<PostModel> posts = [];
+  late final List<CommentModel> comments = [];
   bool _isLoading = false;
   String? _error;
 
   AppResponse2<PostModel>? paginationModel;
+  AppResponse2<CommentModel>? paginationCommentModel;
 
   List<PostModel> get postListResponse => paginationModel?.list ?? [];
+
+  List<CommentModel> get commentListResponse =>
+      paginationCommentModel?.list ?? [];
 
   int currentPage = 0;
   int pageSize = 20;
@@ -113,6 +118,7 @@ class PostsProvider extends ChangeNotifier {
     }
   }
 
+  ///Post Location
   Future<void> postLocationAPI() async {
     if (userData == null || userData?.id == null) return;
     loader = true;
@@ -183,16 +189,98 @@ class PostsProvider extends ChangeNotifier {
     String? content,
   }) async {
     if (userData == null || userData?.id == null) return;
-    loader = true;
+    loaderComments = true;
     notifyListeners();
     final result = await PostAPI.commentOnPostAPI(
       postId: postId.toString(),
       content: content.toString(),
     );
-    await getAllPostListAPI(resetData: true, showLoader: true);
-    if (result) {}
-    loader = false;
+    print("RESULT ===== ${result}");
+    if (result) {
+      await getAllCommentListAPI(
+        postId!,
+        showLoader: true,
+        resetData: true,
+      ); // Refresh comments
+    }
+    loaderComments = false;
     notifyListeners();
+  }
+
+  /// Get All Comment List API for a specific post
+  late final Map<String, List<CommentModel>> _commentLists =
+      {}; // Map to store comments by postId
+  bool _isLoadingComments = false;
+  String? _errorComments;
+  int currentPageComments = 0;
+  int pageSizeComments = 20;
+  bool isApiCallingComments = false;
+  bool loaderComments = false;
+
+  bool get isLoadingComments => _isLoadingComments;
+  late final List<CommentModel> commentModel = [];
+
+  String? get errorComments => _errorComments;
+
+  List<CommentModel> getCommentList(String postId) =>
+      _commentLists[postId] ?? [];
+
+  bool get hasMoreComments => paginationModel?.hasMorePages ?? false;
+
+  /// Get All Comment List
+  Future<void> getAllCommentListAPI(
+    String postId, {
+    bool showLoader = false,
+    bool resetData = false,
+  }) async {
+    // if (isApiCallingComments || _commentLists.containsKey(postId))
+    //   return _commentLists[postId] ?? [];
+    if (comments.isEmpty && !resetData) return;
+
+    if (isApiCallingComments) return;
+    isApiCallingComments = true;
+
+    if (showLoader) {
+      loaderComments = true;
+      _safeNotifyListeners();
+    }
+    if (resetData) {
+      currentPageComments = 0;
+      paginationCommentModel = null;
+      commentModel.clear();
+    }
+
+    try {
+      final model = await PostAPI.getAllCommentListAPI(
+        postId: postId,
+        page: currentPageComments + 1,
+        pageSize: pageSizeComments,
+      );
+
+      if (resetData || paginationCommentModel == null) {
+        paginationCommentModel = model?.copyWith();
+      } else {
+        final existingIds =
+            paginationCommentModel?.list?.map((e) => e.id).toSet() ?? {};
+        final newItems =
+            (model?.list ?? [])
+                .where((e) => !existingIds.contains(e.id))
+                .toList();
+
+        paginationCommentModel = paginationCommentModel?.copyWith(
+          list: [...(paginationCommentModel?.list ?? []), ...newItems],
+        );
+      }
+    } catch (e) {
+      _errorComments = e.toString();
+      if (loaderComments) showCatchToast(_errorComments, null);
+      print('Exception in getAllCommentListAPI: $e');
+      if (showLoader) showCatchToast(_error, null);
+    } finally {
+      loaderComments = false;
+      isApiCallingComments = false;
+      _safeNotifyListeners();
+    }
   }
 
   /// Clear all posts

@@ -150,6 +150,7 @@ class UploadProvider extends ChangeNotifier {
   int pageSize = 20;
   bool isApiCalling = false;
   bool loader = false;
+  bool followLoader = false;
 
   late final List<PostModel> posts = [];
   final bool _isLoading = false;
@@ -227,15 +228,15 @@ class UploadProvider extends ChangeNotifier {
   Future<bool> followUserProfile(BuildContext context) async {
     if (userData == null || userData?.id == null) return false;
 
-    loader = true;
+    followLoader = true;
     notifyListeners();
 
     final result = await AuthApis.followUserProfile(
-      followUserId: userId,
-      userId: userData!.id!,
+      followUserId: userData!.id!,
+      userId: userId,
     );
 
-    loader = false;
+    followLoader = false;
 
     if (result) {
       isFollowing = true;
@@ -243,11 +244,11 @@ class UploadProvider extends ChangeNotifier {
       if (profileData != null) {
         profileData!.followingCount = (profileData!.followingCount ?? 0) + 1;
       }
-
+      followLoader = false;
       notifyListeners();
       return true;
     }
-
+    followLoader = false;
     notifyListeners();
     return false;
   }
@@ -255,15 +256,15 @@ class UploadProvider extends ChangeNotifier {
   Future<bool> unfollowUserProfile(BuildContext context) async {
     if (userData == null || userData?.id == null) return false;
 
-    // loader = true;
-    // // notifyListeners();
+    followLoader = true;
+    notifyListeners();
 
     final result = await AuthApis.unfollowUserProfile(
       followUserId: userId,
       userId: userData!.id!,
     );
 
-    loader = false;
+    followLoader = false;
 
     if (result) {
       isFollowing = false;
@@ -275,7 +276,7 @@ class UploadProvider extends ChangeNotifier {
       notifyListeners();
       return true;
     }
-
+    followLoader = false;
     notifyListeners();
     return false;
   }

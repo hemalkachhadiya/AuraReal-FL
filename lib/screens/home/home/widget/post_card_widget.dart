@@ -47,6 +47,7 @@ class _PostCardState extends State<PostCard> {
 
   @override
   Widget build(BuildContext context) {
+    final postsProvider = Provider.of<PostsProvider>(context, listen: false);
     return InkWell(
       onTap: widget.onTap,
       child: Column(
@@ -155,9 +156,7 @@ class _PostCardState extends State<PostCard> {
                         // Use local for immediate feedback
                         size: 20,
                         activeColor: ColorRes.primaryColor,
-                        inactiveColor: ColorRes.primaryColor.withOpacity(
-                          0.3,
-                        ), // Faded inactive
+                        inactiveColor: ColorRes.primaryColor, // Faded inactive
                       ),
                       const SizedBox(width: 10),
                       Text(
@@ -167,28 +166,53 @@ class _PostCardState extends State<PostCard> {
                         style: styleW700S16,
                       ),
                       const Spacer(),
+
                       InkWell(
                         onTap: () async {
-
+                          final postsProvider = Provider.of<PostsProvider>(
+                            context,
+                            listen: false,
+                          );
+                          await postsProvider.getAllCommentListAPI(
+                            widget.post.id!,
+                            showLoader: true,
+                            resetData: true,
+                          );
+                          print(
+                            "Comment list ===== ${postsProvider.commentListResponse.length}",
+                          );
                           openCustomDraggableBottomSheet(
                             context,
                             title: context.l10n?.comments ?? "",
                             customChild: CommentsWidget(
                               post: widget.post,
-                              onCommentSubmitted: (val) {
+                              comments: postsProvider.commentListResponse,
+                              onCommentSubmitted: (val) async {
                                 print("val -------- ${val}");
                                 if (widget.onCommentSubmitted != null) {
                                   widget.onCommentSubmitted!(val);
                                 }
+                                await postsProvider.commentPostAPI(
+                                  context,
+                                  postId: widget.post.id,
+                                  content: val,
+                                );
+
+                                // Refresh the comment list without popping
+                                await postsProvider.getAllCommentListAPI(
+                                  widget.post.id!,
+                                  showLoader: true,
+                                  resetData: true,
+                                );
+                                setState(
+                                  () {},
+                                ); // Trigger UI update in PostCard if needed
                               },
                             ),
                             showButtons: false,
                             borderRadius: 20,
                             padding: const EdgeInsets.all(0),
-                            initialChildSize: 0.8,
-                            minChildSize: 0.4,
-                            maxChildSize: 0.95,
-                          ); // openCustomDraggableBottomSheet(
+                          );
                         },
                         child: Row(
                           children: [

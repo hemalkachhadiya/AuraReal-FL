@@ -15,9 +15,9 @@ Future<T?> openCustomDraggableBottomSheet<T>(
   EdgeInsets? padding,
   bool isDismissible = true,
   bool enableDrag = true,
-  double initialChildSize = 0.7,
-  double minChildSize = 0.5,
-  double maxChildSize = 0.9,
+  double initialChildSize = 0.9, // Increased from 0.8
+  double minChildSize = 0.6, // Increased from 0.5
+  double maxChildSize = 0.9, // Increased from 0.9 to allow full screen
 }) async {
   final result = await showModalBottomSheet<T>(
     context: context,
