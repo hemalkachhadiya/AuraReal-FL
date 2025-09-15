@@ -347,36 +347,36 @@ class SignInScreen extends StatelessWidget {
                               style: styleW500S16,
                             ),
                             40.ph.spaceVertical,
-                            provider.loaderGoogleLogin
-                                ? const CircularProgressIndicator()
-                                : InkWell(
-                                  borderRadius: BorderRadius.circular(8),
-                                  onTap: () {
-                                    provider.googleSignIn(context);
-                                  },
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                      children: [
-                                        const SvgAsset(
-                                          imagePath: AssetRes.googleIcon,
-                                        ),
-                                        15.pw.spaceHorizontal,
-                                        Text(
-                                          AppLocalizations.of(
-                                                context,
-                                              )?.signInWithGoogle ??
-                                              "Sign In with Google",
-                                          style: styleW600S18,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
+                            // provider.loaderGoogleLogin
+                            //     ? const CircularProgressIndicator()
+                            //     : InkWell(
+                            //       borderRadius: BorderRadius.circular(8),
+                            //       onTap: () {
+                            //         provider.googleSignIn(context);
+                            //       },
+                            //       child: Padding(
+                            //         padding: const EdgeInsets.all(8.0),
+                            //         child: Row(
+                            //           mainAxisAlignment:
+                            //               MainAxisAlignment.center,
+                            //           crossAxisAlignment:
+                            //               CrossAxisAlignment.center,
+                            //           children: [
+                            //             const SvgAsset(
+                            //               imagePath: AssetRes.googleIcon,
+                            //             ),
+                            //             15.pw.spaceHorizontal,
+                            //             Text(
+                            //               AppLocalizations.of(
+                            //                     context,
+                            //                   )?.signInWithGoogle ??
+                            //                   "Sign In with Google",
+                            //               style: styleW600S18,
+                            //             ),
+                            //           ],
+                            //         ),
+                            //       ),
+                            //     ),
                           ],
                         ),
                       ),

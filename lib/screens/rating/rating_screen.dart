@@ -4,7 +4,7 @@ import 'package:aura_real/screens/rating/rating_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flip_card/flip_card.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+// import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class RatingScreen extends StatelessWidget {
   const RatingScreen({super.key});
@@ -408,68 +408,68 @@ class _RatingScreenContent extends StatelessWidget {
       child: Stack(
         children: [
           // Google Map with markers
-          GoogleMap(
-            initialCameraPosition: const CameraPosition(
-              target: LatLng(37.7749, -122.4194), // San Francisco
-              zoom: 12,
-            ),
-            markers: provider.markers,
-            onMapCreated: provider.onMapCreated,
-            myLocationEnabled: true,
-            myLocationButtonEnabled: false,
-            zoomControlsEnabled: false,
-            mapToolbarEnabled: false,
-            buildingsEnabled: true,
-            indoorViewEnabled: true,
-            trafficEnabled: false,
-            mapType: MapType.normal,
-            // Custom map styling (optional)
-            style: '''
-          [
-            {
-              "elementType": "geometry",
-              "stylers": [
-                {
-                  "color": "#f5f5f5"
-                }
-              ]
-            },
-            {
-              "elementType": "labels.icon",
-              "stylers": [
-                {
-                  "visibility": "off"
-                }
-              ]
-            },
-            {
-              "elementType": "labels.text.fill",
-              "stylers": [
-                {
-                  "color": "#616161"
-                }
-              ]
-            },
-            {
-              "elementType": "labels.text.stroke",
-              "stylers": [
-                {
-                  "color": "#f5f5f5"
-                }
-              ]
-            },
-            {
-              "featureType": "water",
-              "elementType": "geometry",
-              "stylers": [
-                {
-                  "color": "#c9c9c9"
-                }
-              ]
-            }
-          ]
-          ''',
-          ),
+          // GoogleMap(
+          //   initialCameraPosition: const CameraPosition(
+          //     target: LatLng(37.7749, -122.4194), // San Francisco
+          //     zoom: 12,
+          //   ),
+          //   markers: provider.markers,
+          //   onMapCreated: provider.onMapCreated,
+          //   myLocationEnabled: true,
+          //   myLocationButtonEnabled: false,
+          //   zoomControlsEnabled: false,
+          //   mapToolbarEnabled: false,
+          //   buildingsEnabled: true,
+          //   indoorViewEnabled: true,
+          //   trafficEnabled: false,
+          //   mapType: MapType.normal,
+          //   // Custom map styling (optional)
+          //   style: '''
+          // [
+          //   {
+          //     "elementType": "geometry",
+          //     "stylers": [
+          //       {
+          //         "color": "#f5f5f5"
+          //       }
+          //     ]
+          //   },
+          //   {
+          //     "elementType": "labels.icon",
+          //     "stylers": [
+          //       {
+          //         "visibility": "off"
+          //       }
+          //     ]
+          //   },
+          //   {
+          //     "elementType": "labels.text.fill",
+          //     "stylers": [
+          //       {
+          //         "color": "#616161"
+          //       }
+          //     ]
+          //   },
+          //   {
+          //     "elementType": "labels.text.stroke",
+          //     "stylers": [
+          //       {
+          //         "color": "#f5f5f5"
+          //       }
+          //     ]
+          //   },
+          //   {
+          //     "featureType": "water",
+          //     "elementType": "geometry",
+          //     "stylers": [
+          //       {
+          //         "color": "#c9c9c9"
+          //       }
+          //     ]
+          //   }
+          // ]
+          // ''',
+          // ),
 
           // Top Controls (Camera/Map toggle)
           Positioned(
@@ -551,11 +551,11 @@ class _RatingScreenContent extends StatelessWidget {
                   backgroundColor: Colors.white,
                   onPressed: () {
                     // Center map on user location
-                    provider.mapController?.animateCamera(
-                      CameraUpdate.newLatLng(
-                        const LatLng(37.7749, -122.4194), // Your current location
-                      ),
-                    );
+                    // provider.mapController?.animateCamera(
+                    //   CameraUpdate.newLatLng(
+                    //     const LatLng(37.7749, -122.4194), // Your current location
+                    //   ),
+                    // );
                   },
                   child: const Icon(
                     Icons.my_location,
@@ -568,9 +568,9 @@ class _RatingScreenContent extends StatelessWidget {
                   mini: true,
                   backgroundColor: Colors.white,
                   onPressed: () {
-                    provider.mapController?.animateCamera(
-                      CameraUpdate.zoomIn(),
-                    );
+                    // provider.mapController?.animateCamera(
+                      // CameraUpdate.zoomIn(),
+                    // );
                   },
                   child: const Icon(
                     Icons.add,
@@ -583,9 +583,9 @@ class _RatingScreenContent extends StatelessWidget {
                   mini: true,
                   backgroundColor: Colors.white,
                   onPressed: () {
-                    provider.mapController?.animateCamera(
-                      CameraUpdate.zoomOut(),
-                    );
+                    // provider.mapController?.animateCamera(
+                    //   CameraUpdate.zoomOut(),
+                    // );
                   },
                   child: const Icon(
                     Icons.remove,

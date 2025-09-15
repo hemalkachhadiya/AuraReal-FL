@@ -48,8 +48,9 @@ class UploadScreen extends StatelessWidget {
                     children: [
                       Stack(
                         children: [
+                          /// BackGround Image
                           Container(
-                            height: 280.ph,
+                            height: 315.ph,
                             width: double.infinity,
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(0),
@@ -70,7 +71,7 @@ class UploadScreen extends StatelessWidget {
                                 child: Center(
                                   child: AssetsImg(
                                     imagePath: AssetRes.uploadBgIcon,
-                                    height: 300,
+                                    height: 315,
                                     width: double.infinity,
                                     fit: BoxFit.cover,
                                   ),
@@ -79,7 +80,7 @@ class UploadScreen extends StatelessWidget {
                             ),
                           ),
 
-                          ///
+                          ///Profile Data
                           Stack(
                             children: [
                               Container(
@@ -116,7 +117,6 @@ class UploadScreen extends StatelessWidget {
                                               // 180 degrees for Arabic
                                               child: SvgAsset(
                                                 imagePath: AssetRes.leftIcon,
-                                                // Use same icon for both
                                                 color: ColorRes.white,
                                               ),
                                             ),
@@ -240,7 +240,7 @@ class UploadScreen extends StatelessWidget {
                                     isArabic
                                         ? Constants.horizontalPadding
                                         : null,
-                                top: 50,
+                                top: 30,
                                 child: Container(
                                   width: 170,
                                   child: Column(
@@ -350,8 +350,6 @@ class UploadScreen extends StatelessWidget {
                               ),
                             ],
                           ),
-
-                          ///
                         ],
                       ),
 
@@ -360,111 +358,117 @@ class UploadScreen extends StatelessWidget {
                         right: isArabic ? null : 0,
                         left: isArabic ? 0 : null,
                         bottom: 0,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            /// Custom Follow Button
-                            Container(
-                              width: 100.pw,
-                              height: 40.ph,
-                              decoration: BoxDecoration(
-                                color: ColorRes.primaryColor,
-                                borderRadius: BorderRadius.circular(15),
-                              ),
-                              child: Material(
-                                color: Colors.transparent,
-                                child: InkWell(
+                        child: Container(
+                          margin: const EdgeInsets.only(top: 10.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              /// Custom Follow Button
+                              Container(
+                                width: 100.pw,
+                                height: 40.ph,
+                                decoration: BoxDecoration(
+                                  color: ColorRes.primaryColor,
                                   borderRadius: BorderRadius.circular(15),
-                                  onTap: () async {
-                                    if (provider.isFollowing) {
-                                      await provider.unfollowUserProfile(
-                                        context,
-                                      );
-                                    } else {
-                                      await provider.followUserProfile(context);
-                                    }
-                                  },
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      SvgAsset(
-                                        imagePath: AssetRes.userIcon2,
-                                        width: 16,
-                                        height: 16,
-                                        color: ColorRes.white,
-                                      ),
-                                      SizedBox(width: 6.pw),
-                                      provider.followLoader
-                                          ? CircularProgressIndicator(
-                                            color: ColorRes.white,
-                                          )
-                                          : Text(
-                                            provider.isFollowing
-                                                ? (isArabic
-                                                    ? "متابع"
-                                                    : "Following")
-                                                : (isArabic
-                                                    ? "متابعة"
-                                                    : "Follow"),
-                                            style: TextStyle(
-                                              color: ColorRes.white,
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                    ],
-                                  ),
                                 ),
-                              ),
-                            ),
-                            7.pw.spaceHorizontal,
-
-                            /// Custom Message Button
-                            Container(
-                              width: 100.pw,
-                              height: 40.ph,
-                              decoration: BoxDecoration(
-                                color: ColorRes.primaryColor,
-                                borderRadius: BorderRadius.circular(15),
-                              ),
-                              child: Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  borderRadius: BorderRadius.circular(15),
-                                  onTap: () {
-                                    // Handle message action
-                                  },
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      SvgAsset(
-                                        imagePath: AssetRes.msgIcon,
-                                        width: 16,
-                                        height: 16,
-                                        color: ColorRes.white,
-                                      ),
-                                      SizedBox(width: 6.pw),
-                                      Text(
-                                        isArabic ? "رسالة" : "Message",
-                                        style: TextStyle(
+                                child: Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    borderRadius: BorderRadius.circular(15),
+                                    onTap: () async {
+                                      if (provider.isFollowing) {
+                                        await provider.unfollowUserProfile(
+                                          context,
+                                        );
+                                      } else {
+                                        await provider.followUserProfile(
+                                          context,
+                                        );
+                                      }
+                                    },
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        SvgAsset(
+                                          imagePath: AssetRes.userIcon2,
+                                          width: 16,
+                                          height: 16,
                                           color: ColorRes.white,
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w600,
                                         ),
-                                      ),
-                                    ],
+                                        SizedBox(width: 6.pw),
+                                        provider.followLoader
+                                            ? CircularProgressIndicator(
+                                              color: ColorRes.white,
+                                            )
+                                            : Text(
+                                              provider.isFollowing
+                                                  ? (isArabic
+                                                      ? "متابع"
+                                                      : "Following")
+                                                  : (isArabic
+                                                      ? "متابعة"
+                                                      : "Follow"),
+                                              style: TextStyle(
+                                                color: ColorRes.white,
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                      ],
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                            14.pw.spaceHorizontal,
-                          ],
+                              7.pw.spaceHorizontal,
+
+                              /// Custom Message Button
+                              Container(
+                                width: 100.pw,
+                                height: 40.ph,
+                                decoration: BoxDecoration(
+                                  color: ColorRes.primaryColor,
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
+                                child: Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    borderRadius: BorderRadius.circular(15),
+                                    onTap: () {
+                                      // Handle message action
+                                    },
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        SvgAsset(
+                                          imagePath: AssetRes.msgIcon,
+                                          width: 16,
+                                          height: 16,
+                                          color: ColorRes.white,
+                                        ),
+                                        SizedBox(width: 6.pw),
+                                        Text(
+                                          isArabic ? "رسالة" : "Message",
+                                          style: TextStyle(
+                                            color: ColorRes.white,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              14.pw.spaceHorizontal,
+                            ],
+                          ),
                         ),
                       ),
                     ],
                   ),
-
 
                   // 25.ph.spaceVertical,
                   Expanded(
