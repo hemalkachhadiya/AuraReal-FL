@@ -1,738 +1,427 @@
-import 'package:aura_real/aura_real.dart';
+import 'dart:io';
+import 'dart:ui' as ui;
+import 'package:aura_real/apis/model/post_model.dart';
+import 'package:aura_real/apis/model/user_marker_data.dart';
+import 'package:aura_real/apis/rating_profile_apis.dart';
+import 'package:aura_real/common/methods.dart';
+import 'package:aura_real/screens/rating/model/rating_profile_list_model.dart';
+import 'package:aura_real/services/location_permission.dart';
+import 'package:aura_real/utils/color_res.dart';
 import 'package:flip_card/flip_card.dart';
-import 'package:map_location_picker/map_location_picker.dart';
+import 'package:flip_card/flip_card_controller.dart';
+import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:aura_real/aura_real.dart';
+import 'package:geolocator/geolocator.dart'; // Add for distance calculations
 
-class RatingScreen extends StatelessWidget {
-  const RatingScreen({super.key});
-
-  static const routeName = "rating_screen";
-
-  static Widget builder(BuildContext context) {
-    return ChangeNotifierProvider<RatingProvider>(
-      create: (context) => RatingProvider(),
-      child: const ChatScreen(),
-    );
+class RatingProvider extends ChangeNotifier {
+  RatingProvider() {
+    init();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => RatingProvider(),
-      child: const _RatingScreenContent(), // move logic into another widget
-    );
-  }
-}
-
-class _RatingScreenContent extends StatelessWidget {
-  const _RatingScreenContent();
-
-  @override
-  Widget build(BuildContext context) {
-    final appProvider = Provider.of<AppProvider>(context, listen: true);
-    final isArabic = appProvider.locale?.languageCode == 'ar';
-
-    return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      body: SafeArea(
-        child: Directionality(
-          textDirection: isArabic ? TextDirection.rtl : TextDirection.ltr,
-          child: Consumer<RatingProvider>(
-            builder: (context, provider, child) {
-              return Center(
-                child: FlipCard(
-                  direction: FlipDirection.HORIZONTAL,
-                  flipOnTouch: false,
-                  controller: provider.flipController,
-                  front: _buildCameraView(context, provider, isArabic),
-                  back: _buildMapView(context, provider),
-                ),
-              );
-            },
-          ),
-        ),
-      ),
-    );
+  init() async {
+    await getAllUserRatingProfile();
   }
 
-  Widget _buildCameraView(
-      BuildContext context,
-      RatingProvider provider,
-      bool? isArabic,
+  ///====================== Profile Rating Map Section =========================
+  Set<Marker> markers = {};
+  GoogleMapController? mapController;
+  List<RatingProfileUserModel> users = [];
+  RatingProfileUserModel? selectedUser;
+  bool loader = false;
+  PostModel? selectedPost; // New variable to hold the selected post
+
+  Future<LatLng?> getCurrentLocation() async {
+    // Try to get location from SharedPreferences
+    final prefs = await SharedPreferences.getInstance();
+    final double? latitude = prefs.getDouble(PrefKeys.latitude);
+    final double? longitude = prefs.getDouble(PrefKeys.longitude);
+
+    print("Provider latitude------- $latitude");
+    print("Provider longitude------- $longitude");
+    if (latitude != null && longitude != null) {
+      return LatLng(latitude, longitude);
+    }
+
+    return null;
+  }
+
+  // Filter users within 10 miles
+  List<RatingProfileUserModel> getUsersWithinRadius(
+      LatLng userLocation,
+      double radiusMiles,
       ) {
-    return Container(
-      width: double.infinity,
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Positioned.fill(
-              child: AssetsImg(
-                imagePath: AssetRes.ratingImg, // Replace with your image
-                fit: BoxFit.cover,
-              ),
-            ),
+    const double milesToMeters = 1609.34; // 1 mile = 1609.34 meters
+    return users.where((user) {
+      if (user.latitude == null || user.longitude == null) return false;
+      final distance = Geolocator.distanceBetween(
+        userLocation.latitude,
+        userLocation.longitude,
+        user.latitude!,
+        user.longitude!,
+      );
+      return distance <=
+          (radiusMiles * milesToMeters); // Convert miles to meters
+    }).toList();
+  }
 
-            // Gradient Overlay
-            Positioned.fill(
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.transparent,
-                      Colors.black.withValues(alpha: 0.3),
-                      Colors.black.withValues(alpha: 0.7),
-                    ],
-                  ),
-                ),
-              ),
-            ),
+  Future<void> onMapCreated(GoogleMapController controller) async {
+    mapController = controller;
+    await _createMarkers();
+    final currentLocation = await getCurrentLocation();
+    print("currentLocation=====123========= ${currentLocation}");
+    if (currentLocation != null) {
+      mapController?.animateCamera(
+        CameraUpdate.newLatLngZoom(currentLocation, 12), // Zoom level 12
+      );
+    }
+    notifyListeners();
+  }
+  Future<void> _createMarkers() async {
+    final Set<Marker> newMarkers = {};
+    final currentLocation = await getCurrentLocation();
 
-            // Top Controls
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.pw, vertical: 10.ph),
-              child: Consumer<RatingProvider>(
-                builder: (context, provider, child) {
-                  return Column(
-                    children: [
-                      40.ph.spaceVertical,
+    // Only create markers for users within 10 miles
+    final nearbyUsers =/*
+        currentLocation != null
+            ? getUsersWithinRadius(currentLocation, 10.0)
+            : */users;
 
-                      // Camera/Map Toggle
-                      // Camera/Map Toggle - Updated section for your RatingScreen
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            decoration: BoxDecoration(
-                              color: ColorRes.lightBlue,
-                              borderRadius: BorderRadius.circular(25),
-                              border: Border.all(color: ColorRes.lightBlue),
-                            ),
-                            child: Row(
-                              children: [
-                                // Camera Tab
-                                SizedBox(
-                                  width: 131.pw,
-                                  height: 41.ph,
-                                  child: SubmitButton(
-                                    title: context.l10n?.camera ?? "",
-                                    onTap: () {
-                                      provider.setMode('camera');
-                                      provider.flipController.toggleCard();
-                                    },
-                                    style: styleW500S14.copyWith(
-                                      color: provider.getCameraTabTextColor(),
-                                    ),
-                                    bgColor: provider.getCameraTabBgColor(),
-                                    raduis: 10,
-                                  ),
-                                ),
-                                // Map Tab
-                                SizedBox(
-                                  width: 131.pw,
-                                  height: 41.ph,
-                                  child: SubmitButton(
-                                    raduis: 10,
-                                    title: context.l10n?.map ?? "",
-                                    style: styleW500S14.copyWith(
-                                      color: provider.getMapTabTextColor(),
-                                    ),
-                                    onTap: () {
-                                      provider.setMode('map');
-                                      provider.flipController.toggleCard();
-                                    },
-                                    bgColor: provider.getMapTabBgColor(),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
+    for (RatingProfileUserModel user in nearbyUsers) {
+      if (!user.hasLocation) continue;
 
-                      Spacer(),
+      try {
+        BitmapDescriptor markerIcon = await _createCustomMarker(user);
 
-                      // Profile Info Section
-                      Column(
-                        children: [
-                          // Name and Age
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Expanded(
-                                child: InkWell(
-                                  onTap: () {
-                                    openCustomDialog(
-                                      context,
-                                      borderRadius: 30,
+        final Marker marker = Marker(
+          markerId: MarkerId(user.id ?? ""),
+          position: LatLng(user.latitude ?? 0, user.longitude ?? 0),
+          icon: markerIcon,
+          infoWindow: InfoWindow(
+            title: user.displayName,
+            snippet: '${user.ratingsAverage.toStringAsFixed(1)}/10 ⭐',
+          ),
+          onTap: () => _onMarkerTapped(user),
+        );
 
-                                      title: context.l10n?.sendRating ?? "",
-                                      customChild: StarRatingWidget(
-                                        rating: 5,
-                                        activeColor: ColorRes.primaryColor,
-                                        inactiveColor: ColorRes.primaryColor,
-                                        size: 37,
-                                      ),
-                                      confirmBtnTitle: context.l10n?.send ?? "",
-                                    );
-                                  },
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      color: ColorRes.primaryColor.withValues(
-                                        alpha: 0.1,
-                                      ),
-                                      borderRadius: BorderRadius.circular(15),
-                                    ),
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: 10,
-                                      vertical: 8,
-                                    ),
-                                    child: Column(
-                                      children: [
-                                        Text(
-                                          isArabic!
-                                              ? "كادين شلايفر"
-                                              : "Kadin Schleifer",
-                                          overflow: TextOverflow.ellipsis,
-                                          maxLines: 2,
-                                          style: styleW700S20.copyWith(
-                                            color: ColorRes.white,
-                                          ),
-                                        ),
-                                        9.pw.spaceVertical,
-                                        // Rating Section
-                                        Row(
-                                          mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                          children: [
-                                            Text(
-                                              "(8.84/10)",
-                                              style: styleW700S12.copyWith(
-                                                color: ColorRes.white,
-                                              ),
-                                            ),
-                                            8.pw.spaceHorizontal,
-                                            StarRatingWidget(
-                                              rating: 4.5,
-                                              size: 10,
-                                              space: 8,
-                                              activeColor: ColorRes.yellowColor,
-                                              inactiveColor: Colors.grey,
-                                            ),
-                                            8.pw.spaceHorizontal,
-                                            Text(
-                                              "5.0",
-                                              style: styleW700S12.copyWith(
-                                                color: ColorRes.white,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
+        newMarkers.add(marker);
+      } catch (e) {
+        print('Error creating marker for ${user.displayName}: $e');
+        final Marker marker = Marker(
+          markerId: MarkerId(user.id ?? ""),
+          position: LatLng(user.latitude ?? 0, user.longitude ?? 0),
+          infoWindow: InfoWindow(
+            title: user.displayName,
+            snippet: '${user.ratingsAverage.toStringAsFixed(1)}/10 ⭐',
+          ),
+          onTap: () => _onMarkerTapped(user),
+        );
 
-                                        5.ph.spaceVertical,
+        newMarkers.add(marker);
+      }
+    }
 
-                                        // Rate Button
-                                        SizedBox(
-                                          width: 80.pw,
-                                          child: SubmitButton(
-                                            title: context.l10n?.rate ?? "",
-                                            height: 28.ph,
-                                            style: styleW500S12.copyWith(
-                                              color: ColorRes.white,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
+    markers = newMarkers;
+    notifyListeners();
+  }
+  // Future<void> _createMarkers() async {
+  //   final Set<Marker> newMarkers = {};
+  //   final currentLocation = await getCurrentLocation();
+  //
+  //   // Only create markers for users within 10 miles
+  //   final nearbyUsers =
+  //       currentLocation != null
+  //           ? getUsersWithinRadius(currentLocation, 10.0)
+  //           : users;
+  //
+  //   for (RatingProfileUserModel user in nearbyUsers) {
+  //     if (!user.hasLocation) continue;
+  //
+  //     try {
+  //       BitmapDescriptor markerIcon = await _createCustomMarker(user);
+  //
+  //       final Marker marker = Marker(
+  //         markerId: MarkerId(user.id ?? ""),
+  //         position: LatLng(user.latitude ?? 0, user.longitude ?? 0),
+  //         icon: markerIcon,
+  //         infoWindow: InfoWindow(
+  //           title: user.displayName,
+  //           snippet: '${user.ratingsAverage.toStringAsFixed(1)}/10 ⭐',
+  //         ),
+  //         onTap: () => _onMarkerTapped(user),
+  //       );
+  //
+  //       newMarkers.add(marker);
+  //     } catch (e) {
+  //       print('Error creating marker for ${user.displayName}: $e');
+  //       final Marker marker = Marker(
+  //         markerId: MarkerId(user.id ?? ""),
+  //         position: LatLng(user.latitude ?? 0, user.longitude ?? 0),
+  //         infoWindow: InfoWindow(
+  //           title: user.displayName,
+  //           snippet: '${user.ratingsAverage.toStringAsFixed(1)}/10 ⭐',
+  //         ),
+  //         onTap: () => _onMarkerTapped(user),
+  //       );
+  //
+  //       newMarkers.add(marker);
+  //     }
+  //   }
+  //
+  //   markers = newMarkers;
+  //   notifyListeners();
+  // }
 
-                              20.pw.spaceHorizontal,
-                              // Action Buttons
-                              Column(
-                                mainAxisAlignment:
-                                MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  SizedBox(
-                                    width: 120.pw,
-                                    child: SubmitButton2(
-                                      raduis: 15,
-                                      height: 45.ph,
-                                      title: context.l10n?.profileVisit ?? "",
-                                      onTap: () {},
-                                      icon: AssetRes.userIcon2,
-                                    ),
-                                  ),
-                                  10.ph.spaceVertical,
+  Future<BitmapDescriptor> _createCustomMarker(
+      RatingProfileUserModel user,
+      ) async {
+    print(
+      "User PRofile image -- ${EndPoints.domain}${user.profile?.profileImage}",
+    );
+    final ui.PictureRecorder pictureRecorder = ui.PictureRecorder();
+    final Canvas canvas = Canvas(pictureRecorder);
+    final Paint paint = Paint()..isAntiAlias = true;
 
-                                  SizedBox(
-                                    width: 120.pw,
-                                    child: SubmitButton2(
-                                      height: 45.ph,
-                                      raduis: 15,
-                                      title: context.l10n?.privateChat ?? "",
-                                      onTap: () {},
-                                      icon: AssetRes.msgIcon,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
+    const double size = 120.0;
+    const double borderWidth = 4.0;
 
-                          40.ph.spaceVertical,
+    canvas.drawCircle(
+      const Offset(size / 2, size / 2),
+      size / 2,
+      paint..color = Colors.white,
+    );
 
-                          // Bottom Control Buttons
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              // Lightning Button
-                              Container(
-                                width: 60,
-                                height: 60,
-                                decoration: BoxDecoration(
-                                  color: Colors.black.withValues(alpha: 0.4),
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: Colors.white.withValues(alpha: 0.4),
-                                  ),
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(19),
-                                  child: SvgAsset(
-                                    imagePath: AssetRes.flashIcon,
-                                    width: 19,
-                                    height: 19,
-                                  ),
-                                ),
-                              ),
+    canvas.drawCircle(
+      const Offset(size / 2, size / 2),
+      (size / 2) - borderWidth,
+      paint..color = ColorRes.primaryColor,
+    );
 
-                              // Camera Button
-                              InkWell(
-                                onTap: () async {
-                                  await checkCameraPermission(context);
-                                  if (context.mounted) {}
-                                },
-                                borderRadius: BorderRadius.circular(80),
-                                child: Container(
-                                  width: 80,
-                                  height: 80,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: ColorRes.primaryColor,
-                                      width: 4,
-                                    ),
-                                  ),
-                                  child: Container(),
-                                ),
-                              ),
+    canvas.drawCircle(
+      const Offset(size / 2, size / 2),
+      (size / 2) - (borderWidth * 2),
+      paint..color = Colors.grey[300]!,
+    );
 
-                              // Gallery Button
-                              Container(
-                                width: 60,
-                                height: 60,
-                                decoration: BoxDecoration(
-                                  color: Colors.black.withValues(alpha: 0.5),
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: Colors.white.withValues(alpha: 0.3),
-                                  ),
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(19),
-                                  child: SvgAsset(
-                                    imagePath: AssetRes.cameraIcon3,
-                                    width: 19,
-                                    height: 19,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
+    const double badgeSize = 30.0;
+    const double badgeY = size - 15;
 
-                          40.ph.spaceVertical,
-                        ],
-                      ),
-                    ],
-                  );
-                },
-              ),
-            ),
+    canvas.drawCircle(
+      const Offset(size / 2, badgeY),
+      badgeSize / 2,
+      paint..color = ColorRes.primaryColor,
+    );
 
-            // if (provider.capturedImage != null)
-            //   Image.file(provider.capturedImage!, height: 300)
-            // else
-            //   const Icon(Icons.camera_alt, size: 80, color: Colors.white),
-            // const SizedBox(height: 20),
-            // ElevatedButton(
-            //   onPressed: () => provider.openCamera(context),
-            //   child: const Text("Open Camera"),
-            // ),
-            // ElevatedButton(
-            //   onPressed: () {
-            //     provider.flipController.toggleCard();
-            //   },
-            //   child: const Text("Show Map"),
-            // ),
-          ],
+    final textPainter = TextPainter(
+      text: TextSpan(
+        text: user.ratingsAverage.toStringAsFixed(1),
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 12,
+          fontWeight: FontWeight.bold,
         ),
       ),
+      textDirection: TextDirection.ltr,
+    );
+    textPainter.layout();
+    textPainter.paint(
+      canvas,
+      Offset(
+        (size / 2) - (textPainter.width / 2),
+        badgeY - (textPainter.height / 2),
+      ),
+    );
+
+    final ui.Picture picture = pictureRecorder.endRecording();
+    final ui.Image image = await picture.toImage(size.toInt(), size.toInt());
+    final ByteData? byteData = await image.toByteData(
+      format: ui.ImageByteFormat.png,
+    );
+    final Uint8List uint8List = byteData!.buffer.asUint8List();
+
+    return BitmapDescriptor.fromBytes(uint8List);
+  }
+
+  Future<void> _onMarkerTapped(RatingProfileUserModel user) async {
+    selectedUser = user;
+    notifyListeners();
+    await _fetchOrCreateSelectedPost(user);
+    mapController?.animateCamera(
+      CameraUpdate.newLatLng(LatLng(user.latitude ?? 0, user.longitude ?? 0)),
     );
   }
 
-  Widget _buildMapView(BuildContext context, RatingProvider provider) {
-    return Container(
-      color: Colors.white,
-      child: Stack(
-        children: [
-          const GoogleMap(
-            initialCameraPosition: CameraPosition(
-              target: LatLng(37.7749, -122.4194),
-              zoom: 12,
-            ),
+  Future<void> _fetchOrCreateSelectedPost(RatingProfileUserModel user) async {
+    try {
+      // Option 2: Create a placeholder PostModel if API fetch fails or no userId
+      if (selectedPost == null) {
+        selectedPost = PostModel(
+          userId: UserId(
+            id: user.id,
+            email: user.email,
+            fullName: user.fullName,
+            phone_number: user.phoneNumber,
+            profile: user.profile,
           ),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: ElevatedButton(
-              onPressed: () {
-                provider.flipController.toggleCard();
-              },
-              child: const Text("Back to Camera"),
-            ),
+          content: "Sample post content for ${user.displayName}",
+          postImage: user.profile?.profileImage,
+          // Use profile image as post image
+          postRating: user.ratingsAverage,
+          createdAt: DateTime.now(),
+          // Add other fields as needed (e.g., location from geoLocation)
+          geoLocation: GeoLocation(
+            coordinates: [user.latitude ?? 0.0, user.longitude ?? 0.0],
           ),
-        ],
-      ),
-    );
-  }
-}
-
-@override
-Widget build(BuildContext context) {
-  final appProvider = Provider.of<AppProvider>(context, listen: true);
-  final isArabic = appProvider.locale?.languageCode == 'ar';
-
-  return Scaffold(
-    backgroundColor: Theme.of(context).colorScheme.surface,
-    body: ChangeNotifierProvider<RatingProvider>(
-      create: (context) => RatingProvider(),
-      child: SafeArea(
-        child: Directionality(
-          textDirection: isArabic ? TextDirection.rtl : TextDirection.ltr,
-          child: Stack(
-            children: [
-              // Background Image
-              Positioned.fill(
-                child: AssetsImg(
-                  imagePath: AssetRes.ratingImg, // Replace with your image
-                  fit: BoxFit.cover,
-                ),
-              ),
-
-              // Gradient Overlay
-              Positioned.fill(
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.transparent,
-                        Colors.black.withValues(alpha: 0.3),
-                        Colors.black.withValues(alpha: 0.7),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-
-              // Top Controls
-              Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: 20.pw,
-                  vertical: 10.ph,
-                ),
-                child: Consumer<RatingProvider>(
-                  builder: (context, provider, child) {
-                    return Column(
-                      children: [
-                        40.ph.spaceVertical,
-
-                        // Camera/Map Toggle
-                        // Camera/Map Toggle - Updated section for your RatingScreen
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Container(
-                              decoration: BoxDecoration(
-                                color: ColorRes.lightBlue,
-                                borderRadius: BorderRadius.circular(25),
-                                border: Border.all(color: ColorRes.lightBlue),
-                              ),
-                              child: Row(
-                                children: [
-                                  // Camera Tab
-                                  SizedBox(
-                                    width: 131.pw,
-                                    height: 41.ph,
-                                    child: SubmitButton(
-                                      title: context.l10n?.camera ?? "",
-                                      onTap: () {
-                                        provider.setMode('camera');
-                                      },
-                                      style: styleW500S14.copyWith(
-                                        color: provider.getCameraTabTextColor(),
-                                      ),
-                                      bgColor: provider.getCameraTabBgColor(),
-                                      raduis: 10,
-                                    ),
-                                  ),
-                                  // Map Tab
-                                  SizedBox(
-                                    width: 131.pw,
-                                    height: 41.ph,
-                                    child: SubmitButton(
-                                      raduis: 10,
-                                      title: context.l10n?.map ?? "",
-                                      style: styleW500S14.copyWith(
-                                        color: provider.getMapTabTextColor(),
-                                      ),
-                                      onTap: () {
-                                        provider.setMode('map');
-                                      },
-                                      bgColor: provider.getMapTabBgColor(),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-
-                        Spacer(),
-
-                        // Profile Info Section
-                        Column(
-                          children: [
-                            // Name and Age
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Expanded(
-                                  child: InkWell(
-                                    onTap: () {
-                                      openCustomDialog(
-                                        context,
-                                        borderRadius: 30,
-
-                                        title: context.l10n?.sendRating ?? "",
-                                        customChild: StarRatingWidget(
-                                          rating: 5,
-                                          activeColor: ColorRes.primaryColor,
-                                          inactiveColor: ColorRes.primaryColor,
-                                          size: 37,
-                                        ),
-                                        confirmBtnTitle:
-                                        context.l10n?.send ?? "",
-                                      );
-                                    },
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        color: ColorRes.primaryColor.withValues(
-                                          alpha: 0.1,
-                                        ),
-                                        borderRadius: BorderRadius.circular(15),
-                                      ),
-                                      padding: EdgeInsets.symmetric(
-                                        horizontal: 10,
-                                        vertical: 8,
-                                      ),
-                                      child: Column(
-                                        children: [
-                                          Text(
-                                            isArabic
-                                                ? "كادين شلايفر"
-                                                : "Kadin Schleifer",
-                                            overflow: TextOverflow.ellipsis,
-                                            maxLines: 2,
-                                            style: styleW700S20.copyWith(
-                                              color: ColorRes.white,
-                                            ),
-                                          ),
-                                          9.pw.spaceVertical,
-                                          // Rating Section
-                                          Row(
-                                            mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                            children: [
-                                              Text(
-                                                "(8.84/10)",
-                                                style: styleW700S12.copyWith(
-                                                  color: ColorRes.white,
-                                                ),
-                                              ),
-                                              8.pw.spaceHorizontal,
-                                              StarRatingWidget(
-                                                rating: 4.5,
-                                                size: 10,
-                                                space: 8,
-                                                activeColor:
-                                                ColorRes.yellowColor,
-                                                inactiveColor: Colors.grey,
-                                              ),
-                                              8.pw.spaceHorizontal,
-                                              Text(
-                                                "5.0",
-                                                style: styleW700S12.copyWith(
-                                                  color: ColorRes.white,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-
-                                          5.ph.spaceVertical,
-
-                                          // Rate Button
-                                          SizedBox(
-                                            width: 80.pw,
-                                            child: SubmitButton(
-                                              title: context.l10n?.rate ?? "",
-                                              height: 28.ph,
-                                              style: styleW500S12.copyWith(
-                                                color: ColorRes.white,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-
-                                20.pw.spaceHorizontal,
-                                // Action Buttons
-                                Column(
-                                  mainAxisAlignment:
-                                  MainAxisAlignment.spaceEvenly,
-                                  children: [
-                                    SizedBox(
-                                      width: 120.pw,
-                                      child: SubmitButton2(
-                                        raduis: 15,
-                                        height: 45.ph,
-                                        title: context.l10n?.profileVisit ?? "",
-                                        onTap: () {},
-                                        icon: AssetRes.userIcon2,
-                                      ),
-                                    ),
-                                    10.ph.spaceVertical,
-
-                                    SizedBox(
-                                      width: 120.pw,
-                                      child: SubmitButton2(
-                                        height: 45.ph,
-                                        raduis: 15,
-                                        title: context.l10n?.privateChat ?? "",
-                                        onTap: () {},
-                                        icon: AssetRes.msgIcon,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-
-                            40.ph.spaceVertical,
-
-                            // Bottom Control Buttons
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: [
-                                // Lightning Button
-                                Container(
-                                  width: 60,
-                                  height: 60,
-                                  decoration: BoxDecoration(
-                                    color: Colors.black.withValues(alpha: 0.4),
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: Colors.white.withValues(
-                                        alpha: 0.4,
-                                      ),
-                                    ),
-                                  ),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(19),
-                                    child: SvgAsset(
-                                      imagePath: AssetRes.flashIcon,
-                                      width: 19,
-                                      height: 19,
-                                    ),
-                                  ),
-                                ),
-
-                                // Camera Button
-                                InkWell(
-                                  onTap: () async {
-                                    await checkCameraPermission(context);
-                                    if (context.mounted) {}
-                                  },
-                                  borderRadius: BorderRadius.circular(80),
-                                  child: Container(
-                                    width: 80,
-                                    height: 80,
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                        color: ColorRes.primaryColor,
-                                        width: 4,
-                                      ),
-                                    ),
-                                    child: Container(),
-                                  ),
-                                ),
-
-                                // Gallery Button
-                                Container(
-                                  width: 60,
-                                  height: 60,
-                                  decoration: BoxDecoration(
-                                    color: Colors.black.withValues(alpha: 0.5),
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: Colors.white.withValues(
-                                        alpha: 0.3,
-                                      ),
-                                    ),
-                                  ),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(19),
-                                    child: SvgAsset(
-                                      imagePath: AssetRes.cameraIcon3,
-                                      width: 19,
-                                      height: 19,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-
-                            40.ph.spaceVertical,
-                          ],
-                        ),
-                      ],
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
+        );
+        print("Created placeholder PostModel for ${user.displayName}");
+      }
+    } catch (e) {
+      print("Error fetching/creating post: $e");
+      // Fallback to placeholder if error occurs
+      selectedPost = PostModel(
+        userId: UserId(
+          id: user.id,
+          email: user.email,
+          fullName: user.fullName,
+          phone_number: user.phoneNumber,
+          profile: user.profile,
         ),
-      ),
-    ),
-  );
+        content: "Default post for ${user.displayName}",
+        postRating: user.ratingsAverage,
+        createdAt: DateTime.now(),
+      );
+    }
+  }
+
+  Future<void> getAllUserRatingProfile() async {
+    if (userData == null || userData?.id == null) return;
+    loader = true;
+    notifyListeners();
+    var latitude = PrefService.getDouble(PrefKeys.latitude);
+    var longitude = PrefService.getDouble(PrefKeys.longitude);
+
+    print("Login User Lat $latitude Long $longitude");
+    final response = await RatingProfileAPIS.getAllRatingProfileUSerListAPI(
+      latitude: latitude.toString() ?? "0",
+      longitude: longitude.toString() ?? "0",
+    );
+
+    if (response != null && response.isSuccess) {
+      users = response.list ?? [];
+      print("✅ Loaded ${users.length} users");
+      await _createMarkers();
+    } else {
+      print("❌ Failed to fetch users");
+    }
+
+    loader = false;
+    notifyListeners();
+  }
+
+  ///====================== Profile Rating Camera Section ======================
+  final FlipCardController flipController = FlipCardController();
+  File? capturedImage;
+  bool isLoading = false;
+  String? errorMessage;
+  String currentMode = 'camera';
+
+  bool get isCameraSelected => currentMode == 'camera';
+
+  bool get isMapSelected => currentMode == 'map';
+
+  void showCamera() {
+    if (isMapSelected) {
+      flipController.toggleCard();
+    }
+    setMode('camera');
+  }
+
+  Future<void> showMap() async {
+    await getAllUserRatingProfile();
+    if (isCameraSelected) {
+      flipController.toggleCard();
+    }
+    setMode('map');
+  }
+
+  final ImagePicker _picker = ImagePicker();
+
+  Future<void> openCamera(BuildContext context) async {
+    try {
+      isLoading = true;
+      errorMessage = null;
+      notifyListeners();
+
+      final hasPermission = await checkCameraPermission(context);
+      if (!hasPermission) {
+        errorMessage = 'Camera permission denied';
+        notifyListeners();
+        return;
+      }
+
+      final XFile? image = await _picker.pickImage(
+        source: ImageSource.camera,
+        imageQuality: 80,
+        preferredCameraDevice: CameraDevice.front,
+      );
+
+      if (image != null) {
+        capturedImage = File(image.path);
+        notifyListeners();
+      }
+    } catch (e) {
+      errorMessage = 'Failed to capture image: $e';
+      notifyListeners();
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> openGallery(BuildContext context) async {
+    try {
+      isLoading = true;
+      errorMessage = null;
+      notifyListeners();
+
+      final XFile? image = await _picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 80,
+      );
+
+      if (image != null) {
+        capturedImage = File(image.path);
+        notifyListeners();
+      }
+    } catch (e) {
+      errorMessage = 'Failed to select image: $e';
+      notifyListeners();
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  void setMode(String mode) {
+    currentMode = mode;
+    notifyListeners();
+  }
+
+  Color getCameraTabBgColor() {
+    return isCameraSelected ? ColorRes.primaryColor : ColorRes.lightBlue;
+  }
+
+  Color getCameraTabTextColor() {
+    return isCameraSelected ? ColorRes.white : ColorRes.primaryColor;
+  }
+
+  Color getMapTabBgColor() {
+    return isMapSelected ? ColorRes.primaryColor : ColorRes.lightBlue;
+  }
+
+  Color getMapTabTextColor() {
+    return isMapSelected ? ColorRes.white : ColorRes.primaryColor;
+  }
 }

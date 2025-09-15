@@ -240,7 +240,7 @@ class UploadScreen extends StatelessWidget {
                                     isArabic
                                         ? Constants.horizontalPadding
                                         : null,
-                                top: 30,
+                                top: 45,
                                 child: Container(
                                   width: 170,
                                   child: Column(
@@ -367,7 +367,7 @@ class UploadScreen extends StatelessWidget {
                               /// Custom Follow Button
                               Container(
                                 width: 100.pw,
-                                height: 40.ph,
+                                height: 45.ph,
                                 decoration: BoxDecoration(
                                   color: ColorRes.primaryColor,
                                   borderRadius: BorderRadius.circular(15),
@@ -426,7 +426,7 @@ class UploadScreen extends StatelessWidget {
                               /// Custom Message Button
                               Container(
                                 width: 100.pw,
-                                height: 40.ph,
+                                height: 45.ph,
                                 decoration: BoxDecoration(
                                   color: ColorRes.primaryColor,
                                   borderRadius: BorderRadius.circular(15),
@@ -470,6 +470,8 @@ class UploadScreen extends StatelessWidget {
                     ],
                   ),
 
+
+                  10.ph.spaceVertical,
                   // 25.ph.spaceVertical,
                   Expanded(
                     child: Container(

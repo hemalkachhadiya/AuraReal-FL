@@ -1,6 +1,6 @@
 class EndPoints {
   /// LOCAL URL
-  // static const domain = "http://192.168.1.23:4000/";
+  // static const domain = "http://192.168.1.28:4000/";
 
   ///Live URL
   static const domain = "https://aurarealapi.smarttechnica.com/";

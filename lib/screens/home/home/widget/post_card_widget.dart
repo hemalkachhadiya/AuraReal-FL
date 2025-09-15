@@ -160,9 +160,7 @@ class _PostCardState extends State<PostCard> {
                       ),
                       const SizedBox(width: 10),
                       Text(
-                        widget.post.postRating!.toStarCount().toStringAsFixed(
-                          1,
-                        ),
+                        widget.post.postRating.toString() ,
                         style: styleW700S16,
                       ),
                       const Spacer(),

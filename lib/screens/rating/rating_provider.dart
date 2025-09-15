@@ -1,104 +1,167 @@
 import 'dart:io';
 import 'dart:ui' as ui;
+import 'package:aura_real/apis/model/post_model.dart';
 import 'package:aura_real/apis/model/user_marker_data.dart';
+import 'package:aura_real/apis/rating_profile_apis.dart';
 import 'package:aura_real/common/methods.dart';
+import 'package:aura_real/screens/rating/model/rating_profile_list_model.dart';
+import 'package:aura_real/services/location_permission.dart';
 import 'package:aura_real/utils/color_res.dart';
 import 'package:flip_card/flip_card.dart';
 import 'package:flip_card/flip_card_controller.dart';
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:map_location_picker/map_location_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
-
-import '../../aura_real.dart';
+import 'package:aura_real/aura_real.dart';
+import 'package:geolocator/geolocator.dart'; // Add for distance calculations
 
 class RatingProvider extends ChangeNotifier {
-  ///====================== Profile Rating Map Section =========================
-  Set<Marker> markers = {};
-  // Google Maps related
-  GoogleMapController? mapController;
-  // Sample user data - replace with your actual data
-  List<UserMarkerData> users = [
-    UserMarkerData(
-      id: '1',
-      name: 'Kadin Schleifer',
-      profileImage: 'https://example.com/profile1.jpg', // Replace with actual image URLs
-      rating: 8.84,
-      position: const LatLng(37.7849, -122.4094), // San Francisco
-      age: 25,
-    ),
-    UserMarkerData(
-      id: '2',
-      name: 'Sarah Johnson',
-      profileImage: 'https://example.com/profile2.jpg',
-      rating: 9.2,
-      position: const LatLng(37.7849, -122.4194),
-      age: 28,
-    ),
-    UserMarkerData(
-      id: '3',
-      name: 'Mike Chen',
-      profileImage: 'https://example.com/profile3.jpg',
-      rating: 7.8,
-      position: const LatLng(37.7749, -122.4294),
-      age: 32,
-    ),
-    UserMarkerData(
-      id: '4',
-      name: 'Emma Davis',
-      profileImage: 'https://example.com/profile4.jpg',
-      rating: 8.5,
-      position: const LatLng(37.7649, -122.4394),
-      age: 24,
-    ),
-    UserMarkerData(
-      id: '5',
-      name: 'Alex Rodriguez',
-      profileImage: 'https://example.com/profile5.jpg',
-      rating: 9.1,
-      position: const LatLng(37.7549, -122.4494),
-      age: 29,
-    ),
-  ];
-
-  void onMapCreated(GoogleMapController controller) {
-    mapController = controller;
-    _createMarkers();
+  RatingProvider() {
+    init();
   }
 
-  // Create custom markers for users
+  init() async {
+    await getAllUserRatingProfile();
+  }
+
+  ///====================== Profile Rating Map Section =========================
+  Set<Marker> markers = {};
+  GoogleMapController? mapController;
+  List<RatingProfileUserModel> users = [];
+  RatingProfileUserModel? selectedUser;
+  bool loader = false;
+  PostModel? selectedPost; // New variable to hold the selected post
+
+  Future<LatLng?> getCurrentLocation() async {
+    // Try to get location from SharedPreferences
+    final prefs = await SharedPreferences.getInstance();
+    final double? latitude = prefs.getDouble(PrefKeys.latitude);
+    final double? longitude = prefs.getDouble(PrefKeys.longitude);
+
+    print("Provider latitude------- $latitude");
+    print("Provider longitude------- $longitude");
+    if (latitude != null && longitude != null) {
+      return LatLng(latitude, longitude);
+    }
+
+    return null;
+  }
+
+  // Filter users within 10 miles
+  List<RatingProfileUserModel> getUsersWithinRadius(
+    LatLng userLocation,
+    double radiusMiles,
+  ) {
+    const double milesToMeters = 1609.34; // 1 mile = 1609.34 meters
+    return users.where((user) {
+      if (user.latitude == null || user.longitude == null) return false;
+      final distance = Geolocator.distanceBetween(
+        userLocation.latitude,
+        userLocation.longitude,
+        user.latitude!,
+        user.longitude!,
+      );
+      return distance <=
+          (radiusMiles * milesToMeters); // Convert miles to meters
+    }).toList();
+  }
+
+  List<Widget> mapOverlays = [];
+
+  Future<void> _createMapOverlays() async {
+    final currentLocation = await getCurrentLocation();
+    final nearbyUsers =
+        currentLocation != null
+            ? getUsersWithinRadius(currentLocation, 10.0)
+            : users;
+
+    mapOverlays = await Future.wait(
+      nearbyUsers.map((user) async {
+        if (!user.hasLocation) return SizedBox.shrink();
+
+        final imageProvider =
+            user.profile?.profileImage != null
+                ? NetworkImage(
+                  '${EndPoints.domain}${user.profile?.profileImage}',
+                )
+                : SvgAsset(imagePath: AssetRes.appLogo) as ImageProvider;
+
+        return Positioned(
+          left: 0,
+          // Convert lat/lng to screen coordinates (requires map controller)
+          top: 0,
+          // Convert lat/lng to screen coordinates (requires map controller)
+          child: GestureDetector(
+            onTap: () => _onMarkerTapped(user),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircleAvatar(radius: 30, backgroundImage: imageProvider),
+                Text('${user.ratingsAverage.toStringAsFixed(1)}/10 ⭐'),
+              ],
+            ),
+          ),
+        );
+      }).toList(),
+    );
+
+    notifyListeners();
+  }
+
+  Future<void> onMapCreated(GoogleMapController controller) async {
+    mapController = controller;
+    await _createMarkers();
+    final currentLocation = await getCurrentLocation();
+    print("currentLocation=====123========= ${currentLocation}");
+    if (currentLocation != null) {
+      mapController?.animateCamera(
+        CameraUpdate.newLatLngZoom(currentLocation, 12), // Zoom level 12
+      );
+    }
+    notifyListeners();
+  }
+
   Future<void> _createMarkers() async {
     final Set<Marker> newMarkers = {};
+    final currentLocation = await getCurrentLocation();
 
-    for (UserMarkerData user in users) {
+    // Only create markers for users within 10 miles
+    final nearbyUsers =
+        currentLocation != null
+            ? getUsersWithinRadius(currentLocation, 10.0)
+            : users;
+
+    for (RatingProfileUserModel user in nearbyUsers) {
+      if (!user.hasLocation) continue;
+
       try {
-        // Create custom marker icon with user profile
         BitmapDescriptor markerIcon = await _createCustomMarker(user);
 
         final Marker marker = Marker(
-          markerId: MarkerId(user.id),
-          position: user.position,
+          markerId: MarkerId(user.id ?? ""),
+          position: LatLng(user.latitude ?? 0, user.longitude ?? 0),
           icon: markerIcon,
           infoWindow: InfoWindow(
-            title: user.name,
-            snippet: '${user.rating}/10 ⭐ • ${user.age} years',
+            title: user.displayName,
+            snippet: '${user.ratingsAverage.toStringAsFixed(1)}/10 ⭐',
           ),
           onTap: () => _onMarkerTapped(user),
         );
 
         newMarkers.add(marker);
       } catch (e) {
-        print('Error creating marker for ${user.name}: $e');
-        // Fallback to default marker
+        print('Error creating marker for ${user.displayName}: $e');
         final Marker marker = Marker(
-          markerId: MarkerId(user.id),
-          position: user.position,
+          markerId: MarkerId(user.id ?? ""),
+          position: LatLng(user.latitude ?? 0, user.longitude ?? 0),
           infoWindow: InfoWindow(
-            title: user.name,
-            snippet: '${user.rating}/10 ⭐',
+            title: user.displayName,
+            snippet: '${user.ratingsAverage.toStringAsFixed(1)}/10 ⭐',
           ),
           onTap: () => _onMarkerTapped(user),
         );
+
         newMarkers.add(marker);
       }
     }
@@ -107,105 +170,274 @@ class RatingProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Create custom marker with circular profile image
-  Future<BitmapDescriptor> _createCustomMarker(UserMarkerData user) async {
-    final ui.PictureRecorder pictureRecorder = ui.PictureRecorder();
-    final Canvas canvas = Canvas(pictureRecorder);
-    final Paint paint = Paint()..isAntiAlias = true;
 
-    const double size = 120.0;
-    const double borderWidth = 4.0;
 
-    // Draw outer border (white)
-    canvas.drawCircle(
-      const Offset(size / 2, size / 2),
-      size / 2,
-      paint..color = Colors.white,
-    );
+  Future<BitmapDescriptor> _createCustomMarker(
 
-    // Draw inner border (primary color)
-    canvas.drawCircle(
-      const Offset(size / 2, size / 2),
-      (size / 2) - borderWidth,
-      paint..color = const Color(0xFF6366F1), // Replace with your primary color
-    );
+      RatingProfileUserModel user,
+      ) async {
+    try {
+      final ui.PictureRecorder pictureRecorder = ui.PictureRecorder();
+      final Canvas canvas = Canvas(pictureRecorder);
+      final Paint paint = Paint()..isAntiAlias = true;
 
-    // Draw profile circle background
-    canvas.drawCircle(
-      const Offset(size / 2, size / 2),
-      (size / 2) - (borderWidth * 2),
-      paint..color = Colors.grey[300]!,
-    );
+      const double size = 120.0; // Total size of the marker
+      const double borderWidth = 4.0; // Border width
+      const double imageSize = 80.0; // Size of the SVG image inside the marker
 
-    // Draw rating badge at the bottom
-    const double badgeSize = 30.0;
-    const double badgeY = size - 15;
+      // Draw outer white circle
+      canvas.drawCircle(
+        const Offset(size / 2, size / 2),
+        size / 2,
+        paint..color = Colors.white,
+      );
 
-    // Badge background
-    canvas.drawCircle(
-      const Offset(size / 2, badgeY),
-      badgeSize / 2,
-      paint..color = const Color(0xFF6366F1),
-    );
+      // Draw primary color border
+      canvas.drawCircle(
+        const Offset(size / 2, size / 2),
+        (size / 2) - borderWidth,
+        paint..color = ColorRes.primaryColor,
+      );
 
-    // Draw rating text
-    final textPainter = TextPainter(
-      text: TextSpan(
-        text: user.rating.toStringAsFixed(1),
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 12,
-          fontWeight: FontWeight.bold,
+      // Draw inner grey circle
+      canvas.drawCircle(
+        const Offset(size / 2, size / 2),
+        (size / 2) - (borderWidth * 2),
+        paint..color = Colors.grey[300]!,
+      );
+
+      // Load and render the SVG app logo
+      final String svgString = await DefaultAssetBundle.of(navigatorKey.currentState!.context).loadString(AssetRes.appLogo);
+      final SvgPicture svgPicture = SvgPicture.string(
+        svgString,
+        width: imageSize,
+        height: imageSize,
+      );
+
+      // Convert SvgPicture to ui.Image
+      final ui.Image svgImage = await _svgPictureToImage(svgPicture, imageSize.toInt());
+
+      // Draw the SVG image in the center of the marker
+      canvas.drawImage(
+        svgImage,
+        Offset((size - imageSize) / 2, (size - imageSize) / 2),
+        paint,
+      );
+
+      // Draw the rating badge at the bottom
+      const double badgeSize = 30.0;
+      const double badgeY = size - 15;
+
+      canvas.drawCircle(
+        const Offset(size / 2, badgeY),
+        badgeSize / 2,
+        paint..color = ColorRes.primaryColor,
+      );
+
+      final textPainter = TextPainter(
+        text: TextSpan(
+          text: user.ratingsAverage.toStringAsFixed(1),
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+          ),
         ),
-      ),
-      textDirection: TextDirection.ltr,
-    );
-    textPainter.layout();
-    textPainter.paint(
-      canvas,
-      Offset(
-        (size / 2) - (textPainter.width / 2),
-        badgeY - (textPainter.height / 2),
-      ),
-    );
+        textDirection: TextDirection.ltr,
+      );
+      textPainter.layout();
+      textPainter.paint(
+        canvas,
+        Offset(
+          (size / 2) - (textPainter.width / 2),
+          badgeY - (textPainter.height / 2),
+        ),
+      );
 
-    // Convert to image
-    final ui.Picture picture = pictureRecorder.endRecording();
-    final ui.Image image = await picture.toImage(size.toInt(), size.toInt());
-    final ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-    final Uint8List uint8List = byteData!.buffer.asUint8List();
+      // Convert the canvas to an image
+      final ui.Image markerImage = await pictureRecorder.endRecording().toImage(size.toInt(), size.toInt());
+      final ByteData? byteData = await markerImage.toByteData(format: ui.ImageByteFormat.png);
+      final Uint8List uint8List = byteData!.buffer.asUint8List();
 
-    return BitmapDescriptor.fromBytes(uint8List);
+      return BitmapDescriptor.fromBytes(uint8List);
+    } catch (e) {
+      print('Error creating custom marker for ${user.displayName}: $e');
+      return BitmapDescriptor.defaultMarker;
+    }
   }
 
-  UserMarkerData? selectedUser;
+// Helper method to convert SvgPicture to ui.Image
+  Future<ui.Image> _svgPictureToImage(SvgPicture svgPicture, int size) async {
+    final pictureRecorder = ui.PictureRecorder();
+    final canvas = Canvas(pictureRecorder);
+    // svgPicture.paint(canvas, Size(size.toDouble(), size.toDouble()));
+    final picture = pictureRecorder.endRecording();
+    return await picture.toImage(size, size);
+  }
 
-  // Handle marker tap
-  void _onMarkerTapped(UserMarkerData user) {
+  // Future<BitmapDescriptor> _createCustomMarker(
+  //   RatingProfileUserModel user,
+  // ) async {
+  //   print(
+  //     "User PRofile image -- ${EndPoints.domain}${user.profile?.profileImage}",
+  //   );
+  //   final ui.PictureRecorder pictureRecorder = ui.PictureRecorder();
+  //   final Canvas canvas = Canvas(pictureRecorder);
+  //   final Paint paint = Paint()..isAntiAlias = true;
+  //
+  //   const double size = 120.0;
+  //   const double borderWidth = 4.0;
+  //
+  //   canvas.drawCircle(
+  //     const Offset(size / 2, size / 2),
+  //     size / 2,
+  //     paint..color = Colors.white,
+  //   );
+  //
+  //   canvas.drawCircle(
+  //     const Offset(size / 2, size / 2),
+  //     (size / 2) - borderWidth,
+  //     paint..color = ColorRes.primaryColor,
+  //   );
+  //
+  //   canvas.drawCircle(
+  //     const Offset(size / 2, size / 2),
+  //     (size / 2) - (borderWidth * 2),
+  //     paint..color = Colors.grey[300]!,
+  //   );
+  //
+  //   const double badgeSize = 30.0;
+  //   const double badgeY = size - 15;
+  //
+  //   canvas.drawCircle(
+  //     const Offset(size / 2, badgeY),
+  //     badgeSize / 2,
+  //     paint..color = ColorRes.primaryColor,
+  //   );
+  //
+  //   final textPainter = TextPainter(
+  //     text: TextSpan(
+  //       text: user.ratingsAverage.toStringAsFixed(1),
+  //       style: const TextStyle(
+  //         color: Colors.white,
+  //         fontSize: 12,
+  //         fontWeight: FontWeight.bold,
+  //       ),
+  //     ),
+  //     textDirection: TextDirection.ltr,
+  //   );
+  //   textPainter.layout();
+  //   textPainter.paint(
+  //     canvas,
+  //     Offset(
+  //       (size / 2) - (textPainter.width / 2),
+  //       badgeY - (textPainter.height / 2),
+  //     ),
+  //   );
+  //
+  //   final ui.Picture picture = pictureRecorder.endRecording();
+  //   final ui.Image image = await picture.toImage(size.toInt(), size.toInt());
+  //   final ByteData? byteData = await image.toByteData(
+  //     format: ui.ImageByteFormat.png,
+  //   );
+  //   final Uint8List uint8List = byteData!.buffer.asUint8List();
+  //
+  //   return BitmapDescriptor.fromBytes(uint8List);
+  // }
 
-    print('Tapped on ${user.name}');
+  Future<void> _onMarkerTapped(RatingProfileUserModel user) async {
+    selectedPost = null;
     selectedUser = user;
     notifyListeners();
-    print('Selected user: ${user.name}');
-
-    // Optional: Center map on selected user
+    await _fetchOrCreateSelectedPost(user);
     mapController?.animateCamera(
-      CameraUpdate.newLatLng(user.position),
+      CameraUpdate.newLatLng(LatLng(user.latitude ?? 0, user.longitude ?? 0)),
     );
-    // You can add navigation to user profile or show bottom sheet here
-    // For example:
-    // Navigator.pushNamed(context, '/user_profile', arguments: user);
   }
 
+  // Future<void> _onMarkerTapped(RatingProfileUserModel user) async {
+  //   selectedPost=null;
+  //   selectedUser = user;
+  //   notifyListeners();
+  //   await _fetchOrCreateSelectedPost(user);
+  //   mapController?.animateCamera(
+  //     CameraUpdate.newLatLng(LatLng(user.latitude ?? 0, user.longitude ?? 0)),
+  //   );
+  // }
+
+  Future<void> _fetchOrCreateSelectedPost(RatingProfileUserModel user) async {
+    try {
+      // Option 2: Create a placeholder PostModel if API fetch fails or no userId
+      if (selectedPost == null) {
+        selectedPost = PostModel(
+          userId: UserId(
+            id: user.id,
+            email: user.email,
+            fullName: user.fullName,
+            phone_number: user.phoneNumber,
+            profile: user.profile,
+          ),
+          content: "Sample post content for ${user.displayName}",
+          postImage: user.profile?.profileImage,
+          // Use profile image as post image
+          postRating: user.ratingsAverage,
+          createdAt: DateTime.now(),
+          // Add other fields as needed (e.g., location from geoLocation)
+          geoLocation: GeoLocation(
+            coordinates: [user.latitude ?? 0.0, user.longitude ?? 0.0],
+          ),
+        );
+        print("Created placeholder PostModel for ${user.displayName}");
+      }
+    } catch (e) {
+      print("Error fetching/creating post: $e");
+      // Fallback to placeholder if error occurs
+      selectedPost = PostModel(
+        userId: UserId(
+          id: user.id,
+          email: user.email,
+          fullName: user.fullName,
+          phone_number: user.phoneNumber,
+          profile: user.profile,
+        ),
+        content: "Default post for ${user.displayName}",
+        postRating: user.ratingsAverage,
+        createdAt: DateTime.now(),
+      );
+    }
+  }
+
+  Future<void> getAllUserRatingProfile() async {
+    if (userData == null || userData?.id == null) return;
+    loader = true;
+    notifyListeners();
+    var latitude = PrefService.getDouble(PrefKeys.latitude);
+    var longitude = PrefService.getDouble(PrefKeys.longitude);
+
+    print("Login User Lat $latitude Long $longitude");
+    final response = await RatingProfileAPIS.getAllRatingProfileUSerListAPI(
+      latitude: latitude.toString() ?? "0",
+      longitude: longitude.toString() ?? "0",
+    );
+
+    if (response != null && response.isSuccess) {
+      users = response.list ?? [];
+      print("✅ Loaded ${users.length} users");
+      await _createMarkers();
+    } else {
+      print("❌ Failed to fetch users");
+    }
+
+    loader = false;
+    notifyListeners();
+  }
 
   ///====================== Profile Rating Camera Section ======================
   final FlipCardController flipController = FlipCardController();
   File? capturedImage;
   bool isLoading = false;
   String? errorMessage;
-  String currentMode = 'camera'; // Default mode
-
-  // bool isCameraSelected = true;
+  String currentMode = 'camera';
 
   bool get isCameraSelected => currentMode == 'camera';
 
@@ -218,7 +450,8 @@ class RatingProvider extends ChangeNotifier {
     setMode('camera');
   }
 
-  void showMap() {
+  Future<void> showMap() async {
+    await getAllUserRatingProfile();
     if (isCameraSelected) {
       flipController.toggleCard();
     }
@@ -227,7 +460,6 @@ class RatingProvider extends ChangeNotifier {
 
   final ImagePicker _picker = ImagePicker();
 
-  ///Open Camera
   Future<void> openCamera(BuildContext context) async {
     try {
       isLoading = true;
@@ -260,7 +492,6 @@ class RatingProvider extends ChangeNotifier {
     }
   }
 
-  ///Open Gallery
   Future<void> openGallery(BuildContext context) async {
     try {
       isLoading = true;
@@ -285,28 +516,23 @@ class RatingProvider extends ChangeNotifier {
     }
   }
 
-  ///Set Mode
   void setMode(String mode) {
     currentMode = mode;
     notifyListeners();
   }
 
-  ///Get Camera Ta Bg
   Color getCameraTabBgColor() {
     return isCameraSelected ? ColorRes.primaryColor : ColorRes.lightBlue;
   }
 
-  // Get text color for camera tab
   Color getCameraTabTextColor() {
     return isCameraSelected ? ColorRes.white : ColorRes.primaryColor;
   }
 
-  // Get background color for map tab
   Color getMapTabBgColor() {
     return isMapSelected ? ColorRes.primaryColor : ColorRes.lightBlue;
   }
 
-  // Get text color for map tab
   Color getMapTabTextColor() {
     return isMapSelected ? ColorRes.white : ColorRes.primaryColor;
   }

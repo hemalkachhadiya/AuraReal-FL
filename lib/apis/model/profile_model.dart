@@ -60,49 +60,8 @@ class Profile {
     'date_of_birth': dateOfBirth,
     'gender': gender,
     'website': website,
-
     'is_following': is_following,
     'last_seen': lastSeen, // Added last_seen field
   };
 
-  //   /// Convenient copyWith
-  //   Profile copyWith({
-  //     String? username,
-  //     String? profileImage,
-  //     String? email,
-  //     String? bio,
-  //     int? followersCount,
-  //     int? totalPosts,
-  //     double? ratingsAvg,
-  //     String? dateOfBirth,
-  //     int? gender,
-  //     String? website,
-
-  //     String? lastSeen, // Added last_seen field
-  //   }) => Profile(
-  //     username: username ?? this.username,
-  //     profileImage: profileImage ?? this.profileImage,
-  //     email: email ?? this.email,
-  //     bio: bio ?? this.bio,
-  //     followersCount: followersCount ?? this.followersCount,
-  //     totalPosts: totalPosts ?? this.totalPosts,
-  //     ratingsAvg: ratingsAvg ?? this.ratingsAvg,
-  //     dateOfBirth: dateOfBirth ?? this.dateOfBirth,
-  //     gender: gender ?? this.gender,
-  //     website: website ?? this.website,
-  //     lastSeen: lastSeen ?? this.lastSeen, // Added last_seen field
-  //   );
-
-  //   // Helper getters for safe access with default values
-  //   String get safeUsername => username ?? 'Unknown';
-  //   String get safeProfileImage => profileImage ?? '';
-  //   String get safeEmail => email ?? '';
-  //   String get safeBio => bio ?? '';
-  //   int get safeFollowersCount => followersCount ?? 0;
-  //   int get safeTotalPosts => totalPosts ?? 0;
-  //   double get safeRatingsAvg => ratingsAvg ?? 0.0;
-  //   String get safeDateOfBirth => dateOfBirth ?? '';
-  //   int get safeGender => gender ?? 0;
-  //   String get safeWebsite => website ?? '';
-  //   String get safeLastSeen => lastSeen ?? ''; // Added last_seen field
 }

@@ -76,34 +76,41 @@ class AddPostScreen extends StatelessWidget {
                               children: [
                                 // Text input area
                                 Expanded(
-                                  flex: 3,
+                                  flex: 4,
                                   child: Container(
                                     decoration: BoxDecoration(
-                                      color: ColorRes.grey7,
                                       borderRadius: BorderRadius.circular(15),
                                     ),
-                                    padding: const EdgeInsets.all(16),
-                                    child: TextField(
+                                    padding: EdgeInsets.zero,
+                                    child: AppTextField(
                                       controller: provider.textController,
-                                      maxLines: null,
-                                      expands: true,
-                                      decoration: const InputDecoration(
-                                        hintText: "Write a Caption?",
-                                        border: InputBorder.none,
-                                        hintStyle: TextStyle(
-                                          color: Colors.grey,
-                                          fontSize: 16,
-                                        ),
+                                      textInputType: TextInputType.multiline,
+                                      hintText: "Write a Caption?",
+                                      customPadding: const EdgeInsets.only(
+                                        left: 10,
+                                        right: 5,
+                                        top: 10,
+                                        bottom: 10,
                                       ),
-                                      style: const TextStyle(fontSize: 16),
-                                      textAlignVertical: TextAlignVertical.top,
+                                      // 👈 reduced right space
+                                      maxLine: 6,
+                                      minLine: 1,
+                                      textInputAction: TextInputAction.newline,
+                                      borderRadius: 5,
+                                      fillColor: ColorRes.grey7,
+                                      customBorder: InputBorder.none,
+                                      // remove outline
+                                      textAlign: TextAlign.left,
+                                      // 👈 keep left aligned
+                                      onChanged: (value) {
+                                        // handle text change
+                                      },
                                     ),
                                   ),
                                 ),
 
-                                // Image section
                                 Expanded(
-                                  flex: 2,
+                                  flex: 3,
                                   child: GestureDetector(
                                     onTap: () => provider.pickImage(),
                                     child: Container(

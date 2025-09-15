@@ -1,10 +1,11 @@
 import 'package:aura_real/app/app_provider.dart';
 import 'package:aura_real/aura_real.dart';
 import 'package:aura_real/screens/rating/rating_provider.dart';
+import 'package:aura_real/screens/rating/widget/user_profile_rating_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flip_card/flip_card.dart';
-// import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class RatingScreen extends StatelessWidget {
   const RatingScreen({super.key});
@@ -310,10 +311,10 @@ class _RatingScreenContent extends StatelessWidget {
                             width: 60,
                             height: 60,
                             decoration: BoxDecoration(
-                              color: Colors.black.withOpacity(0.4),
+                              color: Colors.black.withValues(alpha: 0.4),
                               shape: BoxShape.circle,
                               border: Border.all(
-                                color: Colors.white.withOpacity(0.4),
+                                color: Colors.white.withValues(alpha: 0.4),
                               ),
                             ),
                             child: const Padding(
@@ -403,454 +404,263 @@ class _RatingScreenContent extends StatelessWidget {
   }
 
   Widget _buildMapView(BuildContext context, RatingProvider provider) {
-    return Container(
-      color: Colors.white,
-      child: Stack(
-        children: [
-          // Google Map with markers
-          // GoogleMap(
-          //   initialCameraPosition: const CameraPosition(
-          //     target: LatLng(37.7749, -122.4194), // San Francisco
-          //     zoom: 12,
-          //   ),
-          //   markers: provider.markers,
-          //   onMapCreated: provider.onMapCreated,
-          //   myLocationEnabled: true,
-          //   myLocationButtonEnabled: false,
-          //   zoomControlsEnabled: false,
-          //   mapToolbarEnabled: false,
-          //   buildingsEnabled: true,
-          //   indoorViewEnabled: true,
-          //   trafficEnabled: false,
-          //   mapType: MapType.normal,
-          //   // Custom map styling (optional)
-          //   style: '''
-          // [
-          //   {
-          //     "elementType": "geometry",
-          //     "stylers": [
-          //       {
-          //         "color": "#f5f5f5"
-          //       }
-          //     ]
-          //   },
-          //   {
-          //     "elementType": "labels.icon",
-          //     "stylers": [
-          //       {
-          //         "visibility": "off"
-          //       }
-          //     ]
-          //   },
-          //   {
-          //     "elementType": "labels.text.fill",
-          //     "stylers": [
-          //       {
-          //         "color": "#616161"
-          //       }
-          //     ]
-          //   },
-          //   {
-          //     "elementType": "labels.text.stroke",
-          //     "stylers": [
-          //       {
-          //         "color": "#f5f5f5"
-          //       }
-          //     ]
-          //   },
-          //   {
-          //     "featureType": "water",
-          //     "elementType": "geometry",
-          //     "stylers": [
-          //       {
-          //         "color": "#c9c9c9"
-          //       }
-          //     ]
-          //   }
-          // ]
-          // ''',
-          // ),
+    return FutureBuilder<LatLng?>(
+      future: provider.getCurrentLocation(),
+      builder: (context, snapshot) {
+        LatLng initialPosition = const LatLng(
+          37.7749,
+          -122.4194,
+        ); // Fallback: San Francisco
+        Set<Circle> circles = {};
 
-          // Top Controls (Camera/Map toggle)
-          Positioned(
-            top: 40,
-            left: 0,
-            right: 0,
-            child: Consumer<RatingProvider>(
-              builder: (context, provider, child) {
-                return Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        color: ColorRes.lightBlue,
-                        borderRadius: BorderRadius.circular(25),
-                        border: Border.all(color: ColorRes.lightBlue),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 10,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        children: [
-                          // Camera Tab
-                          SizedBox(
-                            width: 131,
-                            height: 41,
-                            child: SubmitButton(
-                              title: context.l10n?.camera ?? "Camera",
-                              onTap: () {
-                                provider.setMode('camera');
-                                provider.flipController.toggleCard();
-                              },
-                              style: styleW500S14.copyWith(
-                                color: provider.getCameraTabTextColor(),
-                              ),
-                              bgColor: provider.getCameraTabBgColor(),
-                              raduis: 10,
-                            ),
-                          ),
-                          // Map Tab
-                          SizedBox(
-                            width: 131,
-                            height: 41,
-                            child: SubmitButton(
-                              raduis: 10,
-                              title: context.l10n?.map ?? "Map",
-                              style: styleW500S14.copyWith(
-                                color: provider.getMapTabTextColor(),
-                              ),
-                              onTap: () {
-                                provider.setMode('map');
-                                // Don't flip if already on map
-                              },
-                              bgColor: provider.getMapTabBgColor(),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                );
-              },
+        if (snapshot.connectionState == ConnectionState.done &&
+            snapshot.hasData &&
+            snapshot.data != null) {
+          initialPosition = snapshot.data!;
+          circles.add(
+            Circle(
+              circleId: const CircleId('user_location'),
+              center: initialPosition,
+              radius: 16093.4,
+              // 10 miles in meters
+              fillColor: Colors.blue.withOpacity(0.2),
+              strokeColor: Colors.blue,
+              strokeWidth: 2,
             ),
-          ),
+          );
+        }
 
-          // Floating Action Buttons (optional)
-          Positioned(
-            right: 16,
-            bottom: 100,
-            child: Column(
-              children: [
-                // My Location Button
-                FloatingActionButton(
-                  mini: true,
-                  backgroundColor: Colors.white,
-                  onPressed: () {
-                    // Center map on user location
-                    // provider.mapController?.animateCamera(
-                    //   CameraUpdate.newLatLng(
-                    //     const LatLng(37.7749, -122.4194), // Your current location
-                    //   ),
-                    // );
-                  },
-                  child: const Icon(
-                    Icons.my_location,
-                    color: ColorRes.primaryColor,
-                  ),
+        return Container(
+          color: Colors.white,
+          child: Stack(
+            children: [
+              GoogleMap(
+                initialCameraPosition: CameraPosition(
+                  target: initialPosition,
+                  zoom: 12,
                 ),
-                const SizedBox(height: 8),
-                // Zoom In Button
-                FloatingActionButton(
-                  mini: true,
-                  backgroundColor: Colors.white,
-                  onPressed: () {
-                    // provider.mapController?.animateCamera(
-                      // CameraUpdate.zoomIn(),
-                    // );
-                  },
-                  child: const Icon(
-                    Icons.add,
-                    color: ColorRes.primaryColor,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                // Zoom Out Button
-                FloatingActionButton(
-                  mini: true,
-                  backgroundColor: Colors.white,
-                  onPressed: () {
-                    // provider.mapController?.animateCamera(
-                    //   CameraUpdate.zoomOut(),
-                    // );
-                  },
-                  child: const Icon(
-                    Icons.remove,
-                    color: ColorRes.primaryColor,
-                  ),
-                ),
-              ],
-            ),
-          ),
+                markers: provider.markers,
+                circles: circles,
+                onMapCreated: provider.onMapCreated,
+                myLocationEnabled: true,
 
-          // Bottom user info overlay (shows selected user info)
-          if (provider.selectedUser != null)
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: Container(
-                margin: const EdgeInsets.all(16),
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 10,
-                      offset: const Offset(0, -2),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    // Profile Image
-                    Container(
-                      width: 60,
-                      height: 60,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: ColorRes.primaryColor,
-                          width: 2,
-                        ),
-                      ),
-                      child: ClipOval(
-                        child: Image.network(
-                          provider.selectedUser!.profileImage,
-                          width: 60,
-                          height: 60,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              width: 60,
-                              height: 60,
-                              color: ColorRes.primaryColor.withOpacity(0.2),
-                              child: const Icon(
-                                Icons.person,
-                                color: ColorRes.primaryColor,
-                                size: 30,
+                myLocationButtonEnabled: false,
+                zoomControlsEnabled: false,
+                mapToolbarEnabled: false,
+                buildingsEnabled: true,
+                indoorViewEnabled: true,
+                trafficEnabled: false,
+                mapType: MapType.normal,
+                style: '''
+              [
+                {
+                  "elementType": "geometry",
+                  "stylers": [
+                    {
+                      "color": "#f5f5f5"
+                    }
+                  ]
+                },
+                {
+                  "elementType": "labels.icon",
+                  "stylers": [
+                    {
+                      "visibility": "off"
+                    }
+                  ]
+                },
+                {
+                  "elementType": "labels.text.fill",
+                  "stylers": [
+                    {
+                      "color": "#616161"
+                    }
+                  ]
+                },
+                {
+                  "elementType": "labels.text.stroke",
+                  "stylers": [
+                    {
+                      "color": "#f5f5f5"
+                    }
+                  ]
+                },
+                {
+                  "featureType": "water",
+                  "elementType": "geometry",
+                  "stylers": [
+                    {
+                      "color": "#c9c9c9"
+                    }
+                  ]
+                }
+              ]
+              ''',
+              ),
+              ...provider.mapOverlays, // Add cust
+              // om overlays
+              ///Camera and Map
+              Positioned(
+                top: 40,
+                left: 0,
+                right: 0,
+                child: Consumer<RatingProvider>(
+                  builder: (context, provider, child) {
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            color: ColorRes.lightBlue,
+                            borderRadius: BorderRadius.circular(25),
+                            border: Border.all(color: ColorRes.lightBlue),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 10,
+                                offset: const Offset(0, 2),
                               ),
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    // User Info
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            provider.selectedUser!.name,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black87,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Row(
-                            children: [
-                              const Icon(
-                                Icons.star,
-                                color: Colors.amber,
-                                size: 16,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                '${provider.selectedUser!.rating}/10',
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.black54,
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                              // Text(
-                              //   '${provider.selectedUser!.age} years',
-                              //   style: const TextStyle(
-                              //     fontSize: 14,
-                              //     color: Colors.black54,
-                              //   ),
-                              // ),
                             ],
                           ),
-                        ],
-                      ),
-                    ),
-                    // Action Buttons
-                    Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        ElevatedButton(
-                          onPressed: () {
-                            // Navigate to profile
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: ColorRes.primaryColor,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 8,
-                            ),
-                            minimumSize: const Size(80, 32),
-                          ),
-                          child: const Text(
-                            'Profile',
-                            style: TextStyle(fontSize: 12),
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        OutlinedButton(
-                          onPressed: () {
-                            // Start chat
-                          },
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: ColorRes.primaryColor,
-                            side: const BorderSide(color: ColorRes.primaryColor),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 8,
-                            ),
-                            minimumSize: const Size(80, 32),
-                          ),
-                          child: const Text(
-                            'Chat',
-                            style: TextStyle(fontSize: 12),
+                          child: Row(
+                            children: [
+                              SizedBox(
+                                width: 131,
+                                height: 41,
+                                child: SubmitButton(
+                                  title: context.l10n?.camera ?? "Camera",
+                                  onTap: () {
+                                    provider.setMode('camera');
+                                    provider.flipController.toggleCard();
+                                  },
+                                  style: styleW500S14.copyWith(
+                                    color: provider.getCameraTabTextColor(),
+                                  ),
+                                  bgColor: provider.getCameraTabBgColor(),
+                                  raduis: 10,
+                                ),
+                              ),
+                              SizedBox(
+                                width: 131,
+                                height: 41,
+                                child: SubmitButton(
+                                  raduis: 10,
+                                  title: context.l10n?.map ?? "Map",
+                                  style: styleW500S14.copyWith(
+                                    color: provider.getMapTabTextColor(),
+                                  ),
+                                  onTap: () {
+                                    provider.setMode('map');
+                                  },
+                                  bgColor: provider.getMapTabBgColor(),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
+                    );
+                  },
+                ),
+              ),
+
+              ///Floating button
+              Positioned(
+                right: 16,
+                bottom: 100,
+                child: Column(
+                  children: [
+                    FloatingActionButton(
+                      mini: true,
+                      backgroundColor: Colors.white,
+                      onPressed: () async {
+                        final location = await provider.getCurrentLocation();
+                        if (location != null) {
+                          provider.mapController?.animateCamera(
+                            CameraUpdate.newLatLng(location),
+                          );
+                        }
+                      },
+                      child: const Icon(
+                        Icons.my_location,
+                        color: ColorRes.primaryColor,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    FloatingActionButton(
+                      mini: true,
+                      backgroundColor: Colors.white,
+                      onPressed: () {
+                        provider.mapController?.animateCamera(
+                          CameraUpdate.zoomIn(),
+                        );
+                      },
+                      child: const Icon(
+                        Icons.add,
+                        color: ColorRes.primaryColor,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    FloatingActionButton(
+                      mini: true,
+                      backgroundColor: Colors.white,
+                      onPressed: () {
+                        provider.mapController?.animateCamera(
+                          CameraUpdate.zoomOut(),
+                        );
+                      },
+                      child: const Icon(
+                        Icons.remove,
+                        color: ColorRes.primaryColor,
+                      ),
                     ),
                   ],
                 ),
               ),
-            ),
-        ],
-      ),
+
+              ///Profile Rating
+              if (provider.selectedUser != null)
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: UserProfileRatingWidget(
+                    user: provider.selectedUser,
+                    onPrivateChat: () {
+                      print("On Private Chat");
+                    },
+                    onVisitProfile: () {
+                      print(
+                        "Selected User ------- ${provider.selectedUser?.fullName}",
+                      );
+                      context.navigator.pushNamed(
+                        UploadScreen.routeName,
+                        arguments: provider.selectedUser,
+                      );
+
+                      print("On Visit Profile");
+                    },
+                    onRate: () {
+                      print("On Rate");
+                      openCustomDialog(
+                        context,
+                        borderRadius: 30,
+                        title: context.l10n?.sendRating ?? "Send Rating",
+                        customChild: StarRatingWidget(
+                          rating: 5,
+                          activeColor: ColorRes.primaryColor,
+                          inactiveColor: ColorRes.primaryColor,
+                          size: 37,
+                        ),
+                        confirmBtnTitle: context.l10n?.send ?? "Send",
+                      );
+                    },
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
     );
   }
-  // Widget _buildMapView(BuildContext context, RatingProvider provider) {
-  //   return Container(
-  //     color: Colors.white,
-  //     child: Stack(
-  //       children: [
-  //         // Google Map
-  //         const GoogleMap(
-  //           initialCameraPosition: CameraPosition(
-  //             target: LatLng(37.7749, -122.4194),
-  //             zoom: 12,
-  //           ),
-  //         ),
-  //
-  //         // Top Controls (similar to camera view)
-  //         Positioned(
-  //           top: 40,
-  //           left: 0,
-  //           right: 0,
-  //           child: Consumer<RatingProvider>(
-  //             builder: (context, provider, child) {
-  //               return Row(
-  //                 mainAxisAlignment: MainAxisAlignment.center,
-  //                 children: [
-  //                   Container(
-  //                     decoration: BoxDecoration(
-  //                       color: ColorRes.lightBlue,
-  //                       borderRadius: BorderRadius.circular(25),
-  //                       border: Border.all(color: ColorRes.lightBlue),
-  //                     ),
-  //                     child: Row(
-  //                       children: [
-  //                         // Camera Tab
-  //                         SizedBox(
-  //                           width: 131,
-  //                           height: 41,
-  //                           child: SubmitButton(
-  //                             title: context.l10n?.camera ?? "Camera",
-  //                             onTap: () {
-  //                               provider.setMode('camera');
-  //                               provider.flipController.toggleCard();
-  //                             },
-  //                             style: styleW500S14.copyWith(
-  //                               color: provider.getCameraTabTextColor(),
-  //                             ),
-  //                             bgColor: provider.getCameraTabBgColor(),
-  //                             raduis: 10,
-  //                           ),
-  //                         ),
-  //                         // Map Tab
-  //                         SizedBox(
-  //                           width: 131,
-  //                           height: 41,
-  //                           child: SubmitButton(
-  //                             raduis: 10,
-  //                             title: context.l10n?.map ?? "Map",
-  //                             style: styleW500S14.copyWith(
-  //                               color: provider.getMapTabTextColor(),
-  //                             ),
-  //                             onTap: () {
-  //                               provider.setMode('map');
-  //                               // Don't flip if already on map
-  //                             },
-  //                             bgColor: provider.getMapTabBgColor(),
-  //                           ),
-  //                         ),
-  //                       ],
-  //                     ),
-  //                   ),
-  //                 ],
-  //               );
-  //             },
-  //           ),
-  //         ),
-  //
-  //         /// Back button at bottom
-  //         // Positioned(
-  //         //   bottom: 50,
-  //         //   left: 0,
-  //         //   right: 0,
-  //         //   child: Center(
-  //         //     child: Consumer<RatingProvider>(
-  //         //       builder: (context, provider, child) {
-  //         //         return ElevatedButton(
-  //         //           onPressed: () {
-  //         //             provider.setMode('camera');
-  //         //             provider.flipController.toggleCard();
-  //         //           },
-  //         //           style: ElevatedButton.styleFrom(
-  //         //             backgroundColor: ColorRes.primaryColor,
-  //         //             foregroundColor: Colors.white,
-  //         //             padding: const EdgeInsets.symmetric(
-  //         //               horizontal: 30,
-  //         //               vertical: 12,
-  //         //             ),
-  //         //             shape: RoundedRectangleBorder(
-  //         //               borderRadius: BorderRadius.circular(25),
-  //         //             ),
-  //         //           ),
-  //         //           child: const Text("Back to Camera"),
-  //         //         );
-  //         //       },
-  //         //     ),
-  //         //   ),
-  //         // ),
-  //       ],
-  //     ),
-  //   );
-  // }
 }
