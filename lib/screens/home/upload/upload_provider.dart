@@ -123,16 +123,14 @@
 //     super.dispose();
 //   }
 // }
-
-import 'package:aura_real/apis/app_response_2.dart';
+import 'package:aura_real/apis/chat_apis.dart';
 import 'package:aura_real/apis/model/post_model.dart';
-import 'package:aura_real/apis/post_apis.dart';
 import 'package:aura_real/aura_real.dart';
 
 class UploadProvider extends ChangeNotifier {
-  final String userId;
+  final String postUserId;
 
-  UploadProvider(this.userId) {
+  UploadProvider(this.postUserId) {
     init();
   }
 
@@ -186,7 +184,7 @@ class UploadProvider extends ChangeNotifier {
       final model = await PostAPI.getPostByUserAPI(
         page: currentPage + 1, // API expects 1-based indexing
         pageSize: pageSize,
-        userId: userId,
+        userId: postUserId,
       );
       if (kDebugMode) {
         print("Model get by user profile ======== ${model?.profile}");
@@ -233,7 +231,7 @@ class UploadProvider extends ChangeNotifier {
 
     final result = await AuthApis.followUserProfile(
       followUserId: userData!.id!,
-      userId: userId,
+      userId: postUserId,
     );
 
     followLoader = false;
@@ -260,7 +258,7 @@ class UploadProvider extends ChangeNotifier {
     notifyListeners();
 
     final result = await AuthApis.unfollowUserProfile(
-      followUserId: userId,
+      followUserId: postUserId,
       userId: userData!.id!,
     );
 
@@ -281,69 +279,67 @@ class UploadProvider extends ChangeNotifier {
     return false;
   }
 
-  // Future<void> followUserProfile(BuildContext context) async {
-  //   if (userData == null || userData?.id == null) return;
+  ///Create Chat Room For Send Message
+  Future<void> createChatRoom(BuildContext context) async {
+    print("test==============================1");
+    if (userData == null || userData?.id == null) return;
 
-  //   loader = true;
-  //   // notifyListeners();
+    followLoader = true;
+    notifyListeners();
 
-  //   final result = await AuthApis.followUserProfile(
-  //     followUserId: userId,
-  //     userId: userData!.id!,
-  //   );
+    try {
+      print("test==============================2");
+      print("UserId============== ${userData!.id}");
+      print("postUserId============== ${postUserId}");
 
-  //   if (result) {
-  //     isFollowing = true;
-  //   }
+      final result = await ChatApis.createChatRoom(
+        userId: userData!.id!,
+        followUserId: postUserId, // The profile user's ID
+      );
 
-  //   loader = false;
-  //   // notifyListeners();
-  // }
+      if (result.success! && result.data != null) {
+        print("Chat Room Id -- ${result.data?.chatRoomId}");
+        // Navigate to MessageScreen with provider
+        // Build ChatUser for MessageScreen
+        final chatUser = ChatUser(
+          id: postUserId,
+          name: profileData?.fullName ?? "User",
+          avatarUrl: profileData?.profileImage ?? "",
+          isOnline: false,
+          // lastSeen: DateTime.now().toString(),
+        );
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder:
+                (_) => ChangeNotifierProvider(
+                  create: (_) {
+                    final provider = MessageProvider();
+                    provider.initializeChat(
+                      user: chatUser,
+                      chatRoomId: chatUser.id!,
+                    ); // <-- preload chat data
+                    return provider;
+                  },
+                  child: MessageScreen(chatUser: chatUser),
+                ),
+          ),
+        );
+        // Navigate to chat screen or handle success
 
-  // Future<void> unfollowUserProfile(BuildContext context) async {
-  //   if (userData == null || userData?.id == null) return;
-
-  //   loader = true;
-  //   // notifyListeners();
-
-  //   final result = await AuthApis.unfollowUserProfile(
-  //     followUserId: userId,
-  //     userId: userData!.id!,
-  //   );
-
-  //   if (result) {
-  //     isFollowing = false;
-  //   }
-
-  //   loader = false;
-  //   // notifyListeners();
-  // }
-
-  // Future<void> followUserProfile(BuildContext context) async {
-  //   if (userData == null || userData?.id == null) return;
-
-  //   loader = true;
-
-  //   final result = await AuthApis.followUserProfile(
-  //     followUserId: userId,
-  //     userId: userData!.id!,
-  //   );
-
-  //   loader = false;
-  // }
-
-  // Future<void> unfollowUserProfile(BuildContext context) async {
-  //   if (userData == null || userData?.id == null) return;
-
-  //   loader = true;
-
-  //   final result = await AuthApis.unfollowUserProfile(
-  //     followUserId: userId,
-  //     userId: userData!.id!,
-  //   );
-
-  //   loader = false;
-  // }
+        // Navigator.push(context, MaterialPageRoute(
+        //   builder: (context) => MessageScreen(chatUser: ),
+        // ));
+      } else {
+        showCatchToast(result.message ?? "Failed to create chat room", null);
+      }
+    } catch (e) {
+      showCatchToast(e.toString(), null);
+    } finally {
+      followLoader = false;
+      notifyListeners();
+    }
+  }
 
   /// Helper method to safely call notifyListeners
   void _safeNotifyListeners() {

@@ -1,6 +1,4 @@
 import 'package:aura_real/aura_real.dart';
-import 'package:aura_real/screens/chat/message/message_provider.dart';
-import 'package:aura_real/services/sockect_helper.dart';
 
 class MessageScreen extends StatefulWidget {
   final ChatUser chatUser;
@@ -16,17 +14,35 @@ class MessageScreen extends StatefulWidget {
 class _MessageScreenState extends State<MessageScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  conectCocketFun() async {
-    socketIoHelper.connectSocket("", setState);
-  }
 
-  disconectCocketFun() async {
-    socketIoHelper.disconnectSocket();
-  }
 
+  // conectCocketFun() async {
+  //   socketIoHelper.connectSocket("", setState);
+  // }
+  //
+  // disconectCocketFun() async {
+  //   socketIoHelper.disconnectSocket();
+  // }
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   WidgetsBinding.instance.addPostFrameCallback((_) {
+  //     _scrollToBottom();
+  //   });
+  // }
+  //
+  // @override
+  // void dispose() {
+  //   _messageController.dispose();
+  //   _scrollController.dispose();
+  //   conectCocketFun();
+  //   super.dispose();
+  // }
   @override
   void initState() {
     super.initState();
+    conectCocketFun(); // ✅ connect when screen opens
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _scrollToBottom();
     });
@@ -36,8 +52,16 @@ class _MessageScreenState extends State<MessageScreen> {
   void dispose() {
     _messageController.dispose();
     _scrollController.dispose();
-    conectCocketFun();
+    disconectCocketFun(); // ✅ disconnect when leaving
     super.dispose();
+  }
+
+  conectCocketFun() async {
+    socketIoHelper.connectSocket(widget.chatUser.id ?? "", setState);
+  }
+
+  disconectCocketFun() async {
+    socketIoHelper.disconnectSocket();
   }
 
   void _scrollToBottom() {
@@ -131,7 +155,7 @@ class _MessageScreenState extends State<MessageScreen> {
                   widget.chatUser.isOnline ? 'Online' : 'Offline',
                   style: TextStyle(
                     color:
-                    !widget.chatUser.isOnline ? Colors.green : Colors.grey,
+                        !widget.chatUser.isOnline ? Colors.green : Colors.grey,
                     fontSize: 12,
                   ),
                 ),
@@ -162,10 +186,10 @@ class _MessageScreenState extends State<MessageScreen> {
         final message = messageProvider.messages[index];
         final showTimestamp =
             index == 0 ||
-                messageProvider.messages[index - 1].timestamp
+            messageProvider.messages[index - 1].timestamp
                     .difference(message.timestamp)
                     .inMinutes >
-                    5;
+                5;
 
         return Column(
           children: [
@@ -208,7 +232,7 @@ class _MessageScreenState extends State<MessageScreen> {
       margin: const EdgeInsets.symmetric(vertical: 08),
       child: Row(
         mainAxisAlignment:
-        message.isFromMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+            message.isFromMe ? MainAxisAlignment.end : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           if (message.isFromMe) const Spacer(),
@@ -218,9 +242,9 @@ class _MessageScreenState extends State<MessageScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               decoration: BoxDecoration(
                 color:
-                message.isFromMe
-                    ? const Color(0xFF7C3AED)
-                    : Colors.grey[100],
+                    message.isFromMe
+                        ? const Color(0xFF7C3AED)
+                        : Colors.grey[100],
                 borderRadius: BorderRadius.only(
                   bottomLeft: Radius.circular(message.isFromMe ? 16 : 0),
                   bottomRight: Radius.circular(message.isFromMe ? 0 : 16),
@@ -247,9 +271,9 @@ class _MessageScreenState extends State<MessageScreen> {
                         messageProvider.formatMessageTime(message.timestamp),
                         style: TextStyle(
                           color:
-                          message.isFromMe
-                              ? Colors.white70
-                              : Colors.grey[600],
+                              message.isFromMe
+                                  ? Colors.white70
+                                  : Colors.grey[600],
                           fontSize: 11,
                         ),
                       ),
@@ -259,10 +283,10 @@ class _MessageScreenState extends State<MessageScreen> {
                           messageProvider.getStatusIcon(message.status),
                           size: 12,
                           color:
-                          messageProvider.getStatusColor(message.status) ==
-                              ColorRes.primaryColor
-                              ? Colors.white
-                              : Colors.white70,
+                              messageProvider.getStatusColor(message.status) ==
+                                      ColorRes.primaryColor
+                                  ? Colors.white
+                                  : Colors.white70,
                         ),
                       ],
                     ],
@@ -366,7 +390,7 @@ class _MessageScreenState extends State<MessageScreen> {
                             controller: _messageController,
                             onChanged:
                                 (text) =>
-                                messageProvider.updateMessageText(text),
+                                    messageProvider.updateMessageText(text),
                             onSubmitted:
                                 (text) => _sendMessage(messageProvider),
                             decoration: InputDecoration(
@@ -405,9 +429,9 @@ class _MessageScreenState extends State<MessageScreen> {
               builder: (context, messageProvider, child) {
                 return GestureDetector(
                   onTap:
-                  messageProvider.canSendMessage
-                      ? () => _sendMessage(messageProvider)
-                      : null,
+                      messageProvider.canSendMessage
+                          ? () => _sendMessage(messageProvider)
+                          : null,
                   child: Container(
                     width: 53,
                     height: 53,
@@ -434,7 +458,7 @@ class _MessageScreenState extends State<MessageScreen> {
   }
 
   void _sendMessage(MessageProvider messageProvider) {
-    messageProvider.sendMessage();
+    messageProvider.sendMessage(widget.chatUser.id ?? ""); // 👈 pass roomId
     _messageController.clear();
     WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
   }

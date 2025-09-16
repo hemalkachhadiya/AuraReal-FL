@@ -140,21 +140,41 @@ class RouteManager {
 
       /// Message Screen
       case MessageScreen.routeName:
-        final args = settings.arguments as ChatUser?;
-        if (args == null) {
+        final args = settings.arguments as Map<String, dynamic>?;
+        if (args == null ||
+            args['chatUser'] == null ||
+            args['chatRoomId'] == null) {
           throw ArgumentError(
-            'ChatUser argument is required for MessageScreen',
-          );
+              'Arguments {chatUser: ChatUser, chatRoomId: String} are required for MessageScreen');
         }
+
+        final ChatUser chatUser = args['chatUser'];
+        final String chatRoomId = args['chatRoomId'];
+
         return MaterialPageRoute(
-          builder:
-              (context) => ChangeNotifierProvider<MessageProvider>(
-                create:
-                    (context) => MessageProvider()..initializeChat(user: args),
-                child: MessageScreen(chatUser: args),
-              ),
+          builder: (context) => ChangeNotifierProvider<MessageProvider>(
+            create: (context) =>
+            MessageProvider()..initializeChat(user: chatUser, chatRoomId: chatRoomId),
+            child: MessageScreen(chatUser: chatUser),
+          ),
           settings: settings,
         );
+      // case MessageScreen.routeName:
+      //   final args = settings.arguments as ChatUser?;
+      //   if (args == null) {
+      //     throw ArgumentError(
+      //       'ChatUser argument is required for MessageScreen',
+      //     );
+      //   }
+      //   return MaterialPageRoute(
+      //     builder:
+      //         (context) => ChangeNotifierProvider<MessageProvider>(
+      //           create:
+      //               (context) => MessageProvider()..initializeChat(user: args),
+      //           child: MessageScreen(chatUser: args),
+      //         ),
+      //     settings: settings,
+      //   );
     }
     return null;
   }

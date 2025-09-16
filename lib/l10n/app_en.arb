@@ -102,5 +102,6 @@
   "postComment": "Post Comment",
   "incorrectPassword": "Incorrect password",
   "comments": "Comments",
+  "following": "Following",
   "rateThisPost": "Rate this Post"
 }

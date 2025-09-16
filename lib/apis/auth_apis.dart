@@ -146,7 +146,7 @@ class AuthApis {
             jsonEncode(responseBody['data']),
           );
 
-          debugPrint('````````````````>>>>>>>${responseBody['data']}');
+          debugPrint('>>>>>>>${responseBody['data']}');
 
           await PrefService.set(
             PrefKeys.token,
@@ -314,6 +314,7 @@ class AuthApis {
       showCatchToast(exception, stack);
       return null;
     }
+    return null;
   }
 
   static Future<bool> userUpdateProfile({

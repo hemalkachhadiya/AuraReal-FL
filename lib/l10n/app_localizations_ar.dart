@@ -318,5 +318,8 @@ class AppLocalizationsAr extends AppLocalizations {
   String get comments => 'التعليقات';
 
   @override
+  String get following => 'المتابَعون';
+
+  @override
   String get rateThisPost => 'قيم هذه المشاركة';
 }

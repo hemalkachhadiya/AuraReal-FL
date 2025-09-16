@@ -8,9 +8,9 @@ class EndPoints {
   /// Base URL
   static const baseUrl = "${domain}api/v1/";
 
-  /// ------------------------------------ Socket -------------------------------
+  /// ------------------------------------ Socket ------------------------------
   static const WebSocketurl =
-      "http://localhost:4000/socket.io/?EIO=4&transport=websocket";
+      "http://192.168.1.28:4000/socket.io/?EIO=4&transport=websocket";
 
   /// ------------------------------------ Auth -------------------------------
   static const register = "${baseUrl}user/register";
@@ -18,26 +18,27 @@ class EndPoints {
   static const verifyOTP = "${baseUrl}verify-otp";
   static const logout = "${baseUrl}userlogout";
 
-  /// ------------------------------------ Forgot Password -------------------------------
+  /// ------------------------------------ Forgot Password ---------------------
 
   static const requestPasswordReset = "${baseUrl}requestPasswordReset";
   static const verifyPasswordResetOTP = "${baseUrl}verifyPasswordResetOTP";
   static const resetPassword = "${baseUrl}resetPassword";
   static const changePassword = "${baseUrl}changePassword";
 
-  /// ------------------------------------ Google Login -------------------------------
+  /// ------------------------------------ Google Login ------------------------
+
   static const googleLogin = "${baseUrl}google-login";
 
-  /// ------------------------------------ User Profile -------------------------------
+  /// ------------------------------------ User Profile ------------------------
+
   static const getUserProfile = "${baseUrl}getuserprofile?userId=";
   static const updateUserProfile = "${baseUrl}updateUser";
 
-  /// ------------------------------------ Location -------------------------------
-
+  /// ------------------------------------ Location ----------------------------
   static const location = "${baseUrl}user/location";
   static const getUserLocations = "${baseUrl}getUserLocations?user_id=";
 
-  /// ------------------------------------ Dashboard -------------------------------
+  /// ------------------------------------ Dashboard ---------------------------
   static const createPostAPI = "${baseUrl}createpost";
   static const getAllPostAPI = "${baseUrl}getallposts";
   static const getPostByUSer = "${baseUrl}getpostsbyuser?userId";
@@ -50,14 +51,16 @@ class EndPoints {
   static const createcomment = "${baseUrl}createcomment";
   static const getcomments = "${baseUrl}getcomments";
 
-  /// ------------------------------------ Rating Profile -------------------------------
+  /// ------------------------------------ Rating Profile ----------------------
+
   static const getAllUsers = "${baseUrl}getAllUsers";
 
-  /// ------------------------------------ Follow and UnFollow User Profile -------------------------------
+  /// ------------------------------------ Follow and UnFollow User Profile ----
 
   static const follow = "${baseUrl}follow";
   static const unfollow = "${baseUrl}unfollow";
-/// ------------------------------------ Chat -------------------------------
+
+  /// ------------------------------------ Chat -------------------------------
 
   static const createChatRoom = "${baseUrl}createChatRoom";
   static const getAllMessages = "${baseUrl}getAllMessages";

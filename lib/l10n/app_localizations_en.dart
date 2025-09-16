@@ -318,5 +318,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get comments => 'Comments';
 
   @override
+  String get following => 'Following';
+
+  @override
   String get rateThisPost => 'Rate this Post';
 }

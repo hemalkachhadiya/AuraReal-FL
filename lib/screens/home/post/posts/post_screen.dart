@@ -98,7 +98,8 @@ class HomeScreen extends StatelessWidget {
                         child: Container(
                           decoration: BoxDecoration(color: ColorRes.white),
                           child: CustomListView(
-                            controller: scrollController, // Add ScrollController
+                            controller: scrollController,
+                            // Add ScrollController
                             itemCount:
                                 provider.loader
                                     ? 0

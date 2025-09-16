@@ -713,6 +713,12 @@ abstract class AppLocalizations {
   /// **'Comments'**
   String get comments;
 
+  /// No description provided for @following.
+  ///
+  /// In en, this message translates to:
+  /// **'Following'**
+  String get following;
+
   /// No description provided for @rateThisPost.
   ///
   /// In en, this message translates to:

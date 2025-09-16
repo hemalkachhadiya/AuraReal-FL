@@ -47,11 +47,12 @@ class _PostCardState extends State<PostCard> {
   @override
   Widget build(BuildContext context) {
     final postsProvider = Provider.of<PostsProvider>(context, listen: false);
-    return InkWell(
-      onTap: widget.onTap,
-      child: Column(
-        children: [
-          Padding(
+    return Column(
+      children: [
+        ///Profile
+        InkWell(
+          onTap: widget.onTap,
+          child: Padding(
             padding: EdgeInsets.symmetric(
               horizontal: Constants.horizontalPadding,
               vertical: 8.0,
@@ -111,162 +112,184 @@ class _PostCardState extends State<PostCard> {
               ],
             ),
           ),
-          CachedImage(
-            EndPoints.domain + (widget.post.postImage?.toBackslashPath() ?? ''),
-            height: 390.0,
-            fit: BoxFit.cover,
-          ),
-          const SizedBox(height: 10),
-          // Rating and Actions
-          InkWell(
-            onTap: () async {
-              if (widget.loading == true) return; // Prevent if loading
-              print('Rating InkWell tapped - opening dialog');
-              final selectedRating = await showRatingDialog(
-                context,
-                widget.post,
-                loading: widget.loading,
+        ),
 
-                onSubmit: () {
-                  print('Submit callback executed from PostCard');
-                  // Add API call here if needed
+        ///Post Image / Video
+        CachedImage(
+          EndPoints.domain + (widget.post.postImage?.toBackslashPath() ?? ''),
+          height: 390.0,
+          fit: BoxFit.cover,
+        ),
+
+        ///Space
+        10.ph.spaceVertical,
+
+        /// Rating and Message
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              ///Rate Section
+              InkWell(
+                onTap: () async {
+                  if (widget.loading == true) return; // Prevent if loading
+                  print('Rating InkWell tapped - opening dialog');
+                  final selectedRating = await showRatingDialog(
+                    context,
+                    widget.post,
+                    loading: widget.loading,
+
+                    onSubmit: () {
+                      print('Submit callback executed from PostCard');
+                      // Add API call here if needed
+                    },
+                  );
+                  print('Dialog closed with rating: $selectedRating');
+                  if (selectedRating != null) {
+                    setState(() {
+                      _localRating = selectedRating; // Optimistic local update
+                    });
+                    if (widget.onRatingSubmitted != null) {
+                      widget.onRatingSubmitted!(selectedRating);
+                    }
+                  }
                 },
-              );
-              print('Dialog closed with rating: $selectedRating');
-              if (selectedRating != null) {
-                setState(() {
-                  _localRating = selectedRating; // Optimistic local update
-                });
-                if (widget.onRatingSubmitted != null) {
-                  widget.onRatingSubmitted!(selectedRating);
-                }
-              }
-            },
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        StarRatingWidget(
+                          rating: _localRating.toStarRating(),
+                          // Use local for immediate feedback
+                          size: 20,
+                          activeColor: ColorRes.primaryColor,
+                          inactiveColor:
+                              ColorRes.primaryColor, // Faded inactive
+                        ),
+                        10.pw.spaceHorizontal,
+                        Text(
+                          widget.post.postRating.toString(),
+                          style: styleW700S16,
+                        ),
+                      ],
+                    ),
 
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      StarRatingWidget(
-                        rating: _localRating.toStarRating(),
-                        // Use local for immediate feedback
-                        size: 20,
-                        activeColor: ColorRes.primaryColor,
-                        inactiveColor: ColorRes.primaryColor, // Faded inactive
-                      ),
-                      const SizedBox(width: 10),
-                      Text(
-                        widget.post.postRating.toString() ,
-                        style: styleW700S16,
-                      ),
-                      const Spacer(),
-
-                      InkWell(
-                        onTap: () async {
-                          final postsProvider = Provider.of<PostsProvider>(
-                            context,
-                            listen: false,
-                          );
-
-                          final scrollProvider = Provider.of<PostsProvider>(
-                            context,
-                            listen: false,
-                          );
-                          scrollProvider.saveScrollPosition(
-                            context
-                                    .findAncestorStateOfType<ScrollableState>()
-                                    ?.position
-                                    .pixels ??
-                                0.0,
-                          );
-
-                          await postsProvider.getAllCommentListAPI(
-                            widget.post.id!,
-                            showLoader: true,
-                            resetData: true,
-                          );
-                          print(
-                            "Comment list ===== ${postsProvider.commentListResponse.length}",
-                          );
-                          openCustomDraggableBottomSheet(
-                            context,
-                            title: context.l10n?.comments ?? "",
-                            customChild: CommentsWidget(
-                              post: widget.post,
-                              comments: postsProvider.commentListResponse,
-                              onCommentSubmitted: (val) async {
-                                print("val -------- ${val}");
-                                if (widget.onCommentSubmitted != null) {
-                                  widget.onCommentSubmitted!(val);
-                                }
-                                await postsProvider.commentPostAPI(
-                                  context,
-                                  postId: widget.post.id,
-                                  content: val,
-                                );
-
-                                navigatorKey.currentState?.context.navigator
-                                    .pop(context);
-
-                                // await postsProvider.getAllCommentListAPI(
-                                //   widget.post.id!,
-                                //   showLoader: true,
-                                //   resetData: true,
-                                // );
-                              },
-                            ),
-                            showButtons: false,
-                            borderRadius: 20,
-                            padding: const EdgeInsets.all(0),
-                          );
-
-                          /// Restore scroll position after operation
-                          WidgetsBinding.instance.addPostFrameCallback((_) {
-                            final scrollableState =
-                                context
-                                    .findAncestorStateOfType<ScrollableState>();
-                            if (scrollableState != null) {
-                              scrollableState.position.jumpTo(
-                                scrollProvider.scrollPosition,
-                              );
-                            }
-                          });
-                        },
-                        child: Row(
-                          children: [
-                            SvgAsset(
-                              imagePath: AssetRes.commentIcon,
-                              height: 22,
-                              width: 22,
-                              color: ColorRes.primaryColor,
-                            ),
-                            const SizedBox(width: 10),
-                            Text(
-                              (widget.post.commentsCount ?? 0).toString(),
-                              style: styleW700S16,
-                            ),
-                          ],
+                    10.ph.spaceVertical,
+                    if (_localRating == 0)
+                      Align(
+                        alignment: Alignment.topLeft,
+                        child: Text(
+                          context.l10n?.rateThisPost ?? "Rate this post",
+                          style: styleW400S13.copyWith(
+                            color: ColorRes.primaryColor,
+                          ),
+                          textAlign: TextAlign.start,
                         ),
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  if (_localRating == 0)
-                    Text(
-                      context.l10n?.rateThisPost ?? "Rate this post",
-                      style: styleW400S13.copyWith(
-                        color: ColorRes.primaryColor,
-                      ),
-                    ),
-                ],
+                  ],
+                ),
               ),
-            ),
+
+              ///Comment Section
+              InkWell(
+                onTap: () async {
+                  final postsProvider = Provider.of<PostsProvider>(
+                    context,
+                    listen: false,
+                  );
+
+                  final scrollProvider = Provider.of<PostsProvider>(
+                    context,
+                    listen: false,
+                  );
+                  scrollProvider.saveScrollPosition(
+                    context
+                            .findAncestorStateOfType<ScrollableState>()
+                            ?.position
+                            .pixels ??
+                        0.0,
+                  );
+
+                  await postsProvider.getAllCommentListAPI(
+                    widget.post.id!,
+                    showLoader: true,
+                    resetData: true,
+                  );
+                  print(
+                    "Comment list ===== ${postsProvider.commentListResponse.length}",
+                  );
+                  openCustomDraggableBottomSheet(
+                    context,
+                    title: context.l10n?.comments ?? "",
+                    customChild: CommentsWidget(
+                      post: widget.post,
+                      comments: postsProvider.commentListResponse,
+                      onCommentSubmitted: (val) async {
+                        print("val -------- ${val}");
+                        if (widget.onCommentSubmitted != null) {
+                          widget.onCommentSubmitted!(val);
+                        }
+                        await postsProvider.commentPostAPI(
+                          context,
+                          postId: widget.post.id,
+                          content: val,
+                        );
+
+                        navigatorKey.currentState?.context.navigator.pop(
+                          context,
+                        );
+
+                        // await postsProvider.getAllCommentListAPI(
+                        //   widget.post.id!,
+                        //   showLoader: true,
+                        //   resetData: true,
+                        // );
+                      },
+                    ),
+                    showButtons: false,
+                    borderRadius: 20,
+                    padding: const EdgeInsets.all(0),
+                  );
+
+                  /// Restore scroll position after operation
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    final scrollableState =
+                        context.findAncestorStateOfType<ScrollableState>();
+                    if (scrollableState != null) {
+                      scrollableState.position.jumpTo(
+                        scrollProvider.scrollPosition,
+                      );
+                    }
+                  });
+                },
+                child: Row(
+                  children: [
+                    SvgAsset(
+                      imagePath: AssetRes.commentIcon,
+                      height: 22,
+                      width: 22,
+                      color: ColorRes.primaryColor,
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      (widget.post.commentsCount ?? 0).toString(),
+                      style: styleW700S16,
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+
+        ///Space
+        10.ph.spaceVertical,
+      ],
     );
   }
 

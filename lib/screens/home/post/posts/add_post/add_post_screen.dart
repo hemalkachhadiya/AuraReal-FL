@@ -1,4 +1,5 @@
 import 'package:aura_real/aura_real.dart';
+import 'package:video_player/video_player.dart';
 
 class AddPostScreen extends StatelessWidget {
   const AddPostScreen({super.key});
@@ -36,7 +37,6 @@ class AddPostScreen extends StatelessWidget {
                     provider.canPublish()
                         ? () => provider.createPostAPI()
                         : null,
-
                 title: context.l10n?.publish ?? "",
               ),
             ),
@@ -53,7 +53,6 @@ class AddPostScreen extends StatelessWidget {
                   child: AppBackIcon(title: context.l10n?.post ?? ""),
                 ),
                 34.ph.spaceVertical,
-
                 // Main content area
                 SizedBox(
                   height: 200,
@@ -92,39 +91,45 @@ class AddPostScreen extends StatelessWidget {
                                         top: 10,
                                         bottom: 10,
                                       ),
-                                      // 👈 reduced right space
                                       maxLine: 6,
                                       minLine: 1,
                                       textInputAction: TextInputAction.newline,
                                       borderRadius: 5,
                                       fillColor: ColorRes.grey7,
                                       customBorder: InputBorder.none,
-                                      // remove outline
                                       textAlign: TextAlign.left,
-                                      // 👈 keep left aligned
                                       onChanged: (value) {
                                         // handle text change
                                       },
                                     ),
                                   ),
                                 ),
-
                                 Expanded(
                                   flex: 3,
                                   child: GestureDetector(
-                                    onTap: () => provider.pickImage(),
+                                    onTap: () => provider.pickMedia(),
                                     child: Container(
                                       margin: const EdgeInsets.all(8),
                                       child:
-                                          provider.selectedImage != null
+                                          provider.selectedMedia != null
                                               ? ClipRRect(
                                                 borderRadius:
                                                     BorderRadius.circular(8),
-                                                child: Image.file(
-                                                  provider.selectedImage!,
-                                                  fit: BoxFit.cover,
+                                                child: SizedBox(
                                                   width: double.infinity,
                                                   height: double.infinity,
+                                                  child:
+                                                      provider.videoController !=
+                                                              null
+                                                          ? VideoPlayer(
+                                                            provider
+                                                                .videoController!,
+                                                          )
+                                                          : Image.file(
+                                                            provider
+                                                                .selectedMedia!,
+                                                            fit: BoxFit.cover,
+                                                          ),
                                                 ),
                                               )
                                               : Container(
@@ -140,7 +145,7 @@ class AddPostScreen extends StatelessWidget {
                                                 child: const Center(
                                                   child: Icon(
                                                     Icons
-                                                        .add_photo_alternate_outlined,
+                                                        .add_to_photos_outlined,
                                                     size: 40,
                                                     color: Colors.grey,
                                                   ),
@@ -153,9 +158,7 @@ class AddPostScreen extends StatelessWidget {
                             ),
                           ),
                         ),
-
                         10.ph.spaceVertical,
-
                         Wrap(
                           spacing: 8,
                           runSpacing: 8,
@@ -163,7 +166,6 @@ class AddPostScreen extends StatelessWidget {
                             ...['hashtag', 'demo', 'test'].map((value) {
                               final isSelected = provider.selectedHashtags
                                   .contains(value);
-
                               return InkWell(
                                 borderRadius: BorderRadius.circular(8),
                                 onTap: () => provider.toggleHashtag(value),

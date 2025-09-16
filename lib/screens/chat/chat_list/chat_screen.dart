@@ -38,44 +38,43 @@ class _ChatScreenState extends State<ChatScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 40),
-
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.only(top: 0, left: 20, bottom: 20),
                 color: Colors.white,
                 child: Text('Message', style: styleW700S22),
               ),
-
+              _buildSearchBar(context),
               Expanded(
-                child: Column(
-                  children: [
-                    _buildSearchBar(context),
-                    Expanded(
-                      child:
-                      chatProvider.isLoading
-                          ? const Center(child: CircularProgressIndicator())
-                          : chatProvider.chatList.isEmpty
-                          ? _buildEmptyState()
-                          : _buildChatList(chatProvider.chatList),
-                    ),
-                  ],
+                child: RefreshIndicator(
+                  onRefresh: () async {
+                    await chatProvider.initializeChatData();
+                  },
+                  child: chatProvider.isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : chatProvider.chatList.isEmpty
+                      ? _buildEmptyState(context)
+                      : ListView.builder(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    itemCount: chatProvider.chatList.length,
+                    itemBuilder: (context, index) {
+                      final chat = chatProvider.chatList[index];
+                      return Padding(
+                        padding: EdgeInsets.only(
+                          left: 24,
+                          right: 24,
+                          top: index == 0 ? 0 : 30,
+                        ),
+                        child: _buildChatTile(context, chat),
+                      );
+                    },
+                  ),
                 ),
               ),
             ],
           ),
         );
       },
-    );
-  }
-
-  AppBar _buildAppBar() {
-    return AppBar(
-      backgroundColor: Colors.white,
-      elevation: 0,
-      title: Padding(
-        padding: const EdgeInsets.only(left: 14),
-        child: Text('Message', style: styleW700S22),
-      ),
     );
   }
 
@@ -101,7 +100,7 @@ class _ChatScreenState extends State<ChatScreen> {
         },
         decoration: InputDecoration(
           hintText: 'Search..',
-          hintStyle: TextStyle(color: ColorRes.black, fontSize: 14),
+          hintStyle: const TextStyle(color: ColorRes.black, fontSize: 14),
           prefixIcon: Padding(
             padding: const EdgeInsets.only(
               left: 20,
@@ -115,20 +114,6 @@ class _ChatScreenState extends State<ChatScreen> {
               width: 20,
             ),
           ),
-          // prefixIcon: Icon(Icons.search, color: Colors.grey[600], size: 20),
-          // suffixIcon:
-          //     Provider.of<ChatProvider>(context).searchQuery.isNotEmpty
-          //         ? IconButton(
-          //           onPressed: () {
-          //             _searchController.clear();
-          //             Provider.of<ChatProvider>(
-          //               context,
-          //               listen: false,
-          //             ).clearSearch();
-          //           },
-          //           icon: Icon(Icons.clear, color: ColorRes.black, size: 20),
-          //         )
-          //         : null,
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 16,
@@ -139,121 +124,110 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  Widget _buildChatList(List<ChatMessage> chats) {
-    return ListView.builder(
-      itemCount: chats.length,
-      itemBuilder: (context, index) {
-        final chat = chats[index];
-        return Padding(
-          padding: EdgeInsets.only(
-            left: 24,
-            right: 24,
-            top: index == 0 ? 0 : 30,
-          ),
-          child: _buildChatTile(context, chat),
-        );
-      },
-    );
-  }
-
   Widget _buildChatTile(BuildContext context, ChatMessage chat) {
     return GestureDetector(
       onTap: () {
-        print("Navigating to MessageScreen");
         if (context.mounted) {
-          // Convert ChatMessage to ChatUser
           final chatUser = ChatUser(
             name: chat.name,
             avatarUrl: chat.avatarUrl,
             isOnline: chat.isOnline,
           );
-          Navigator.of(context, rootNavigator: true).pushNamed(
-            MessageScreen.routeName, // Should be "/message"
-            arguments: chatUser,
+
+          Provider.of<ChatProvider>(context, listen: false).markAsRead(chat.id);
+
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => ChangeNotifierProvider(
+                create: (_) {
+                  final provider = MessageProvider();
+                  provider.initializeChat(
+                    user: chatUser,
+                    chatRoomId: chat.id,
+                  );
+                  return provider;
+                },
+                child: MessageScreen(chatUser: chatUser),
+              ),
+            ),
           );
         }
-        Provider.of<ChatProvider>(context, listen: false).markAsRead(chat.id);
-        // },
       },
-      child: Row(
-        children: [
-          Stack(
-            children: [
-              Container(
-                height: 70,
-                width: 70,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(24),
-
-                  image: DecorationImage(
-                    image: NetworkImage(chat.avatarUrl),
-                    fit: BoxFit.cover,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+        child: Row(
+          children: [
+            Stack(
+              children: [
+                Container(
+                  height: 60,
+                  width: 60,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(30),
+                    child: CachedImage(EndPoints.domain + chat.avatarUrl),
                   ),
                 ),
-              ),
-
-              if (chat.isOnline)
-                Positioned(
-                  right: 2,
-                  bottom: 2,
-                  child: Container(
-                    width: 17,
-                    height: 17,
-                    decoration: BoxDecoration(
-                      color: Colors.green,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 2),
+                if (chat.isOnline)
+                  Positioned(
+                    right: 0,
+                    bottom: 0,
+                    child: Container(
+                      width: 12,
+                      height: 12,
+                      decoration: BoxDecoration(
+                        color: Colors.green,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 2),
+                      ),
                     ),
                   ),
-                ),
-            ],
-          ),
-          SizedBox(width: 16),
-
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  chat.name,
-                  style: styleW700S17,
-
-                  overflow: TextOverflow.ellipsis,
-                ),
-
-                Text(
-                  chat.message,
-                  style: styleW400S12,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
               ],
             ),
-          ),
-
-          Padding(
-            padding: const EdgeInsets.only(left: 05),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    chat.name,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.black87,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    chat.message,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[600],
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
                   chat.time,
-                  style: styleW400S10.copyWith(
-                    color: ColorRes.darkJungleGreen,
-                    fontWeight: FontWeight.normal,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey[500],
                   ),
                 ),
                 const SizedBox(height: 4),
                 if (chat.unreadCount > 0)
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
-                      color: ColorRes.primaryColor,
-                      borderRadius: BorderRadius.circular(12),
+                      color: Color(0xFF9B59B6),
+                      borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
                       chat.unreadCount.toString(),
@@ -266,152 +240,42 @@ class _ChatScreenState extends State<ChatScreen> {
                   ),
               ],
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
-
-    // ListTile(
-    //   contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-    //   leading: Stack(
-    //     children: [
-    //       // CircleAvatar(
-    //       //   radius: 24,
-    //       //   backgroundImage: NetworkImage(chat.avatarUrl),
-    //       //   backgroundColor: Colors.grey[300],
-    //       // ),
-    //       Container(
-    //         height: 70,
-    //         width: 70,
-    //         decoration: BoxDecoration(
-    //           borderRadius: BorderRadius.circular(24),
-
-    //           image: DecorationImage(
-    //             image: NetworkImage(chat.avatarUrl),
-    //             fit: BoxFit.cover,
-    //           ),
-    //         ),
-    //       ),
-    //       if (chat.isOnline)
-    //         Positioned(
-    //           right: 2,
-    //           bottom: 2,
-    //           child: Container(
-    //             width: 16,
-    //             height: 16,
-    //             decoration: BoxDecoration(
-    //               color: Colors.green,
-    //               shape: BoxShape.circle,
-    //               border: Border.all(color: Colors.white, width: 2),
-    //             ),
-    //           ),
-    //         ),
-    //     ],
-    //   ),
-    //   title: Text(chat.name, style: styleW700S18),
-    //   subtitle: Text(
-    //     chat.message,
-    //     style: styleW400S12,
-    //     maxLines: 1,
-    //     overflow: TextOverflow.ellipsis,
-    //   ),
-    //   trailing: Column(
-    //     mainAxisAlignment: MainAxisAlignment.center,
-    //     crossAxisAlignment: CrossAxisAlignment.end,
-    //     children: [
-    //       Text(
-    //         chat.time,
-    //         style: styleW400S12.copyWith(
-    //           color:
-    //               chat.unreadCount > 0
-    //                   ? ColorRes.primaryColor
-    //                   : Colors.grey[600],
-    //           fontWeight:
-    //               chat.unreadCount > 0 ? FontWeight.w600 : FontWeight.normal,
-    //         ),
-    //       ),
-    //       const SizedBox(height: 4),
-    //       if (chat.unreadCount > 0)
-    //         Container(
-    //           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-    //           decoration: BoxDecoration(
-    //             color: ColorRes.primaryColor,
-    //             borderRadius: BorderRadius.circular(12),
-    //           ),
-    //           child: Text(
-    //             chat.unreadCount.toString(),
-    //             style: const TextStyle(
-    //               color: Colors.white,
-    //               fontSize: 12,
-    //               fontWeight: FontWeight.bold,
-    //             ),
-    //           ),
-    //         ),
-    //     ],
-    //   ),
-    //   onTap: () {
-    //     print("Navigating to MessageScreen");
-    //     if (context.mounted) {
-    //       // Convert ChatMessage to ChatUser
-    //       final chatUser = ChatUser(
-    //         name: chat.name,
-    //         avatarUrl: chat.avatarUrl,
-    //         isOnline: chat.isOnline,
-    //       );
-    //       Navigator.of(context, rootNavigator: true).pushNamed(
-    //         MessageScreen.routeName, // Should be "/message"
-    //         arguments: chatUser,
-    //       );
-    //     }
-    //     Provider.of<ChatProvider>(context, listen: false).markAsRead(chat.id);
-    //   },
-    // );
-
-    //  Dismissible(
-    //   key: Key(chat.id),
-    //   direction: DismissDirection.endToStart,
-    //   background: Container(
-    //     alignment: Alignment.centerRight,
-    //     padding: const EdgeInsets.only(right: 16),
-    //     color: Colors.red,
-    //     child: const Icon(Icons.delete, color: Colors.white),
-    //   ),
-    //   onDismissed: (direction) {
-    //     Provider.of<ChatProvider>(context, listen: false).deleteChat(chat.id);
-    //     ScaffoldMessenger.of(context).showSnackBar(
-    //       SnackBar(
-    //         content: Text('${chat.name} deleted'),
-    //         action: SnackBarAction(
-    //           label: 'Undo',
-    //           onPressed: () {
-    //             // Could implement undo functionality here
-    //           },
-    //         ),
-    //       ),
-    //     );
-    //   },
-    //   child:
-    // );
   }
 
-  Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.chat_bubble_outline, size: 64, color: Colors.grey[400]),
-          const SizedBox(height: 16),
-          Text(
-            'No messages yet',
-            style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+  Widget _buildEmptyState(BuildContext context) {
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      children: [
+        SizedBox(
+          height: MediaQuery.of(context).size.height * 0.6,
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.chat_bubble_outline,
+                  size: 64,
+                  color: Colors.grey[400],
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'No messages yet',
+                  style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Start a conversation with someone',
+                  style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: 8),
-          Text(
-            'Start a conversation with someone',
-            style: TextStyle(fontSize: 14, color: Colors.grey[500]),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

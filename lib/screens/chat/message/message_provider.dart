@@ -1,3 +1,4 @@
+import 'package:aura_real/apis/chat_apis.dart';
 import 'package:aura_real/aura_real.dart';
 
 import 'package:flutter/material.dart';
@@ -19,13 +20,7 @@ class Message {
   });
 }
 
-enum MessageStatus {
-  sending,
-  sent,
-  delivered,
-  read,
-  failed,
-}
+enum MessageStatus { sending, sent, delivered, read, failed }
 
 // Chat User Model
 class ChatUser {
@@ -36,9 +31,9 @@ class ChatUser {
   final DateTime? lastSeen;
 
   ChatUser({
-   this.id,
-   this.name,
-   this.avatarUrl,
+    this.id,
+    this.name,
+    this.avatarUrl,
     this.isOnline = false,
     this.lastSeen,
   });
@@ -53,70 +48,119 @@ class MessageProvider extends ChangeNotifier {
 
   // Getters
   List<Message> get messages => _messages;
+
   ChatUser? get currentUser => _currentUser;
+
   bool get isLoading => _isLoading;
+
   bool get isTyping => _isTyping;
+
   String get messageText => _messageText;
+
   bool get canSendMessage => _messageText.trim().isNotEmpty;
 
   // Initialize chat data
-  void initializeChat({required ChatUser user}) {
+  // Initialize chat with user + fetch API messages
+  Future<void> initializeChat({
+    required ChatUser user,
+    required String chatRoomId,
+  }) async {
     _currentUser = user;
+    await getAllMessageList(chatRoomId);
+  }
+
+  // Inside MessageProvider
+  Future<void> getAllMessageList(String chatRoomId) async {
+    print("message====================== 1");
     _isLoading = true;
     notifyListeners();
 
-    // Sample messages similar to the image
-    _messages = [
-      Message(
-        id: '1',
-        text: 'Hey there! 👋',
-        timestamp: DateTime.now().subtract(const Duration(minutes: 50)),
-        isFromMe: false,
-      ),
-      Message(
-        id: '2',
-        text: 'This is your delivery driver from Speedy Chow. I\'m just around the corner from your place. 😊',
-        timestamp: DateTime.now().subtract(const Duration(minutes: 49)),
-        isFromMe: false,
-      ),
-      Message(
-        id: '3',
-        text: 'Hi!',
-        timestamp: DateTime.now().subtract(const Duration(minutes: 48)),
-        isFromMe: true,
-        status: MessageStatus.read,
-      ),
-      Message(
-        id: '4',
-        text: 'Awesome, thanks for letting me know! Can\'t wait for my delivery. 🚀',
-        timestamp: DateTime.now().subtract(const Duration(minutes: 47)),
-        isFromMe: true,
-        status: MessageStatus.read,
-      ),
-      Message(
-        id: '5',
-        text: 'No problem at all! I\'ll be there in about 15 minutes.',
-        timestamp: DateTime.now().subtract(const Duration(minutes: 46)),
-        isFromMe: false,
-      ),
-      Message(
-        id: '6',
-        text: 'I\'ll text you when I arrive.',
-        timestamp: DateTime.now().subtract(const Duration(minutes: 45)),
-        isFromMe: false,
-      ),
-      Message(
-        id: '7',
-        text: 'Great! 😊',
-        timestamp: DateTime.now().subtract(const Duration(minutes: 44)),
-        isFromMe: true,
-        status: MessageStatus.delivered,
-      ),
-    ];
+    final response = await ChatApis.getAllMessages(chatRoomId: chatRoomId);
+    // final response = await ChatApis.getAllMessages(
+    //   chatRoomId: "68c52730f14e3db5254d3e8c",
+    // );
+
+    if (response != null && response.data != null) {
+      // Convert API model (GetAllMessageModel) into provider's Message model
+      _messages =
+          response.data!.map((msg) {
+            return Message(
+              id: msg.id ?? "",
+              // from API
+              text: msg.message ?? "",
+              // from API
+              timestamp: msg.createdAt ?? DateTime.now(),
+              // from API
+              isFromMe: msg.senderId == _currentUser?.id,
+              // check if sent by me
+              status: MessageStatus.sent, // map API status if available
+            );
+          }).toList();
+    } else {
+      _messages = [];
+    }
 
     _isLoading = false;
     notifyListeners();
   }
+
+  // void initializeChat({required ChatUser user}) {
+  //   _currentUser = user;
+  //   _isLoading = true;
+  //   notifyListeners();
+  //
+  //   // Sample messages similar to the image
+  //   _messages = [
+  //     Message(
+  //       id: '1',
+  //       text: 'Hey there! 👋',
+  //       timestamp: DateTime.now().subtract(const Duration(minutes: 50)),
+  //       isFromMe: false,
+  //     ),
+  //     Message(
+  //       id: '2',
+  //       text: 'This is your delivery driver from Speedy Chow. I\'m just around the corner from your place. 😊',
+  //       timestamp: DateTime.now().subtract(const Duration(minutes: 49)),
+  //       isFromMe: false,
+  //     ),
+  //     Message(
+  //       id: '3',
+  //       text: 'Hi!',
+  //       timestamp: DateTime.now().subtract(const Duration(minutes: 48)),
+  //       isFromMe: true,
+  //       status: MessageStatus.read,
+  //     ),
+  //     Message(
+  //       id: '4',
+  //       text: 'Awesome, thanks for letting me know! Can\'t wait for my delivery. 🚀',
+  //       timestamp: DateTime.now().subtract(const Duration(minutes: 47)),
+  //       isFromMe: true,
+  //       status: MessageStatus.read,
+  //     ),
+  //     Message(
+  //       id: '5',
+  //       text: 'No problem at all! I\'ll be there in about 15 minutes.',
+  //       timestamp: DateTime.now().subtract(const Duration(minutes: 46)),
+  //       isFromMe: false,
+  //     ),
+  //     Message(
+  //       id: '6',
+  //       text: 'I\'ll text you when I arrive.',
+  //       timestamp: DateTime.now().subtract(const Duration(minutes: 45)),
+  //       isFromMe: false,
+  //     ),
+  //     Message(
+  //       id: '7',
+  //       text: 'Great! 😊',
+  //       timestamp: DateTime.now().subtract(const Duration(minutes: 44)),
+  //       isFromMe: true,
+  //       status: MessageStatus.delivered,
+  //     ),
+  //   ];
+  //
+  //   _isLoading = false;
+  //   notifyListeners();
+  // }
 
   // Update message text
   void updateMessageText(String text) {
@@ -124,8 +168,8 @@ class MessageProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Send message
-  void sendMessage() {
+  /// Send message
+  void sendMessage(String roomId) {
     if (!canSendMessage) return;
 
     final newMessage = Message(
@@ -137,12 +181,42 @@ class MessageProvider extends ChangeNotifier {
     );
 
     _messages.add(newMessage);
-    _messageText = '';
     notifyListeners();
 
-    // Simulate message sending
-    _simulateMessageSending(newMessage.id);
+    print("Send Message=============================called");
+    // 🚀 Send to server via socket
+    socketIoHelper.webSocketData(
+      text: newMessage.text,
+      roomId: roomId,
+      messageType: "text", // could be text/image/file
+    );
+
+    // ✅ Mark as "sent"
+    _updateMessageStatus(newMessage.id, MessageStatus.sent);
+
+    // Clear input
+    _messageText = '';
+    notifyListeners();
   }
+
+  // void sendMessage() {
+  //   if (!canSendMessage) return;
+  //
+  //   final newMessage = Message(
+  //     id: DateTime.now().millisecondsSinceEpoch.toString(),
+  //     text: _messageText.trim(),
+  //     timestamp: DateTime.now(),
+  //     isFromMe: true,
+  //     status: MessageStatus.sending,
+  //   );
+  //
+  //   _messages.add(newMessage);
+  //   _messageText = '';
+  //   notifyListeners();
+  //
+  //   // Simulate message sending
+  //   _simulateMessageSending(newMessage.id);
+  // }
 
   // Simulate message sending process
   void _simulateMessageSending(String messageId) async {

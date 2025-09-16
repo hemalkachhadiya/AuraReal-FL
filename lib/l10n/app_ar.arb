@@ -103,6 +103,7 @@
   "postComment": "نشر التعليق",
   "incorrectPassword": "كلمة المرور غير صحيحة",
   "comments": "التعليقات",
+  "following": "المتابَعون",
   "@cameraPermissionContent": {
     "description": "رسالة طلب إذن الكاميرا"
   }

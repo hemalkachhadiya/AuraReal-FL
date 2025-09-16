@@ -404,12 +404,9 @@ class UploadScreen extends StatelessWidget {
                                             )
                                             : Text(
                                               provider.isFollowing
-                                                  ? (isArabic
-                                                      ? "متابع"
-                                                      : "Following")
-                                                  : (isArabic
-                                                      ? "متابعة"
-                                                      : "Follow"),
+                                                  ? context.l10n?.following ??
+                                                      ""
+                                                  : context.l10n?.follow ?? "",
                                               style: TextStyle(
                                                 color: ColorRes.white,
                                                 fontSize: 12,
@@ -436,6 +433,12 @@ class UploadScreen extends StatelessWidget {
                                   child: InkWell(
                                     borderRadius: BorderRadius.circular(15),
                                     onTap: () {
+                                      provider.createChatRoom(context);
+
+                                      // socketIoHelper.webSocketData(
+                                      //     messageType: 'text',
+                                      //     roomId: '${provider.postUserId}',
+                                      //     text: chatTxtController.text);
                                       // Handle message action
                                     },
                                     child: Row(
@@ -450,7 +453,7 @@ class UploadScreen extends StatelessWidget {
                                         ),
                                         SizedBox(width: 6.pw),
                                         Text(
-                                          isArabic ? "رسالة" : "Message",
+                                          context.l10n?.message ?? "",
                                           style: TextStyle(
                                             color: ColorRes.white,
                                             fontSize: 12,
@@ -469,7 +472,6 @@ class UploadScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-
 
                   10.ph.spaceVertical,
                   // 25.ph.spaceVertical,

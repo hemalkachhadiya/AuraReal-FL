@@ -1,5 +1,19 @@
 import 'package:aura_real/apis/model/post_model.dart';
 import 'package:aura_real/aura_real.dart';
+import 'package:http_parser/http_parser.dart';
+
+// Helper function to get media type
+MediaType? getMediaType(String filePath) {
+  final mimeType = lookupMimeType(filePath);
+  if (mimeType != null) {
+    final parts = mimeType.split('/');
+    return MediaType(parts[0], parts[1]);
+  }
+  return MediaType(
+    'application',
+    'octet-stream',
+  ); // Fallback for unknown types
+}
 
 Future<void> logoutUser() async {
   await PrefService.removeKey(PrefKeys.token);
