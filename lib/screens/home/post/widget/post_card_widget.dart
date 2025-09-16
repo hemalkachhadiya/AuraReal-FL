@@ -1,6 +1,5 @@
 import 'package:aura_real/apis/model/post_model.dart';
 import 'package:aura_real/aura_real.dart';
-import 'package:aura_real/screens/home/home/widget/comment_content.dart';
 
 class PostCard extends StatefulWidget {
   // Changed to Stateful for local updates
