@@ -1,34 +1,47 @@
+import 'package:aura_real/apis/app_response.dart';
 import 'package:aura_real/aura_real.dart';
+import 'package:aura_real/screens/chat/model/chat_room_model.dart';
 
-class ChatApis{
+class ChatApis {
   ///Create Chat Room
-  static Future<bool> createChatRoom({
-    required String followUserId,
+
+  static Future<AppResponse<ChatRoomModel>> createChatRoom({
     required String userId,
+    required String followUserId,
   }) async {
     try {
       final response = await ApiService.postApi(
-        url: EndPoints.follow,
-        body: {"followUserId": followUserId, "userId": userId},
+        url: EndPoints.createChatRoom,
+        body: {
+          "participants": [userId, followUserId],
+        },
       );
 
       if (response == null) {
         showCatchToast("No response from server", null);
-        return false;
+        return AppResponse(success: false, message: "No response from server");
       }
 
-      final responseBody = jsonDecode(response.body);
+      final responseBody = appResponseFromJson<ChatRoomModel>(
+        response.body,
+        converter: (json) => ChatRoomModel.fromJson(json),
+      );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        // showSuccessToast(responseBody['message'] ?? 'Follow successful');
-        return true;
+        return responseBody;
       } else {
-        showCatchToast(responseBody['message'] ?? 'Failed', null);
-        return false;
+        showCatchToast(
+          responseBody.message ?? 'Failed to create chat room',
+          null,
+        );
+        return AppResponse(
+          success: false,
+          message: responseBody.message ?? 'Failed',
+        );
       }
     } catch (e, s) {
-      showCatchToast(e, s);
-      return false;
+      showCatchToast(e.toString(), s);
+      return AppResponse(success: false, message: e.toString());
     }
   }
 }
