@@ -299,6 +299,7 @@ class PostAPI {
       return {'success': false, 'response': null};
     }
   }
+
   // static Future<bool> commentOnPostAPI({
   //   required String postId,
   //   required String content,
@@ -383,6 +384,7 @@ class PostAPI {
       return null;
     }
   }
+
   // static Future<AppResponse2<CommentModel>?> getAllCommentListAPI({
   //   int page = 1,
   //   int pageSize = 10,

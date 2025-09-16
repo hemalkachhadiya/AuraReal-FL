@@ -57,4 +57,9 @@ class EndPoints {
 
   static const follow = "${baseUrl}follow";
   static const unfollow = "${baseUrl}unfollow";
+/// ------------------------------------ Chat -------------------------------
+
+  static const createChatRoom = "${baseUrl}createChatRoom";
+  static const getAllMessages = "${baseUrl}getAllMessages";
+  static const getUserChatRooms = "${baseUrl}getUserChatRooms";
 }
