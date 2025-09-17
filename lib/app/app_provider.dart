@@ -15,12 +15,14 @@ class AppProvider extends ChangeNotifier {
   }
 
   // Initialize app settings
-  void init() {
+  Future<void> init() async {
     try {
       final savedLanguage =
           PrefService.getString(PrefKeys.localLanguage) ?? 'en_US';
       locale = getLanStrToLocale(savedLanguage);
       print('App initialized with language: ${locale?.languageCode}');
+      getFCMToken();
+
     } catch (e) {
       print('Error initializing app: $e');
       locale = const Locale("en", "US");

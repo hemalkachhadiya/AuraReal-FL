@@ -378,4 +378,3 @@ class AppAlertDialog extends StatelessWidget {
     );
   }
 }
-

@@ -36,24 +36,49 @@ class PostsProvider extends ChangeNotifier {
 
   String? get error => _error;
 
-  bool get hasMoreData => paginationModel?.hasMorePages ?? false;
+  bool hasMoreData = false;
+  ///=============Comments Variable
+
+  /// Get All Comment List API for a specific post
+  late final Map<String, List<CommentModel>> _commentLists =
+  {}; // Map to store comments by postId
+  bool _isLoadingComments = false;
+  String? _errorComments;
+  int currentPageComments = 0;
+  int pageSizeComments = 20;
+  bool isApiCallingComments = false;
+  bool loaderComments = false;
+
+  bool get isLoadingComments => _isLoadingComments;
+  late final List<CommentModel> commentModel = [];
+
+  String? get errorComments => _errorComments;
+
+  List<CommentModel> getCommentList(String postId) =>
+      _commentLists[postId] ?? [];
+
+  bool get hasMoreComments => paginationModel?.hasMorePages ?? false;
+  double scrollPosition = 0.0; // Store scroll position
 
   /// Get All Post List API with pagination
   Future<void> getAllPostListAPI({
     bool showLoader = false,
     bool resetData = false,
   }) async {
-    // Avoid calling API if the list is empty and no reset is requested
-    if (posts.isEmpty && !resetData) return;
+    // Avoid calling API if no pagination model exists and no reset is requested
+    if (paginationModel == null && !resetData) return;
 
+    // Prevent multiple simultaneous API calls
     if (isApiCalling) return;
     isApiCalling = true;
 
+    // Show loader if requested
     if (showLoader) {
       loader = true;
       _safeNotifyListeners();
     }
 
+    // Reset data if requested
     if (resetData) {
       currentPage = 0;
       paginationModel = null;
@@ -81,15 +106,26 @@ class PostsProvider extends ChangeNotifier {
             list: [...(paginationModel?.list ?? []), ...newItems],
           );
         }
+
+        // Update hasMoreData based on API response
+        // Assuming AppResponse2 has a total or hasMore field; adjust if different
+        hasMoreData =
+            (model.totalPages != null &&
+                (currentPage + 1) < model.totalPages!) ||
+            ((model.list?.length ?? 0) >= pageSize);
+        // hasMoreData = (model.list?.length ?? 0) >= pageSize;
+        // If your API provides total pages or total items, use this instead:
+        // hasMoreData = (currentPage + 1) < (model.totalPages ?? 0);
+
         currentPage++;
         print("paginationModel-------- ${paginationModel?.list?.length}");
       } else {
         _error = "Failed to fetch posts";
+        hasMoreData = false;
       }
-      await Future.delayed(1.seconds);
     } catch (e) {
       _error = e.toString();
-      // Optionally show a toast or update UI
+      hasMoreData = false;
       if (showLoader) showCatchToast(_error, null);
     } finally {
       loader = false;
@@ -232,59 +268,11 @@ class PostsProvider extends ChangeNotifier {
     }
   }
 
-  // Future<void> commentPostAPI(
-  //   BuildContext context, {
-  //   String? postId,
-  //   String? content,
-  // }) async {
-  //   if (userData == null || userData?.id == null) return;
-  //   loaderComments = true;
-  //   notifyListeners();
-  //   final result = await PostAPI.commentOnPostAPI(
-  //     postId: postId.toString(),
-  //     content: content.toString(),
-  //   );
-  //   print("RESULT ===== ${result}");
-  //   if (result) {
-  //     await getAllCommentListAPI(
-  //       postId!,
-  //       showLoader: true,
-  //       resetData: true,
-  //     ); // Refresh comments
-  //   }else{
-  //     return null;
-  //   }
-  //   loaderComments = false;
-  //   notifyListeners();
-  // }
-
-  /// Get All Comment List API for a specific post
-  late final Map<String, List<CommentModel>> _commentLists =
-      {}; // Map to store comments by postId
-  bool _isLoadingComments = false;
-  String? _errorComments;
-  int currentPageComments = 0;
-  int pageSizeComments = 20;
-  bool isApiCallingComments = false;
-  bool loaderComments = false;
-
-  bool get isLoadingComments => _isLoadingComments;
-  late final List<CommentModel> commentModel = [];
-
-  String? get errorComments => _errorComments;
-
-  List<CommentModel> getCommentList(String postId) =>
-      _commentLists[postId] ?? [];
-
-  bool get hasMoreComments => paginationModel?.hasMorePages ?? false;
-  double scrollPosition = 0.0; // Store scroll position
   /// Save scroll position
   void saveScrollPosition(double position) {
     scrollPosition = position;
   }
 
-  /// Refresh a specific post item by ID
-  /// Refresh a specific page of the post list without resetting the entire list
   Future<void> refreshPostListPage({
     required int page,
     bool showLoader = false,

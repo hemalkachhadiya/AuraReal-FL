@@ -1,6 +1,9 @@
 import 'package:aura_real/apis/model/post_model.dart';
 import 'package:aura_real/aura_real.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
+import 'package:video_thumbnail/video_thumbnail.dart';
 
 // Helper function to get media type
 MediaType? getMediaType(String filePath) {
@@ -9,10 +12,7 @@ MediaType? getMediaType(String filePath) {
     final parts = mimeType.split('/');
     return MediaType(parts[0], parts[1]);
   }
-  return MediaType(
-    'application',
-    'octet-stream',
-  ); // Fallback for unknown types
+  return MediaType('application', 'octet-stream'); // Fallback for unknown types
 }
 
 Future<void> logoutUser() async {
@@ -181,29 +181,29 @@ Future<T?> openCommentBottomSheet<T>({
 // }
 
 // Show permission dialog
-void  showPermissionDialog(BuildContext context) {
+void showPermissionDialog(BuildContext context) {
   showDialog(
     context: context,
     builder:
         (context) => AlertDialog(
-      title: Text('Camera Permission Required'),
-      content: Text(
-        'Please enable camera permission in app settings to take photos.',
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: Text('Cancel'),
+          title: Text('Camera Permission Required'),
+          content: Text(
+            'Please enable camera permission in app settings to take photos.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                openAppSettings();
+              },
+              child: Text('Settings'),
+            ),
+          ],
         ),
-        TextButton(
-          onPressed: () {
-            Navigator.pop(context);
-            openAppSettings();
-          },
-          child: Text('Settings'),
-        ),
-      ],
-    ),
   );
 }
 
@@ -249,4 +249,62 @@ Future<File?> compressImage(File? file, {double? requestedSize}) async {
   debugPrint(size.toString());
 
   return result;
+}
+
+Future<File?> generateVideoThumbnail(String videoUrl) async {
+  try {
+    // 1. Download video to temp file
+    final response = await http.get(Uri.parse(videoUrl));
+
+    if (response.statusCode != 200) return null;
+
+    final tempDir = await getTemporaryDirectory();
+    final videoFile = File(
+      "${tempDir.path}/${DateTime.now().millisecondsSinceEpoch}.mp4",
+    );
+    await videoFile.writeAsBytes(response.bodyBytes);
+
+    // 2. Generate thumbnail from local video file
+    final String? thumbPath = await VideoThumbnail.thumbnailFile(
+      video: videoFile.path,
+      imageFormat: ImageFormat.JPEG,
+      maxHeight: 300,
+      quality: 75,
+    );
+
+    if (thumbPath == null) return null;
+
+    return File(thumbPath);
+  } catch (e) {
+    debugPrint("Thumbnail generation failed: $e");
+    return null;
+  }
+}
+
+// Get FCM token
+  getFCMToken() async {
+  try {
+    // Request permission for notifications
+    NotificationSettings settings = await FirebaseMessaging.instance
+        .requestPermission(alert: true, badge: true, sound: true);
+
+    debugPrint('User granted permission: ${settings.authorizationStatus}');
+
+    if (settings.authorizationStatus == AuthorizationStatus.authorized ||
+        settings.authorizationStatus == AuthorizationStatus.provisional) {
+      String? token = await FirebaseMessaging.instance.getToken();
+
+      if (token != null) {
+        debugPrint('FCM Token: $token');
+        // Store the token in shared preferences
+        await PrefService.set(PrefKeys.fcmToken, token);
+      } else {
+        debugPrint('Failed to retrieve FCM token');
+      }
+    } else {
+      debugPrint('Notification permission denied');
+    }
+  } catch (e) {
+    debugPrint("Error getting FCM token: $e");
+  }
 }

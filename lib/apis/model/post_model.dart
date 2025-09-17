@@ -1,4 +1,7 @@
-import 'package:aura_real/aura_real.dart';
+import 'package:aura_real/apis/model/geo_location_model.dart';
+import 'package:aura_real/apis/model/media_model.dart';
+import 'package:aura_real/apis/model/user_model.dart';
+import 'package:google_places_flutter/model/place_details.dart';
 
 class PostModel {
   final Location? location;
@@ -7,6 +10,7 @@ class PostModel {
   final UserId? userId;
   final String? content;
   final String? postImage;
+  final Media? media; // New field for media object
   final int? privacyLevel;
   final String? locationId;
   final double? postRating;
@@ -25,6 +29,7 @@ class PostModel {
     this.userId,
     this.content,
     this.postImage,
+    this.media,
     this.privacyLevel,
     this.locationId,
     this.postRating,
@@ -44,6 +49,7 @@ class PostModel {
     UserId? userId,
     String? content,
     String? postImage,
+    Media? media,
     int? privacyLevel,
     String? locationId,
     double? postRating,
@@ -61,6 +67,7 @@ class PostModel {
     userId: userId ?? this.userId,
     content: content ?? this.content,
     postImage: postImage ?? this.postImage,
+    media: media ?? this.media,
     privacyLevel: privacyLevel ?? this.privacyLevel,
     locationId: locationId ?? this.locationId,
     postRating: postRating ?? this.postRating,
@@ -75,14 +82,13 @@ class PostModel {
 
   factory PostModel.fromJson(Map<String, dynamic> json) {
     return PostModel(
-      location:
-      json['location'] != null ? Location.fromJson(json['location']) : null,
-      geoLocation:
-      json['geo_location'] != null ? GeoLocation.fromJson(json['geo_location']) : null,
+      location: json['location'] != null ? Location.fromJson(json['location']) : null,
+      geoLocation: json['geo_location'] != null ? GeoLocation.fromJson(json['geo_location']) : null,
       id: json['_id'] as String?,
       userId: json['user_id'] != null ? UserId.fromJson(json['user_id']) : null,
       content: json['content'] as String?,
       postImage: json['post_image'] as String?,
+      media: json['media'] != null ? Media.fromJson(json['media']) : null, // Parse media
       privacyLevel: json['privacy_level'] as int?,
       locationId: json['location_id'] as String?,
       postRating: (json['post_rating'] as num?)?.toDouble(),
@@ -90,13 +96,8 @@ class PostModel {
       sharesCount: json['shares_count'] as int?,
       isDeleted: json['is_deleted'] as bool?,
       hashtags: json['hashtags'] as List<dynamic>?,
-      // Safer DateTime parsing with null check
-      createdAt: json['created_at'] != null
-          ? _parseDateTime(json['created_at'])
-          : null,
-      updatedAt: json['updated_at'] != null
-          ? _parseDateTime(json['updated_at'])
-          : null,
+      createdAt: json['created_at'] != null ? _parseDateTime(json['created_at']) : null,
+      updatedAt: json['updated_at'] != null ? _parseDateTime(json['updated_at']) : null,
       v: json['__v'] as int?,
     );
   }
@@ -121,6 +122,7 @@ class PostModel {
       'user_id': userId?.toJson(),
       'content': content,
       'post_image': postImage,
+      'media': media?.toJson(), // Include media in serialization
       'privacy_level': privacyLevel,
       'location_id': locationId,
       'post_rating': postRating,
@@ -132,88 +134,5 @@ class PostModel {
       'updated_at': updatedAt?.toIso8601String(),
       '__v': v,
     };
-  }
-}
-
-class GeoLocation {
-  final String? type;
-  final List<double>? coordinates;
-
-  GeoLocation({this.type, this.coordinates});
-
-  GeoLocation copyWith({String? type, List<double>? coordinates}) =>
-      GeoLocation(
-        type: type ?? this.type,
-        coordinates: coordinates ?? this.coordinates,
-      );
-
-  factory GeoLocation.fromJson(Map<String, dynamic> json) {
-    return GeoLocation(
-      type: json['type'] as String?,
-      coordinates: (json['coordinates'] as List<dynamic>?)?.map((e) {
-        if (e is num) return e.toDouble();
-        return null; // Handle invalid values
-      }).whereType<double>().toList(),
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {'type': type, 'coordinates': coordinates};
-  }
-}
-
-class Location {
-  final double? latitude;
-  final double? longitude;
-
-  Location({this.latitude, this.longitude});
-
-  Location copyWith({double? latitude, double? longitude}) => Location(
-    latitude: latitude ?? this.latitude,
-    longitude: longitude ?? this.longitude,
-  );
-
-  factory Location.fromJson(Map<String, dynamic> json) {
-    return Location(
-      latitude: (json['latitude'] as num?)?.toDouble(),
-      longitude: (json['longitude'] as num?)?.toDouble(),
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {'latitude': latitude, 'longitude': longitude};
-  }
-}
-
-class UserId {
-  final Profile? profile;
-  final String? id;
-  final String? fullName;
-  final String? email;
-  final String? phone_number;
-
-  UserId( {this.profile, this.id, this.fullName,this.email,this.phone_number,});
-
-  UserId copyWith({Profile? profile, String? id, String? fullName}) => UserId(
-    profile: profile ?? this.profile,
-    id: id ?? this.id,
-    fullName: fullName ?? this.fullName,
-    email: fullName ?? this.email,
-    phone_number: fullName ?? this.phone_number,
-  );
-
-  factory UserId.fromJson(Map<String, dynamic> json) {
-    return UserId(
-      profile:
-      json['profile'] != null ? Profile.fromJson(json['profile']) : null,
-      id: json['_id'] as String?,
-      fullName: json['full_name'] as String?,
-      email: json['email'] as String?,
-      phone_number: json['phone_number'] as String?,
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {'profile': profile?.toJson(), '_id': id, 'full_name': fullName,"email":email,"phone_number":phone_number};
   }
 }

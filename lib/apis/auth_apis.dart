@@ -1,5 +1,4 @@
-import 'package:aura_real/apis/app_response.dart';
-import 'package:aura_real/apis/model/location_model.dart';
+import 'dart:developer';
 import 'package:aura_real/aura_real.dart';
 import 'package:aura_real/screens/auth/sign_in/model/google_login_response_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -99,6 +98,16 @@ class AuthApis {
       final responseBody = jsonDecode(response.body);
       if (response.statusCode == 200 || response.statusCode == 201) {
         if (responseBody['data'] != null && responseBody != null) {
+          getFCMToken();
+
+          print("verifyOTPAPI Response -------- ${responseBody['data']}");
+
+          String fcmToken = PrefService.getString(PrefKeys.fcmToken);
+          // 🔹 Call update API
+          await AuthApis.userUpdateProfile(
+            fcmToken: fcmToken.toString(), // ✅ send FCM token
+          );
+
           await PrefService.set(
             PrefKeys.userData,
             jsonEncode(responseBody['data']),
@@ -117,6 +126,7 @@ class AuthApis {
       showCatchToast(exception, stack);
       return null;
     }
+    return null;
   }
 
   ///Login API
@@ -140,6 +150,19 @@ class AuthApis {
       print("isInCorrectPassword====== false"); // Initial state
 
       if (response.statusCode == 200 || response.statusCode == 201) {
+        getFCMToken();
+
+
+
+        print("Login REsponse -------- ${responseBody['data']}");
+
+        String fcmToken = PrefService.getString(PrefKeys.fcmToken);
+
+        // 🔹 Call update API
+        await AuthApis.userUpdateProfile(
+          fcmToken: fcmToken.toString(), // ✅ send FCM token
+        );
+
         if (responseBody['data'] != null && responseBody != null) {
           await PrefService.set(
             PrefKeys.userData,
@@ -170,56 +193,6 @@ class AuthApis {
       return LoginResult(isInCorrectPassword: false); // Return on exception
     }
   }
-
-  // static Future<LoginRes?> loginAPI({
-  //   required String password,
-  //   required String email,
-  //   required bool isInCorrectPassword  , // Default to false
-  // }) async {
-  //   try {
-  //     final response = await ApiService.postApi(
-  //       url: EndPoints.login,
-  //       body: {"email": email, "password": password},
-  //       is402Response: isInCorrectPassword,
-  //     );
-  //
-  //     if (response == null) {
-  //       showCatchToast('No response from server', null);
-  //       return null;
-  //     }
-  //
-  //     final responseBody = jsonDecode(response.body);
-  //     print("isInCorrectPassword====== $isInCorrectPassword");
-  //
-  //     if (response.statusCode == 200 || response.statusCode == 201) {
-  //       if (responseBody['data'] != null && responseBody != null) {
-  //         await PrefService.set(
-  //           PrefKeys.userData,
-  //           jsonEncode(responseBody['data']),
-  //         );
-  //
-  //         await PrefService.set(
-  //           PrefKeys.token,
-  //           jsonEncode(responseBody['data']['token']),
-  //         );
-  //
-  //         showSuccessToast(responseBody['message'] ?? 'Login successful');
-  //         return LoginRes.fromJson(responseBody['data']);
-  //       }
-  //     } else if (response.statusCode == 402) {
-  //       showCatchToast(responseBody['message'], null);
-  //       isInCorrectPassword = true; // Set flag for incorrect credentials
-  //       print("is In corrct Password========= ${isInCorrectPassword}");
-  //       return null;
-  //     } else {
-  //       showCatchToast(responseBody['message'] ?? 'Login failed', null);
-  //       return null;
-  //     }
-  //   } catch (exception, stack) {
-  //     showCatchToast(exception.toString(), stack);
-  //     return null;
-  //   }
-  // }
 
   ///Google Login API
   static Future<GoogleLoginRes?> googleAPI({
@@ -259,6 +232,7 @@ class AuthApis {
       showCatchToast(exception, stack);
       return null;
     }
+    return null;
   }
 
   ///Logout
@@ -318,10 +292,11 @@ class AuthApis {
   }
 
   static Future<bool> userUpdateProfile({
-    required String userId,
-    required String fullName,
-    required String email,
-    required String phoneNumber,
+    String? userId,
+    String? fullName,
+    String? email,
+    String? phoneNumber,
+    required String fcmToken,
   }) async {
     try {
       final response = await ApiService.putApi(
@@ -331,6 +306,7 @@ class AuthApis {
           "fullName": fullName,
           "email": email,
           "phoneNumber": phoneNumber,
+          "device_token": fcmToken,
         },
       );
 
@@ -344,6 +320,8 @@ class AuthApis {
       print('${responseBody}');
 
       if (response.statusCode == 200 || response.statusCode == 201) {
+        log("Log response.body");
+        log(response.body);
         print('~!~~~~~?${responseBody['user']}');
         await PrefService.set(
           PrefKeys.userData,
@@ -364,47 +342,6 @@ class AuthApis {
       return false;
     }
   }
-
-  // static Future<> userUpdateProfile({
-  //   required String userId,
-  //   required String fullName,
-  //   required String email,
-  //   required String phoneNumber,
-  // }) async {
-  //   try {
-  //     final response = await ApiService.putApi(
-  //       url: EndPoints.updateUserProfile,
-  //       body: {
-  //         "userId": userId,
-  //         "fullName": fullName,
-  //         "email": email,
-  //         "phoneNumber": phoneNumber,
-  //       },
-  //     );
-
-  //     if (response == null) {
-  //       showCatchToast('No response from server', null);
-  //       return null;
-  //     }
-  //     final responseBody = jsonDecode(response.body);
-  //     if (response.statusCode == 200 || response.statusCode == 201) {
-  //       print("Res Body Data ${responseBody['user']}");
-  //       if (responseBody['user'] != null && responseBody != null) {
-  //         showSuccessToast(
-  //           responseBody['message'] ?? 'User updated successfully',
-  //         );
-  //         await PrefService.set(
-  //           PrefKeys.userData,
-  //           jsonEncode(responseBody['data']),
-  //         );
-  //         return Profile.fromJson(responseBody['user']);
-  //       }
-  //     }
-  //   } catch (exception, stack) {
-  //     showCatchToast(exception, stack);
-  //     return null;
-  //   }
-  // }
 
   ///Request Password API
   static Future<bool?> reqPasswordResetAPI({required String email}) async {
@@ -428,6 +365,7 @@ class AuthApis {
       showCatchToast(exception, stack);
       return false;
     }
+    return null;
   }
 
   ///Request Password API
@@ -455,6 +393,7 @@ class AuthApis {
       showCatchToast(exception, stack);
       return false;
     }
+    return null;
   }
 
   ///Request Password API
@@ -483,6 +422,7 @@ class AuthApis {
       showCatchToast(exception, stack);
       return false;
     }
+    return null;
   }
 
   //change password

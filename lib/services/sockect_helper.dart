@@ -26,7 +26,7 @@ class SocketIoHelper {
 
   void connectSocket(String roomId, StateSetter setState) {
     print("connect socket===========================1");
-    socketApp = IO.io(EndPoints.WebSocketurl, <String, dynamic>{
+    socketApp = IO.io(EndPoints.domain, <String, dynamic>{
       'autoConnect': true,
       'transports': ['websocket'],
       'forceNew': true, // Ensure fresh connection
@@ -112,7 +112,6 @@ class SocketIoHelper {
   disconnectSocket() {
     socketApp!.disconnect();
     socketApp!.dispose();
-
     debugPrint('~~~~~~~Socket disconnect');
   }
 }

@@ -53,7 +53,7 @@ export 'package:flutter_image_compress/flutter_image_compress.dart';
 export 'package:path_provider/path_provider.dart';
 export 'package:permission_handler/permission_handler.dart';
 export 'package:aura_real/common/widgets/app_butoon_2.dart';
-export 'package:aura_real/apis/model/user_model.dart';
+export 'package:aura_real/apis/model/login_user_model.dart';
 export 'package:aura_real/screens/home/post/widget/post_card_widget.dart';
 export 'package:aura_real/screens/home/post/widget/star_rating_widget.dart';
 export 'package:aura_real/screens/home/upload/upload_provider.dart';
@@ -108,3 +108,5 @@ export 'package:aura_real/screens/chat/message/model/get_all_message_model.dart'
 export 'package:aura_real/common/widgets/media_picker.dart';
 export 'package:mime/mime.dart';
 export 'package:video_player/video_player.dart';
+export 'package:photo_view/photo_view.dart';
+

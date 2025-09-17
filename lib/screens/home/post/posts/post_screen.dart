@@ -1,4 +1,7 @@
+import 'package:aura_real/apis/model/post_model.dart';
 import 'package:aura_real/aura_real.dart';
+import 'package:aura_real/screens/home/post/posts/image_preview_screen.dart';
+import 'package:aura_real/screens/home/post/posts/video_player_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -133,7 +136,7 @@ class HomeScreen extends StatelessWidget {
                                   );
                                 }
                                 if (!provider.isApiCalling) {
-                                  // provider.getAllPostListAPI();
+                                  provider.getAllPostListAPI();
                                 }
                                 return SizedBox(
                                   height: 100.ph,
@@ -142,6 +145,68 @@ class HomeScreen extends StatelessWidget {
                               }
 
                               return PostCard(
+                                onTapPost: () {
+                                  if (provider
+                                          .postListResponse[index]
+                                          .media
+                                          ?.type ==
+                                      0) {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder:
+                                            (_) => ImagePreviewScreen(
+                                              imageUrl:
+                                                  EndPoints.domain +
+                                                      provider
+                                                          .postListResponse[index]
+                                                          .media!
+                                                          .url! ??
+                                                  "",
+                                            ),
+                                      ),
+                                    );
+                                    print("Image Screen");
+                                  } else {
+                                    print("Video Screen");
+                                    print(
+                                      EndPoints.domain +
+                                          provider
+                                              .postListResponse[index]
+                                              .media!
+                                              .url!
+                                              .toBackslashPath(),
+                                    );
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder:
+                                            (_) => VideoPlayerScreen(
+                                              thumbnailUrl:
+                                                  (EndPoints.domain +
+                                                          provider
+                                                              .postListResponse[index]
+                                                              .media!
+                                                              .url!
+                                                              .toBackslashPath() ??
+                                                      ""),
+                                              title:
+                                                  provider
+                                                      .postListResponse[index]
+                                                      .content,
+                                              url:
+                                                  (EndPoints.domain +
+                                                          provider
+                                                              .postListResponse[index]
+                                                              .media!
+                                                              .url!
+                                                              .toBackslashPath() ??
+                                                      ""),
+                                            ),
+                                      ),
+                                    );
+                                  }
+                                },
                                 loading: provider.loader,
                                 onRatingSubmitted: (rate) {
                                   var rating =

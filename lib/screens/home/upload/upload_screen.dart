@@ -519,6 +519,8 @@ class UploadScreen extends StatelessWidget {
                             );
                           }
                           return PostCard(
+                            onTapPost: () {},
+                            onCommentSubmitted: (val) {},
                             onRatingSubmitted: (val) {
                               print("Val========= ${val}");
                             },

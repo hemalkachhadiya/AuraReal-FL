@@ -284,7 +284,7 @@ class UploadProvider extends ChangeNotifier {
     print("test==============================1");
     if (userData == null || userData?.id == null) return;
 
-    followLoader = true;
+    loader = true;
     notifyListeners();
 
     try {
@@ -336,7 +336,7 @@ class UploadProvider extends ChangeNotifier {
     } catch (e) {
       showCatchToast(e.toString(), null);
     } finally {
-      followLoader = false;
+      loader = false;
       notifyListeners();
     }
   }

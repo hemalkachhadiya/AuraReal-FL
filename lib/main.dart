@@ -3,8 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  FirebaseOptions firebaseOptions;
+   FirebaseOptions firebaseOptions;
 
   if (Platform.isIOS) {
     firebaseOptions = const FirebaseOptions(

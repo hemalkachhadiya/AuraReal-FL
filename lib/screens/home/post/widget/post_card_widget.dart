@@ -5,6 +5,7 @@ class PostCard extends StatefulWidget {
   // Changed to Stateful for local updates
   final PostModel post;
   final VoidCallback onTap;
+  final VoidCallback onTapPost;
   final bool? loading;
   final Function(double rating)? onRatingSubmitted;
   final Function(String rating)? onCommentSubmitted;
@@ -16,6 +17,7 @@ class PostCard extends StatefulWidget {
     this.onRatingSubmitted,
     this.onCommentSubmitted,
     this.loading = false,
+    required this.onTapPost,
   });
 
   @override
@@ -115,11 +117,15 @@ class _PostCardState extends State<PostCard> {
         ),
 
         ///Post Image / Video
-        CachedImage(
-          EndPoints.domain + (widget.post.postImage?.toBackslashPath() ?? ''),
-          height: 390.0,
-          fit: BoxFit.cover,
-        ),
+        buildMedia(context, widget.post, widget.onTapPost),
+        // InkWell(
+        //   onTap: widget.onTapPost,
+        //   child: CachedImage(
+        //     EndPoints.domain + (widget.post.postImage?.toBackslashPath() ?? ''),
+        //     height: 390.0,
+        //     fit: BoxFit.cover,
+        //   ),
+        // ),
 
         ///Space
         10.ph.spaceVertical,
@@ -293,10 +299,137 @@ class _PostCardState extends State<PostCard> {
     );
   }
 
+  Widget buildMedia(
+    BuildContext context,
+    PostModel post,
+    VoidCallback onTapPost,
+  ) {
+    if (post.media != null && post.media?.type == 1) {
+      // 🎬 Video post
+      final videoUrl = EndPoints.domain + post.media!.url!.toBackslashPath();
+      return GestureDetector(
+        onTap: onTapPost,
+        child: FutureBuilder<File?>(
+          future: generateVideoThumbnail(videoUrl),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Container(
+                height: 390,
+                color: Colors.black,
+                child: const Center(child: CircularProgressIndicator()),
+              );
+            }
+
+            if (!snapshot.hasData || snapshot.data == null) {
+              return Container(
+                height: 390,
+                width: double.infinity,
+                color: Colors.black,
+                child: const Icon(
+                  Icons.play_circle_fill,
+                  color: Colors.white,
+                  size: 60,
+                ),
+              );
+            }
+
+            return Stack(
+              alignment: Alignment.center,
+              children: [
+                Image.file(
+                  snapshot.data!,
+                  height: 390,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                ),
+                const Icon(
+                  Icons.play_circle_fill,
+                  color: Colors.white,
+                  size: 60,
+                ),
+              ],
+            );
+          },
+        ),
+      );
+    } else {
+      // 🖼 Image post
+      final imageUrl =
+          post.media?.url != null
+              ? (EndPoints.domain + post.media!.url!.toBackslashPath())
+              : "";
+
+      return GestureDetector(
+        onTap: onTapPost,
+        child: CachedImage(imageUrl, height: 390.0, fit: BoxFit.cover),
+      );
+    }
+  }
+
+  // Widget buildMedia(
+  //   BuildContext context,
+  //   PostModel post,
+  //   VoidCallback onTapPost,
+  // ) {
+  //   if (post.media != null && post.media?.type == 1) {
+  //     // Video
+  //     return GestureDetector(
+  //       onTap: onTapPost /* () {
+  //         // open video player
+  //         // Navigator.push(
+  //         //   context,
+  //         //   MaterialPageRoute(
+  //         //     builder: (_) => VideoPlayerScreen(url: post.media!.url ?? ""),
+  //         //   ),
+  //         // );
+  //       }*/,
+  //       child: Container(
+  //         height: 390,
+  //         color: Colors.black,
+  //         child: Center(
+  //           child: Icon(Icons.play_circle_fill, color: Colors.white, size: 50),
+  //         ),
+  //       ),
+  //     );
+  //   } else {
+  //     // Image (either media.type == 0 OR fallback to postImage)
+  //     final imageUrl =
+  //         post.media?.url != null
+  //             ? (EndPoints.domain + post.media!.url!.toBackslashPath())
+  //             : "";
+  //     // print("image url========== ${EndPoints.domain + widget.post.postImage!.toBackslashPath()}");
+  //     return GestureDetector(
+  //       onTap: onTapPost /*() {
+  //         // open image in fullscreen
+  //         // Navigator.push(
+  //         //   context,
+  //         //   MaterialPageRoute(
+  //         //     builder: (_) => ImagePreviewScreen(imageUrl: imageUrl),
+  //         //   ),
+  //         // );
+  //       }*/,
+  //       child: CachedImage(
+  //         // EndPoints.domain + (widget.post.postImage?.toBackslashPath() ?? ''),
+  //         imageUrl,
+  //         height: 390.0,
+  //         fit: BoxFit.cover,
+  //       ),
+  //       /*Image.network(
+  //         imageUrl,
+  //         height: 390,
+  //         width: double.infinity,
+  //         fit: BoxFit.cover,
+  //         errorBuilder: (c, e, s) => const Icon(Icons.broken_image),
+  //       )*/
+  //     );
+  //   }
+  // }
+
   String _getProfileImageUrl() {
     if (widget.post.userId?.profile?.profileImage == null) return '';
     final userId = widget.post.userId;
     if (userId == null || userId.runtimeType == String) return '';
-    return EndPoints.domain + userId.profile!.profileImage.toString();
+    return EndPoints.domain +
+        userId.profile!.profileImage!.toBackslashPath().toString();
   }
 }

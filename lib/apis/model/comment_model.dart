@@ -1,4 +1,5 @@
 import 'package:aura_real/apis/model/post_model.dart';
+import 'package:aura_real/apis/model/user_model.dart';
 
 class CommentModel {
   final String? id;

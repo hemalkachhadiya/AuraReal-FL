@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:aura_real/apis/auth_apis.dart';
 import 'package:aura_real/aura_real.dart';
 
@@ -122,11 +124,16 @@ class ProfileProvider extends ChangeNotifier {
       loader = true;
       notifyListeners();
       print("Get Profile ---- ${userData?.id}");
+
+      String fcmToken = PrefService.getString(PrefKeys.fcmToken);
+      print("fcmToken111 ---- ${fcmToken}");
+
       final result = await AuthApis.userUpdateProfile(
         fullName: fullNameController.text.trim(),
         email: emailController.text.trim(),
         phoneNumber: mobileController.text.trim(),
         userId: userData?.id ?? "",
+        fcmToken: fcmToken,
       );
       if (result) {
         Navigator.pop(context);

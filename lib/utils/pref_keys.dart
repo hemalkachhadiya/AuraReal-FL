@@ -4,6 +4,7 @@ class PrefKeys {
   static const email = 'email';
   static const phoneNumber = 'phoneNumber';
   static const token = 'token';
+  static const fcmToken = 'fcmToken';
   static const appSecret = 'app_secret';
   static const locationId = 'location_id'; // Added new key for location
   static const location = 'location'; // Added new key for location

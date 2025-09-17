@@ -6,6 +6,7 @@ class UserProfileRatingWidget extends StatelessWidget {
   final VoidCallback? onRate;
   final VoidCallback? onVisitProfile;
   final VoidCallback? onPrivateChat;
+  final VoidCallback? onRateAPITap;
 
   const UserProfileRatingWidget({
     super.key,
@@ -13,6 +14,7 @@ class UserProfileRatingWidget extends StatelessWidget {
     this.onRate,
     this.onVisitProfile,
     this.onPrivateChat,
+    this.onRateAPITap,
   });
 
   @override
@@ -28,6 +30,7 @@ class UserProfileRatingWidget extends StatelessWidget {
                 flex: 2,
                 child: InkWell(
                   onTap: () {
+                    print("Check oprn rate---------");
                     openCustomDialog(
                       context,
                       borderRadius: 30,
@@ -39,6 +42,7 @@ class UserProfileRatingWidget extends StatelessWidget {
                         size: 37,
                       ),
                       confirmBtnTitle: context.l10n?.send ?? "Send",
+                      onConfirmTap: onRateAPITap,
                     );
                   },
                   child: Container(

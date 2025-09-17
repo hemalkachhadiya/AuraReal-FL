@@ -1,5 +1,5 @@
 import 'package:aura_real/aura_real.dart';
-
+import 'package:aura_real/screens/home/post/posts/video_player_screen.dart';
 
 class RouteManager {
   static String get initialRoute => SplashScreen.routeName;
@@ -138,6 +138,13 @@ class RouteManager {
           settings: settings,
         );
 
+      // ///Full Screen Screen
+      // case FullScreenPostScreen.routeName:
+      //   return MaterialPageRoute(
+      //     builder: FullScreenPostScreen.builder,
+      //     settings: settings,
+      //   );
+
       /// Message Screen
       case MessageScreen.routeName:
         final args = settings.arguments as Map<String, dynamic>?;
@@ -145,18 +152,24 @@ class RouteManager {
             args['chatUser'] == null ||
             args['chatRoomId'] == null) {
           throw ArgumentError(
-              'Arguments {chatUser: ChatUser, chatRoomId: String} are required for MessageScreen');
+            'Arguments {chatUser: ChatUser, chatRoomId: String} are required for MessageScreen',
+          );
         }
 
         final ChatUser chatUser = args['chatUser'];
         final String chatRoomId = args['chatRoomId'];
 
         return MaterialPageRoute(
-          builder: (context) => ChangeNotifierProvider<MessageProvider>(
-            create: (context) =>
-            MessageProvider()..initializeChat(user: chatUser, chatRoomId: chatRoomId),
-            child: MessageScreen(chatUser: chatUser),
-          ),
+          builder:
+              (context) => ChangeNotifierProvider<MessageProvider>(
+                create:
+                    (context) =>
+                        MessageProvider()..initializeChat(
+                          user: chatUser,
+                          chatRoomId: chatRoomId,
+                        ),
+                child: MessageScreen(chatUser: chatUser),
+              ),
           settings: settings,
         );
       // case MessageScreen.routeName:

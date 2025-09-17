@@ -401,6 +401,142 @@ class PostAPI {
   //   }
   // }
   /// FIXED VERSION - Try different field names
+  // static Future<http.Response?> createPostAPI({
+  //   required double latitude,
+  //   required double longitude,
+  //   required String content,
+  //   required String locationId,
+  //   required String postImg,
+  //   String? postVideo,
+  //   List<String>? selectedHashtags,
+  // }) async {
+  //   try {
+  //     // Clean up locationId if it starts and ends with quotes
+  //     if (locationId.startsWith('"') && locationId.endsWith('"')) {
+  //       locationId = locationId.substring(1, locationId.length - 1);
+  //     }
+  //
+  //     // Create a MultipartRequest
+  //     var request = http.MultipartRequest(
+  //       'POST',
+  //       Uri.parse(EndPoints.createPostAPI),
+  //     );
+  //
+  //     // Helper function to add fields if valid
+  //     void addFieldIfValid(
+  //         Map<String, String> fields,
+  //         String key,
+  //         dynamic value,
+  //         ) {
+  //       if (value != null &&
+  //           value.toString().trim().isNotEmpty &&
+  //           value.toString() != 'null') {
+  //         fields[key] = value.toString();
+  //       }
+  //     }
+  //
+  //     // Add fields to the request
+  //     addFieldIfValid(request.fields, 'user_id', userData?.id);
+  //     addFieldIfValid(request.fields, 'content', content);
+  //     addFieldIfValid(request.fields, 'privacy_level', '0');
+  //     addFieldIfValid(request.fields, 'location_id', locationId);
+  //     if (selectedHashtags != null && selectedHashtags.isNotEmpty) {
+  //       addFieldIfValid(request.fields, 'hashtags', selectedHashtags.join(','));
+  //     }
+  //
+  //     debugPrint('------> createPost api request.fields----->${request.fields}');
+  //
+  //     // Helper function to get media type
+  //     MediaType? getMediaType(String filePath) {
+  //       final mimeType = lookupMimeType(filePath);
+  //       if (mimeType != null) {
+  //         final parts = mimeType.split('/');
+  //         print("mime ====================== 1");
+  //         print(mimeType);
+  //         return MediaType(parts[0], parts[1]);
+  //       }
+  //       print("mime ====================== 2");
+  //       return MediaType('application', 'octet-stream');
+  //     }
+  //
+  //     // SOLUTION 1: Only send ONE media type at a time
+  //     bool hasMedia = false;
+  //
+  //     // Add image file if it exists AND no video
+  //     if (postImg.isNotEmpty && (postVideo == null || postVideo.isEmpty)) {
+  //       print("Media============================Image===========================");
+  //       File imageFile = File(postImg);
+  //       if (await imageFile.exists()) {
+  //         final mediaType = getMediaType(postImg);
+  //         try {
+  //           final multipartFile = await http.MultipartFile.fromPath(
+  //             'postImg', // Keep this for images
+  //             postImg,
+  //             contentType: mediaType,
+  //           );
+  //           request.files.add(multipartFile);
+  //           hasMedia = true;
+  //           debugPrint('------> Image added: ${imageFile.path} with type $mediaType');
+  //         } catch (e) {
+  //           debugPrint('------> Error adding image file: $e');
+  //         }
+  //       } else {
+  //         debugPrint('------> Image file not found at: $postImg');
+  //       }
+  //     }
+  //
+  //     // Add video file if it exists AND no image
+  //     if (postVideo != null && postVideo.isNotEmpty && !hasMedia) {
+  //       print("Media=========================video==============================");
+  //       File videoFile = File(postVideo);
+  //       if (await videoFile.exists()) {
+  //         final mediaType = getMediaType(postVideo);
+  //         try {
+  //           // SOLUTION 2: Try different field names - uncomment one at a time to test
+  //           final multipartFile = await http.MultipartFile.fromPath(
+  //             'postVideo', // Try this first (current)
+  //             // 'video',     // Try this if above fails
+  //             // 'file',      // Try this if above fails
+  //             // 'media',     // Try this if above fails
+  //             postVideo,
+  //
+  //           );
+  //           request.files.add(multipartFile);
+  //           debugPrint('------> Video added: ${videoFile.path} with type $mediaType');
+  //         } catch (e) {
+  //           debugPrint('------> Error adding video file: $e');
+  //         }
+  //       } else {
+  //         debugPrint('------> Video file not found at: $postVideo');
+  //       }
+  //     }
+  //
+  //     debugPrint('------> Files being sent: ${request.files.map((f) => f.field).toList()}');
+  //
+  //     // Call the postWithMultipartAPI service
+  //     final response = await ApiService.postWithMultipartAPI(
+  //       url: EndPoints.createPostAPI,
+  //       body: request,
+  //     );
+  //
+  //     if (response != null) {
+  //       debugPrint('------> createPost api response.body----->${response.body}');
+  //       debugPrint('------> createPost api response.statusCode----->${response.statusCode}');
+  //       final model = appResponseFromJson2<PostModel>(
+  //         response.body,
+  //         converter: (dynamic data) => PostModel.fromJson(data as Map<String, dynamic>),
+  //         dataKey: 'posts',
+  //       );
+  //       return response;
+  //     } else {
+  //       debugPrint('Failed to create post: No response received');
+  //       return null;
+  //     }
+  //   } catch (e) {
+  //     debugPrint('Exception in createPostAPI: $e');
+  //     return null;
+  //   }
+  // }
   static Future<http.Response?> createPostAPI({
     required double latitude,
     required double longitude,
@@ -411,23 +547,17 @@ class PostAPI {
     List<String>? selectedHashtags,
   }) async {
     try {
-      // Clean up locationId if it starts and ends with quotes
       if (locationId.startsWith('"') && locationId.endsWith('"')) {
         locationId = locationId.substring(1, locationId.length - 1);
       }
 
-      // Create a MultipartRequest
       var request = http.MultipartRequest(
         'POST',
         Uri.parse(EndPoints.createPostAPI),
       );
 
-      // Helper function to add fields if valid
-      void addFieldIfValid(
-          Map<String, String> fields,
-          String key,
-          dynamic value,
-          ) {
+      // Helper to add valid fields
+      void addFieldIfValid(Map<String, String> fields, String key, dynamic value) {
         if (value != null &&
             value.toString().trim().isNotEmpty &&
             value.toString() != 'null') {
@@ -435,7 +565,7 @@ class PostAPI {
         }
       }
 
-      // Add fields to the request
+      // Add text fields
       addFieldIfValid(request.fields, 'user_id', userData?.id);
       addFieldIfValid(request.fields, 'content', content);
       addFieldIfValid(request.fields, 'privacy_level', '0');
@@ -444,98 +574,59 @@ class PostAPI {
         addFieldIfValid(request.fields, 'hashtags', selectedHashtags.join(','));
       }
 
-      debugPrint('------> createPost api request.fields----->${request.fields}');
+      debugPrint('------> Fields: ${request.fields}');
 
-      // Helper function to get media type
-      MediaType? getMediaType(String filePath) {
+      // Helper to get MIME type
+      MediaType? _getMediaType(String filePath) {
         final mimeType = lookupMimeType(filePath);
         if (mimeType != null) {
           final parts = mimeType.split('/');
-          print("mime ====================== 1");
           return MediaType(parts[0], parts[1]);
         }
-        print("mime ====================== 2");
         return MediaType('application', 'octet-stream');
       }
 
-      // SOLUTION 1: Only send ONE media type at a time
-      bool hasMedia = false;
-
-      // Add image file if it exists AND no video
+      // Attach **only one file** at a time (backend usually expects this)
       if (postImg.isNotEmpty && (postVideo == null || postVideo.isEmpty)) {
-        print("Media============================Image===========================");
         File imageFile = File(postImg);
         if (await imageFile.exists()) {
-          final mediaType = getMediaType(postImg);
-          try {
-            final multipartFile = await http.MultipartFile.fromPath(
-              'postImg', // Keep this for images
-              postImg,
-              contentType: mediaType,
-            );
-            request.files.add(multipartFile);
-            hasMedia = true;
-            debugPrint('------> Image added: ${imageFile.path} with type $mediaType');
-          } catch (e) {
-            debugPrint('------> Error adding image file: $e');
-          }
-        } else {
-          debugPrint('------> Image file not found at: $postImg');
+          final multipartFile = await http.MultipartFile.fromPath(
+            'postImg', // ⚡️ use SAME field name as Postman (change if backend expects `postImg`)
+            postImg,
+            contentType: _getMediaType(postImg),
+          );
+          request.files.add(multipartFile);
+          debugPrint('------> Image added: ${imageFile.path}');
         }
-      }
-
-      // Add video file if it exists AND no image
-      if (postVideo != null && postVideo.isNotEmpty && !hasMedia) {
-        print("Media=========================video==============================");
+      } else if (postVideo != null && postVideo.isNotEmpty) {
         File videoFile = File(postVideo);
         if (await videoFile.exists()) {
-          final mediaType = getMediaType(postVideo);
-          try {
-            // SOLUTION 2: Try different field names - uncomment one at a time to test
-            final multipartFile = await http.MultipartFile.fromPath(
-              'postVideo', // Try this first (current)
-              // 'video',     // Try this if above fails
-              // 'file',      // Try this if above fails
-              // 'media',     // Try this if above fails
-              postVideo,
-              contentType: mediaType,
-            );
-            request.files.add(multipartFile);
-            debugPrint('------> Video added: ${videoFile.path} with type $mediaType');
-          } catch (e) {
-            debugPrint('------> Error adding video file: $e');
-          }
-        } else {
-          debugPrint('------> Video file not found at: $postVideo');
+          final multipartFile = await http.MultipartFile.fromPath(
+            'postVideo', // ⚡️ use SAME field name as Postman (change if backend expects `postVideo`)
+            postVideo,
+            contentType: _getMediaType(postVideo),
+          );
+          request.files.add(multipartFile);
+          debugPrint('------> postVideo: ${postVideo}');
+          debugPrint('------> Video added: ${videoFile.path}');
         }
       }
 
-      debugPrint('------> Files being sent: ${request.files.map((f) => f.field).toList()}');
 
-      // Call the postWithMultipartAPI service
-      final response = await ApiService.postWithMultipartAPI(
-        url: EndPoints.createPostAPI,
-        body: request,
-      );
+      debugPrint('------> Files: ${request.files.map((f) => f.field).toList()}');
 
-      if (response != null) {
-        debugPrint('------> createPost api response.body----->${response.body}');
-        debugPrint('------> createPost api response.statusCode----->${response.statusCode}');
-        final model = appResponseFromJson2<PostModel>(
-          response.body,
-          converter: (dynamic data) => PostModel.fromJson(data as Map<String, dynamic>),
-          dataKey: 'posts',
-        );
-        return response;
-      } else {
-        debugPrint('Failed to create post: No response received');
-        return null;
-      }
+      // Send request
+      final response = await http.Response.fromStream(await request.send());
+
+      debugPrint('------> Response Code: ${response.statusCode}');
+      debugPrint('------> Response Body: ${response.body}');
+      return response;
     } catch (e) {
       debugPrint('Exception in createPostAPI: $e');
       return null;
     }
   }
+
   /// OLD / postVideo / postImg
   // static Future<http.Response?> createPostAPI({
   //   required double latitude,

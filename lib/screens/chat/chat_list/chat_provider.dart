@@ -74,7 +74,7 @@ class ChatProvider extends ChangeNotifier {
                     room.updatedAt != null
                         ? _formatTime(room.updatedAt!)
                         : "--:--",
-                unreadCount: room.unreadCount ?? 0,
+                unreadCount: room.unreadCount?.first ?? 0,
                 isOnline:
                     false, // No online status in API → maybe set via socket later
               );

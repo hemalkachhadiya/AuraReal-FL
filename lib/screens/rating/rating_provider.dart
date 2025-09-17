@@ -1,7 +1,9 @@
 import 'dart:io';
 import 'dart:ui' as ui;
+import 'package:aura_real/apis/model/geo_location_model.dart';
 import 'package:aura_real/apis/model/post_model.dart';
 import 'package:aura_real/apis/model/user_marker_data.dart';
+import 'package:aura_real/apis/model/user_model.dart';
 import 'package:aura_real/apis/rating_profile_apis.dart';
 import 'package:aura_real/common/methods.dart';
 import 'package:aura_real/screens/rating/model/rating_profile_list_model.dart';
@@ -31,6 +33,7 @@ class RatingProvider extends ChangeNotifier {
   List<RatingProfileUserModel> users = [];
   RatingProfileUserModel? selectedUser;
   bool loader = false;
+  bool rateLoader = false;
   PostModel? selectedPost; // New variable to hold the selected post
 
   Future<LatLng?> getCurrentLocation() async {
@@ -170,12 +173,9 @@ class RatingProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-
-
   Future<BitmapDescriptor> _createCustomMarker(
-
-      RatingProfileUserModel user,
-      ) async {
+    RatingProfileUserModel user,
+  ) async {
     try {
       final ui.PictureRecorder pictureRecorder = ui.PictureRecorder();
       final Canvas canvas = Canvas(pictureRecorder);
@@ -207,7 +207,9 @@ class RatingProvider extends ChangeNotifier {
       );
 
       // Load and render the SVG app logo
-      final String svgString = await DefaultAssetBundle.of(navigatorKey.currentState!.context).loadString(AssetRes.appLogo);
+      final String svgString = await DefaultAssetBundle.of(
+        navigatorKey.currentState!.context,
+      ).loadString(AssetRes.appLogo);
       final SvgPicture svgPicture = SvgPicture.string(
         svgString,
         width: imageSize,
@@ -215,7 +217,10 @@ class RatingProvider extends ChangeNotifier {
       );
 
       // Convert SvgPicture to ui.Image
-      final ui.Image svgImage = await _svgPictureToImage(svgPicture, imageSize.toInt());
+      final ui.Image svgImage = await _svgPictureToImage(
+        svgPicture,
+        imageSize.toInt(),
+      );
 
       // Draw the SVG image in the center of the marker
       canvas.drawImage(
@@ -255,8 +260,13 @@ class RatingProvider extends ChangeNotifier {
       );
 
       // Convert the canvas to an image
-      final ui.Image markerImage = await pictureRecorder.endRecording().toImage(size.toInt(), size.toInt());
-      final ByteData? byteData = await markerImage.toByteData(format: ui.ImageByteFormat.png);
+      final ui.Image markerImage = await pictureRecorder.endRecording().toImage(
+        size.toInt(),
+        size.toInt(),
+      );
+      final ByteData? byteData = await markerImage.toByteData(
+        format: ui.ImageByteFormat.png,
+      );
       final Uint8List uint8List = byteData!.buffer.asUint8List();
 
       return BitmapDescriptor.fromBytes(uint8List);
@@ -266,7 +276,7 @@ class RatingProvider extends ChangeNotifier {
     }
   }
 
-// Helper method to convert SvgPicture to ui.Image
+  // Helper method to convert SvgPicture to ui.Image
   Future<ui.Image> _svgPictureToImage(SvgPicture svgPicture, int size) async {
     final pictureRecorder = ui.PictureRecorder();
     final canvas = Canvas(pictureRecorder);
@@ -374,7 +384,7 @@ class RatingProvider extends ChangeNotifier {
             id: user.id,
             email: user.email,
             fullName: user.fullName,
-            phone_number: user.phoneNumber,
+            phoneNumber: user.phoneNumber,
             profile: user.profile,
           ),
           content: "Sample post content for ${user.displayName}",
@@ -397,7 +407,7 @@ class RatingProvider extends ChangeNotifier {
           id: user.id,
           email: user.email,
           fullName: user.fullName,
-          phone_number: user.phoneNumber,
+          phoneNumber: user.phoneNumber,
           profile: user.profile,
         ),
         content: "Default post for ${user.displayName}",
@@ -429,6 +439,48 @@ class RatingProvider extends ChangeNotifier {
     }
 
     loader = false;
+    notifyListeners();
+  }
+
+  ///RateAPI
+  Future<void> updateRatePostAPI(
+    BuildContext context, {
+    String? postId,
+    String? rating,
+  }) async {
+    if (userData == null || userData?.id == null) return;
+    rateLoader = true;
+    notifyListeners();
+    final result = await PostAPI.updateRatePostAPI(
+      postId: postId.toString(),
+      rating: rating.toString(),
+    );
+    await getAllUserRatingProfile();
+    if (result) {
+      context.navigator.pop();
+    }
+    rateLoader = false;
+    notifyListeners();
+  }
+
+  ///New Rate API
+  Future<void> newRatePostAPI(
+    BuildContext context, {
+    String? postId,
+    String? rating,
+  }) async {
+    if (userData == null || userData?.id == null) return;
+    rateLoader = true;
+    notifyListeners();
+    final result = await PostAPI.newRatePostAPI(
+      postId: postId.toString(),
+      newRating: rating.toString(),
+    );
+    await getAllUserRatingProfile();
+    if (result) {
+      context.navigator.pop();
+    }
+    rateLoader = false;
     notifyListeners();
   }
 

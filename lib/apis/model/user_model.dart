@@ -1,71 +1,44 @@
 import 'package:aura_real/aura_real.dart';
+class UserId {
+  final Profile? profile;
+  final String? id;
+  final String? fullName;
+  final String? email;
+  final String? phoneNumber; // Renamed for consistency
 
-/// ---------- Helpers to encode / decode ----------
-LoginRes loginResFromJson(String str) => LoginRes.fromJson(json.decode(str));
+  UserId({this.profile, this.id, this.fullName, this.email, this.phoneNumber});
 
-String loginResToJson(LoginRes data) => json.encode(data.toJson());
-
-class LoginRes {
-  final String? id; // Changed to nullable
-  final String fullName;
-  final String email;
-  final String phoneNumber;
-  final int status;
-  final bool isVerified;
-  final Profile profile;
-  final String token;
-
-  LoginRes({
-    this.id, // Nullable, no 'required'
-    required this.fullName,
-    required this.email,
-    required this.phoneNumber,
-    required this.status,
-    required this.isVerified,
-    required this.profile,
-    required this.token,
-  });
-
-  factory LoginRes.fromJson(Map<String, dynamic> json) => LoginRes(
-    id: json['_id'] as String?, // Handle null from API
-    fullName: json['full_name'] as String,
-    email: json['email'] as String,
-    phoneNumber: json['phone_number'] as String,
-    status: json['status'] as int,
-    isVerified: json['is_verified'] as bool,
-    profile: Profile.fromJson(json['profile'] as Map<String, dynamic>),
-    token: json['token'] as String,
-  );
-
-  Map<String, dynamic> toJson() => {
-    if (id != null) '_id': id, // Only include id if not null
-    'full_name': fullName,
-    'email': email,
-    'phone_number': phoneNumber,
-    'status': status,
-    'is_verified': isVerified,
-    'profile': profile.toJson(),
-    'token': token,
-  };
-
-  /// Convenient copyWith
-  LoginRes copyWith({
+  UserId copyWith({
+    Profile? profile,
     String? id,
     String? fullName,
     String? email,
     String? phoneNumber,
-    int? status,
-    bool? isVerified,
-    Profile? profile,
-    String? token,
-  }) => LoginRes(
+  }) => UserId(
+    profile: profile ?? this.profile,
     id: id ?? this.id,
     fullName: fullName ?? this.fullName,
     email: email ?? this.email,
-    phoneNumber: phoneNumber ?? this.phoneNumber,
-    status: status ?? this.status,
-    isVerified: isVerified ?? this.isVerified,
-    profile: profile ?? this.profile,
-    token: token ?? this.token,
+    phoneNumber: phoneNumber ?? this.phoneNumber, // Fixed to use phoneNumber
   );
+
+  factory UserId.fromJson(Map<String, dynamic> json) {
+    return UserId(
+      profile: json['profile'] != null ? Profile.fromJson(json['profile']) : null,
+      id: json['_id'] as String?,
+      fullName: json['full_name'] as String?,
+      email: json['email'] as String?,
+      phoneNumber: json['phone_number'] as String?, // Renamed for consistency
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'profile': profile?.toJson(),
+      '_id': id,
+      'full_name': fullName,
+      'email': email,
+      'phone_number': phoneNumber, // Renamed for consistency
+    };
+  }
 }
