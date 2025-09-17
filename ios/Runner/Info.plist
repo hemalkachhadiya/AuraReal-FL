@@ -2,17 +2,21 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>CADisableMinimumFrameDurationOnPhone</key>
-	<true/>
-	<key>UIBackgroundModes</key>
-    <array>
-        <string>fetch</string>
-        <string>remote-notification</string>
-    </array>
-    <key>FirebaseAppDelegateProxyEnabled</key>
-    <false/>
-    <key>FirebaseMessagingAutoInitEnabled</key>
-    <true/>
+    <key>NSCameraUsageDescription</key>
+    <string>This app requires camera access to take photos and videos.</string>
+
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>This app requires access to your photo library to select and save photos.</string>
+
+    <key>NSMicrophoneUsageDescription</key>
+    <string>This app requires microphone access to record audio with videos.</string>
+
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>This app needs your location to show nearby content.</string>
+
+    <key>NSLocationAlwaysUsageDescription</key>
+    <string>This app needs your location to work in the background.</string>
+
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
@@ -33,28 +37,7 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
-	<key>GMSApiKey</key>
-	<string>AIzaSyAEp1bymEbwslNks5rrCgtFKXrcOvAp_O0</string>
-	<key>GooglePlacesAPIKey</key>
-	<string>AIzaSyAEp1bymEbwslNks5rrCgtFKXrcOvAp_O0</string>
 	<key>LSRequiresIPhoneOS</key>
-	<true/>
-	<key>NSCameraUsageDescription</key>
-	<string>We need camera access to take photos.</string>
-	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>We need your location to provide location-based services.</string>
-	<key>NSLocationTemporaryUsageDescriptionDictionary</key>
-	<dict>
-		<key>LocationPurpose</key>
-		<string>We need your location for app functionality.</string>
-	</dict>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>We need your location to find nearby places.</string>
-	<key>NSMicrophoneUsageDescription</key>
-	<string>We need microphone access to record videos with sound.</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>We need photo library access to pick images.</string>
-	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
@@ -73,7 +56,9 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
-	<key>io.flutter.embedded_views_preview</key>
+	<key>CADisableMinimumFrameDurationOnPhone</key>
+	<true/>
+	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 </dict>
 </plist>
