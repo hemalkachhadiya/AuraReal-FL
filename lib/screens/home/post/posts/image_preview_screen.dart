@@ -1,14 +1,14 @@
 import 'package:aura_real/aura_real.dart';
 
 class ImagePreviewScreen extends StatefulWidget {
-  final String imageUrl;
+  final String? imageUrl; // Made nullable
   final String? title;
   final List<String>? imageUrls; // For gallery view
   final int? initialIndex;
 
   const ImagePreviewScreen({
     Key? key,
-    required this.imageUrl,
+    this.imageUrl, // Removed required since we'll handle null
     this.title,
     this.imageUrls,
     this.initialIndex,
@@ -74,11 +74,23 @@ class _ImagePreviewScreenState extends State<ImagePreviewScreen>
     if (widget.imageUrls != null && widget.imageUrls!.isNotEmpty) {
       return widget.imageUrls!;
     }
-    return [widget.imageUrl];
+    // Return empty list if imageUrl is null
+    return widget.imageUrl != null ? [widget.imageUrl!] : [];
+  }
+
+  // Check if we have valid image data
+  bool get _hasValidImage {
+    return widget.imageUrl != null && widget.imageUrl!.isNotEmpty;
   }
 
   @override
   Widget build(BuildContext context) {
+    // Show empty widget if no valid image
+    if (!_hasValidImage &&
+        (widget.imageUrls == null || widget.imageUrls!.isEmpty)) {
+      return _buildEmptyWidget();
+    }
+
     return Scaffold(
       backgroundColor: Colors.black,
       extendBodyBehindAppBar: true,
@@ -93,7 +105,7 @@ class _ImagePreviewScreenState extends State<ImagePreviewScreen>
                   onPressed: () => Navigator.of(context).pop(),
                 ),
                 title:
-                    widget.title != null
+                    widget.title != null && widget.title!.isNotEmpty
                         ? Text(
                           widget.title!,
                           style: const TextStyle(
@@ -135,19 +147,30 @@ class _ImagePreviewScreenState extends State<ImagePreviewScreen>
         opacity: _fadeAnimation,
         child: GestureDetector(
           onTap: _toggleAppBar,
-          child: _buildSingleImage(),
+          child: _buildImageContent(),
         ),
       ),
     );
   }
 
+  Widget _buildImageContent() {
+    if (!_hasValidImage) {
+      return _buildEmptyImageWidget();
+    }
+    return _buildSingleImage();
+  }
+
   Widget _buildSingleImage() {
+    if (widget.imageUrl == null) {
+      return _buildEmptyImageWidget();
+    }
+
     return PhotoView(
-      imageProvider: CachedNetworkImageProvider(widget.imageUrl),
+      imageProvider: CachedNetworkImageProvider(widget.imageUrl!),
       minScale: PhotoViewComputedScale.contained,
       maxScale: PhotoViewComputedScale.covered * 3.0,
       initialScale: PhotoViewComputedScale.contained,
-      heroAttributes: PhotoViewHeroAttributes(tag: widget.imageUrl),
+      heroAttributes: PhotoViewHeroAttributes(tag: widget.imageUrl!),
       backgroundDecoration: const BoxDecoration(color: Colors.black),
       loadingBuilder:
           (context, event) => Center(
@@ -156,23 +179,62 @@ class _ImagePreviewScreenState extends State<ImagePreviewScreen>
               value:
                   event == null
                       ? 0
-                      : event.cumulativeBytesLoaded / event.expectedTotalBytes!,
+                      : (event.expectedTotalBytes != null
+                          ? event.cumulativeBytesLoaded /
+                              event.expectedTotalBytes!
+                          : 0),
             ),
           ),
-      errorBuilder:
-          (context, error, stackTrace) => const Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.broken_image, color: Colors.white54, size: 64),
-                SizedBox(height: 16),
-                Text(
-                  'Failed to load image',
-                  style: TextStyle(color: Colors.white, fontSize: 16),
-                ),
-              ],
-            ),
+      errorBuilder: (context, error, stackTrace) => _buildErrorWidget(),
+    );
+  }
+
+  Widget _buildEmptyWidget() {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        systemOverlayStyle: SystemUiOverlayStyle.light,
+        leading: IconButton(
+          icon: const Icon(Icons.close, color: Colors.white),
+          onPressed:
+              () => Navigator.of(navigatorKey.currentState!.context).pop(),
+        ),
+      ),
+      body: _buildEmptyImageWidget(),
+    );
+  }
+
+  Widget _buildEmptyImageWidget() {
+    return const Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.image_not_supported, color: Colors.white54, size: 64),
+          SizedBox(height: 16),
+          Text(
+            'No image available',
+            style: TextStyle(color: Colors.white, fontSize: 16),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorWidget() {
+    return const Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.broken_image, color: Colors.white54, size: 64),
+          SizedBox(height: 16),
+          Text(
+            'Failed to load image',
+            style: TextStyle(color: Colors.white, fontSize: 16),
+          ),
+        ],
+      ),
     );
   }
 }

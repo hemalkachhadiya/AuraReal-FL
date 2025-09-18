@@ -1,7 +1,5 @@
-import 'package:aura_real/apis/chat_apis.dart';
-import 'package:aura_real/aura_real.dart';
 
-import 'package:flutter/material.dart';
+import 'package:aura_real/aura_real.dart' ;
 
 class ChatMessage {
   final String id;
@@ -32,7 +30,7 @@ class ChatProvider extends ChangeNotifier {
   List<ChatMessage> _chatList = [];
   List<ChatMessage> _filteredChatList = [];
   String _searchQuery = '';
-  bool _isLoading = false;
+  bool isLoading = false;
 
   // Getters
   List<ChatMessage> get chatList =>
@@ -42,11 +40,11 @@ class ChatProvider extends ChangeNotifier {
 
   String get searchQuery => _searchQuery;
 
-  bool get isLoading => _isLoading;
+
 
   /// 🔥 Fetch user chat rooms from API
   Future<void> fetchUserChatRooms() async {
-    _isLoading = true;
+    isLoading = true;
     notifyListeners();
     print("User Chat ------ ${userData!.id!}");
 
@@ -56,25 +54,33 @@ class ChatProvider extends ChangeNotifier {
       if (response != null && response.data != null) {
         _chatList =
             response.data!.map((room) {
-              final firstParticipant =
-                  room.participants?.isNotEmpty == true
-                      ? room.participants!.first
-                      : null;
+              // Find the participant that is NOT the logged-in user
+              final otherParticipant = room.participants?.firstWhere(
+                (participant) => participant.id != userData!.id!,
+              );
+
+              // ✅ Updated to handle Map<String, int> unreadCount
+              int unreadCount = 0;
+              if (room.unreadCount != null && userData!.id != null) {
+                // Get unread count for current user
+                unreadCount = room.unreadCount![userData!.id!] ?? 0;
+              }
 
               print("_chatList=========== ${_chatList.length}");
               return ChatMessage(
                 id: room.id ?? "",
-                name: firstParticipant?.fullName ?? "Unknown",
+                name: otherParticipant?.fullName ?? "Unknown",
                 message: "Tap to view messages",
                 // You can replace with last message API
                 avatarUrl:
-                    firstParticipant?.profile?.profileImage ??
-                    "https://via.placeholder.com/150",
+                    otherParticipant?.profile?.profileImage != null
+                        ? "https://your-base-url.com/${otherParticipant!.profile!.profileImage}" // ✅ Add your base URL
+                        : "https://via.placeholder.com/150",
                 time:
                     room.updatedAt != null
                         ? _formatTime(room.updatedAt!)
                         : "--:--",
-                unreadCount: room.unreadCount?.first ?? 0,
+                unreadCount: unreadCount,
                 isOnline:
                     false, // No online status in API → maybe set via socket later
               );
@@ -87,7 +93,7 @@ class ChatProvider extends ChangeNotifier {
       _chatList = [];
     }
 
-    _isLoading = false;
+    isLoading = false;
     notifyListeners();
   }
 
@@ -106,80 +112,12 @@ class ChatProvider extends ChangeNotifier {
     }
   }
 
-  // List<ChatMessage> _chatList = [];
-  // List<ChatMessage> _filteredChatList = [];
-  // String _searchQuery = '';
-  // bool _isLoading = false;
-  //
-  // // Getters
-  // List<ChatMessage> get chatList =>
-  //     _filteredChatList.isEmpty && _searchQuery.isEmpty
-  //         ? _chatList
-  //         : _filteredChatList;
-  // String get searchQuery => _searchQuery;
-  // bool get isLoading => _isLoading;
-
-  // Initialize chat data
   initializeChatData() async {
-    _isLoading = true;
+    isLoading = true;
     await fetchUserChatRooms();
     notifyListeners();
 
-    // Sample chat data similar to the image
-    // _chatList = [
-    //   ChatMessage(
-    //     id: '1',
-    //     name: 'Jenny Wilson',
-    //     message: 'Of course, we just added that to you...',
-    //     time: '3:40 PM',
-    //     avatarUrl:
-    //         'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
-    //     unreadCount: 2,
-    //     isOnline: true,
-    //   ),
-    //   ChatMessage(
-    //     id: '2',
-    //     name: 'Davis Siphron',
-    //     message: 'From chew toys to cozy beds, we\'ve got ev...',
-    //     time: '3:40 PM',
-    //     avatarUrl:
-    //         'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
-    //     unreadCount: 0,
-    //     isOnline: false,
-    //   ),
-    //   ChatMessage(
-    //     id: '3',
-    //     name: 'Aspen Herwitz',
-    //     message: 'From chew toys to cozy beds, we\'ve got ev...',
-    //     time: '3:40 PM',
-    //     avatarUrl:
-    //         'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
-    //     unreadCount: 0,
-    //     isOnline: false,
-    //   ),
-    //   ChatMessage(
-    //     id: '4',
-    //     name: 'Cheyenne Kenter',
-    //     message: 'From chew toys to cozy beds, we\'ve got ev...',
-    //     time: '3:40 PM',
-    //     avatarUrl:
-    //         'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face',
-    //     unreadCount: 0,
-    //     isOnline: false,
-    //   ),
-    //   ChatMessage(
-    //     id: '5',
-    //     name: 'Livia Ekstrom Bothman',
-    //     message: 'From chew toys to cozy beds, we\'ve got ev...',
-    //     time: '3:40 PM',
-    //     avatarUrl:
-    //         'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop&crop=face',
-    //     unreadCount: 0,
-    //     isOnline: false,
-    //   ),
-    // ];
-
-    _isLoading = false;
+    isLoading = false;
     notifyListeners();
   }
 

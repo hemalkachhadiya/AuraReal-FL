@@ -3,7 +3,8 @@ class ChatRoomModel {
   final List<String>? participants;
   final String? chatRoomId;
   final String? createdBy;
-  final int? unreadCount;
+  final Map<String, dynamic>?
+  unreadCount; // Changed from int? to Map<String, dynamic>?
   final DateTime? createdAt;
   final DateTime? updatedAt;
   final int? v;
@@ -25,13 +26,12 @@ class ChatRoomModel {
       participants: (json['participants'] as List<dynamic>?)?.cast<String>(),
       chatRoomId: json['chatRoomId'] as String?,
       createdBy: json['createdBy'] as String?,
-      unreadCount: json['unreadCount'] as int?,
-      createdAt: json['createdAt'] != null
-          ? _parseDateTime(json['createdAt'])
-          : null,
-      updatedAt: json['updatedAt'] != null
-          ? _parseDateTime(json['updatedAt'])
-          : null,
+      unreadCount: json['unreadCount'] as Map<String, dynamic>?,
+      // Fixed type handling
+      createdAt:
+          json['createdAt'] != null ? _parseDateTime(json['createdAt']) : null,
+      updatedAt:
+          json['updatedAt'] != null ? _parseDateTime(json['updatedAt']) : null,
       v: json['__v'] as int?,
     );
   }
@@ -54,7 +54,7 @@ class ChatRoomModel {
     List<String>? participants,
     String? chatRoomId,
     String? createdBy,
-    int? unreadCount,
+    Map<String, dynamic>? unreadCount, // Updated parameter type
     DateTime? createdAt,
     DateTime? updatedAt,
     int? v,

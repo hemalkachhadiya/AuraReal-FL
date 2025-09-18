@@ -104,9 +104,7 @@ class AuthApis {
 
           String fcmToken = PrefService.getString(PrefKeys.fcmToken);
           // 🔹 Call update API
-          await AuthApis.userUpdateProfile(
-            fcmToken: fcmToken.toString(), // ✅ send FCM token
-          );
+
 
           await PrefService.set(
             PrefKeys.userData,
@@ -152,8 +150,6 @@ class AuthApis {
       if (response.statusCode == 200 || response.statusCode == 201) {
         getFCMToken();
 
-
-
         print("Login REsponse -------- ${responseBody['data']}");
 
         String fcmToken = PrefService.getString(PrefKeys.fcmToken);
@@ -161,6 +157,7 @@ class AuthApis {
         // 🔹 Call update API
         await AuthApis.userUpdateProfile(
           fcmToken: fcmToken.toString(), // ✅ send FCM token
+          userId: responseBody['data']['_id'],
         );
 
         if (responseBody['data'] != null && responseBody != null) {

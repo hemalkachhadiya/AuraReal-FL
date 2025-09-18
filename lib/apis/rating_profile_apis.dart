@@ -48,7 +48,6 @@ class RatingProfileAPIS {
       );
 
       if (model.isSuccess) {
-
         return model;
       } else {
         showCatchToast(model.message ?? "Failed to fetch users", null);

@@ -26,7 +26,7 @@ class PostsProvider extends ChangeNotifier {
       paginationCommentModel?.list ?? [];
 
   int currentPage = 0;
-  int pageSize = 5;
+  int pageSize = 20;
   bool isApiCalling = false;
   bool loader = false;
   bool refreshLoader = false;
@@ -37,11 +37,12 @@ class PostsProvider extends ChangeNotifier {
   String? get error => _error;
 
   bool hasMoreData = false;
+
   ///=============Comments Variable
 
   /// Get All Comment List API for a specific post
   late final Map<String, List<CommentModel>> _commentLists =
-  {}; // Map to store comments by postId
+      {}; // Map to store comments by postId
   bool _isLoadingComments = false;
   String? _errorComments;
   int currentPageComments = 0;

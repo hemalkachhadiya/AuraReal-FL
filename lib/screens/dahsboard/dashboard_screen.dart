@@ -25,63 +25,136 @@ class DashboardScreen extends StatelessWidget {
     final dashboardProvider = Provider.of<DashboardProvider>(context);
 
     return Scaffold(
-      body: IndexedStack(
-        index: dashboardProvider.selectedIndex,
+      body: Stack(
         children: [
-          HomeScreen(),
-          RatingScreen(),
-          ChatScreen(),
-          SettingScreen(),
+          IndexedStack(
+            index: dashboardProvider.selectedIndex,
+            children: [
+              HomeScreen(),
+              RatingScreen(),
+              ChatScreen(),
+              SettingScreen(),
+            ],
+          ),
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              height: 80,
+              constraints: BoxConstraints(maxWidth: 100.w),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(24),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 60,
+                    offset: const Offset(0, -4),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildNavItem(
+                    context,
+                    index: 0,
+                    icon:
+                        dashboardProvider.selectedIndex == 0
+                            ? AssetRes.homeDarkIcon
+                            : AssetRes.homeIcon,
+                    label: 'Home',
+                    provider: dashboardProvider,
+                  ),
+                  _buildNavItem(
+                    context,
+                    index: 1,
+                    icon:
+                        dashboardProvider.selectedIndex == 1
+                            ? AssetRes.starDarkIcon
+                            : AssetRes.starIcon,
+                    label: 'Rating',
+                    provider: dashboardProvider,
+                  ),
+                  _buildNavItem(
+                    context,
+                    index: 2,
+                    icon:
+                        dashboardProvider.selectedIndex == 2
+                            ? AssetRes.msgDarkIcon
+                            : AssetRes.msgGrayIcon,
+                    label: 'Private Chat',
+                    provider: dashboardProvider,
+                  ),
+                  _buildNavItem(
+                    context,
+                    index: 3,
+                    icon:
+                        dashboardProvider.selectedIndex == 3
+                            ? AssetRes.settingDarkIcon
+                            : AssetRes.settingGrayIcon,
+                    label: 'Setting',
+                    provider: dashboardProvider,
+                  ),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
-      bottomNavigationBar: Container(
-        height: 80,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 60,
-              offset: const Offset(0, -4),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _buildNavItem(
-              context,
-              index: 0,
-              icon: dashboardProvider.selectedIndex == 0?AssetRes.homeDarkIcon:AssetRes.homeIcon,
-              label: 'Home',
-              provider: dashboardProvider,
-            ),
-            _buildNavItem(
-              context,
-              index: 1,
-              icon: dashboardProvider.selectedIndex == 1?AssetRes.starDarkIcon:AssetRes.starIcon,
-              label: 'Rating',
-              provider: dashboardProvider,
-            ),
-            _buildNavItem(
-              context,
-              index: 2,
-              icon: dashboardProvider.selectedIndex == 2?AssetRes.msgDarkIcon:AssetRes.msgGrayIcon,
-              label: 'Private Chat',
-              provider: dashboardProvider,
-            ),
-            _buildNavItem(
-              context,
-              index: 3,
-              icon:  dashboardProvider.selectedIndex == 3?AssetRes.settingDarkIcon:AssetRes.settingGrayIcon,
-              label: 'Setting',
-              provider: dashboardProvider,
-            ),
-          ],
-        ),
-      ),
+      // bottomNavigationBar: Container(
+      //   height: 80,
+      //   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      //   decoration: BoxDecoration(
+      //     color: Colors.white,
+      //
+      //     borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      //     boxShadow: [
+      //       BoxShadow(
+      //         color: Colors.black.withValues(alpha: 0.05),
+      //         blurRadius: 60,
+      //         offset: const Offset(0, -4),
+      //       ),
+      //     ],
+      //   ),
+      //   child: Row(
+      //     mainAxisAlignment: MainAxisAlignment.spaceAround,
+      //     children: [
+      //       _buildNavItem(
+      //         context,
+      //         index: 0,
+      //         icon: dashboardProvider.selectedIndex == 0?AssetRes.homeDarkIcon:AssetRes.homeIcon,
+      //         label: 'Home',
+      //         provider: dashboardProvider,
+      //       ),
+      //       _buildNavItem(
+      //         context,
+      //         index: 1,
+      //         icon: dashboardProvider.selectedIndex == 1?AssetRes.starDarkIcon:AssetRes.starIcon,
+      //         label: 'Rating',
+      //         provider: dashboardProvider,
+      //       ),
+      //       _buildNavItem(
+      //         context,
+      //         index: 2,
+      //         icon: dashboardProvider.selectedIndex == 2?AssetRes.msgDarkIcon:AssetRes.msgGrayIcon,
+      //         label: 'Private Chat',
+      //         provider: dashboardProvider,
+      //       ),
+      //       _buildNavItem(
+      //         context,
+      //         index: 3,
+      //         icon:  dashboardProvider.selectedIndex == 3?AssetRes.settingDarkIcon:AssetRes.settingGrayIcon,
+      //         label: 'Setting',
+      //         provider: dashboardProvider,
+      //       ),
+      //     ],
+      //   ),
+      // ),
     );
   }
 

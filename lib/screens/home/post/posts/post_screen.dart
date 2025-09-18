@@ -102,7 +102,9 @@ class HomeScreen extends StatelessWidget {
                           decoration: BoxDecoration(color: ColorRes.white),
                           child: CustomListView(
                             controller: scrollController,
-                            padding:EdgeInsets.only(bottom: Constants.horizontalPadding),
+                            padding: EdgeInsets.only(
+                              bottom: Constants.horizontalPadding,
+                            ),
                             // Add ScrollController
                             itemCount:
                                 provider.loader
@@ -144,65 +146,91 @@ class HomeScreen extends StatelessWidget {
                                   child: const SmallLoader(),
                                 );
                               }
-
                               return PostCard(
                                 onTapPost: () {
-                                  if (provider
-                                          .postListResponse[index]
-                                          .media
-                                          ?.type ==
-                                      0) {
+                                  try {
+                                    final post =
+                                        provider.postListResponse[index];
+                                    final media = post.media;
+
+                                    // Always navigate to ImagePreviewScreen, let it handle null cases
+                                    if (media?.type == 0) {
+                                      // Image case
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder:
+                                              (_) => ImagePreviewScreen(
+                                                imageUrl:
+                                                    media?.url != null
+                                                        ? EndPoints.domain +
+                                                            media!.url!
+                                                        : null,
+                                                title: post.content,
+                                              ),
+                                        ),
+                                      );
+                                      print("Image Screen");
+                                    } else if (media?.type == 1) {
+                                      // Video case
+                                      final videoUrl =
+                                          media?.url != null
+                                              ? EndPoints.domain + media!.url!
+                                              : null;
+                                      if (videoUrl != null) {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder:
+                                                (_) => VideoPlayerScreen(
+                                                  thumbnailUrl: videoUrl,
+                                                  title: post.content,
+                                                  url: videoUrl,
+                                                ),
+                                          ),
+                                        );
+                                        print("Video Screen");
+                                      } else {
+                                        // Show error for video with no URL
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                              'Video URL not available',
+                                            ),
+                                            backgroundColor: Colors.red,
+                                          ),
+                                        );
+                                      }
+                                    } else {
+                                      // Unknown media type or null media
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder:
+                                              (_) => ImagePreviewScreen(
+                                                imageUrl: null,
+                                                // Will show empty widget
+                                                title:
+                                                    post.content ??
+                                                    'Post Content',
+                                              ),
+                                        ),
+                                      );
+                                    }
+                                  } catch (e, stackTrace) {
+                                    print('Error in navigation: $e');
+                                    print('Stack trace: $stackTrace');
+
+                                    // Navigate to empty screen on error
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
                                         builder:
                                             (_) => ImagePreviewScreen(
-                                              imageUrl:
-                                                  EndPoints.domain +
-                                                      provider
-                                                          .postListResponse[index]
-                                                          .media!
-                                                          .url! ??
-                                                  "",
-                                            ),
-                                      ),
-                                    );
-                                    print("Image Screen");
-                                  } else {
-                                    print("Video Screen");
-                                    print(
-                                      EndPoints.domain +
-                                          provider
-                                              .postListResponse[index]
-                                              .media!
-                                              .url!
-                                              .toBackslashPath(),
-                                    );
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder:
-                                            (_) => VideoPlayerScreen(
-                                              thumbnailUrl:
-                                                  (EndPoints.domain +
-                                                          provider
-                                                              .postListResponse[index]
-                                                              .media!
-                                                              .url!
-                                                              .toBackslashPath() ??
-                                                      ""),
-                                              title:
-                                                  provider
-                                                      .postListResponse[index]
-                                                      .content,
-                                              url:
-                                                  (EndPoints.domain +
-                                                          provider
-                                                              .postListResponse[index]
-                                                              .media!
-                                                              .url!
-                                                              .toBackslashPath() ??
-                                                      ""),
+                                              imageUrl: null,
+                                              title: 'Error Loading Content',
                                             ),
                                       ),
                                     );
@@ -253,7 +281,6 @@ class HomeScreen extends StatelessWidget {
                           ),
                         ),
                       ),
-
                     ],
                   ),
                 ),
@@ -282,5 +309,63 @@ class HomeScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void _handleMediaNavigation(
+    BuildContext context,
+    PostsProvider provider,
+    int index,
+  ) {
+    try {
+      final post = provider.postListResponse[index];
+      final media = post.media;
+
+      // Validate media exists
+      if (media == null) {
+        showErrorMsg('No media available for this post');
+        return;
+      }
+
+      // Validate URL exists
+      final url = media.url;
+      if (url == null || url.isEmpty) {
+        showErrorMsg('Media URL not available');
+        return;
+      }
+
+      final fullMediaUrl = EndPoints.domain + url;
+      final postTitle = post.content ?? 'Post Media';
+
+      // Navigate based on media type
+      if (media.type == 0) {
+        // Image
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder:
+                (_) => ImagePreviewScreen(
+                  imageUrl: fullMediaUrl,
+                  title: postTitle,
+                ),
+          ),
+        );
+      } else {
+        // Video
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder:
+                (_) => VideoPlayerScreen(
+                  thumbnailUrl: fullMediaUrl,
+                  title: postTitle,
+                  url: fullMediaUrl,
+                ),
+          ),
+        );
+      }
+    } catch (e) {
+      print('Error navigating to media: $e');
+      showErrorMsg('Unable to open media');
+    }
   }
 }

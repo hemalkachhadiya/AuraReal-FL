@@ -2,10 +2,14 @@ import 'package:aura_real/aura_real.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
-Future<File?> openMediaPicker(BuildContext context, {bool useCameraForImage = false}) async {
+Future<File?> openMediaPicker(
+  BuildContext context, {
+  bool useCameraForImage = false,
+}) async {
   // If useCameraForImage is true, open the camera directly for images
   if (useCameraForImage) {
     final canOpenCamera = await checkCameraPermission(context);
+    print("canOpenCamera============= ${canOpenCamera}");
     if (!canOpenCamera) return null;
     final xFile = await ImagePicker().pickImage(source: ImageSource.camera);
     if (xFile != null) {
@@ -176,6 +180,7 @@ class MediaPicker extends StatelessWidget {
     );
   }
 }
+
 // import 'package:aura_real/aura_real.dart';
 //
 // Future<File?> openMediaPicker(BuildContext context) async {

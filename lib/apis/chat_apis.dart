@@ -67,7 +67,7 @@ class ChatApis {
           (item) => GetAllMessageModel.fromJson(item),
         );
 
-        showSuccessToast(appResponse.message ?? "Messages fetched");
+
 
         return appResponse;
       } else {
@@ -104,8 +104,6 @@ class ChatApis {
           responseBody,
           (item) => GetUserChatRoomModel.fromJson(item),
         );
-
-        showSuccessToast(appResponse.message ?? "Chat rooms fetched");
 
         return appResponse;
       } else {

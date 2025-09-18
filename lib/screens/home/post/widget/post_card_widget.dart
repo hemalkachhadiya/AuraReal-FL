@@ -1,5 +1,7 @@
 import 'package:aura_real/apis/model/post_model.dart';
 import 'package:aura_real/aura_real.dart';
+import 'package:aura_real/screens/home/post/posts/image_preview_screen.dart';
+import 'package:aura_real/screens/home/post/posts/video_player_screen.dart';
 
 class PostCard extends StatefulWidget {
   // Changed to Stateful for local updates
@@ -313,11 +315,8 @@ class _PostCardState extends State<PostCard> {
           future: generateVideoThumbnail(videoUrl),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return Container(
-                height: 390,
-                color: Colors.black,
-                child: const Center(child: CircularProgressIndicator()),
-              );
+
+              return CustomShimmer( height: 390,width: double.infinity,);
             }
 
             if (!snapshot.hasData || snapshot.data == null) {
@@ -366,64 +365,17 @@ class _PostCardState extends State<PostCard> {
     }
   }
 
-  // Widget buildMedia(
-  //   BuildContext context,
-  //   PostModel post,
-  //   VoidCallback onTapPost,
-  // ) {
-  //   if (post.media != null && post.media?.type == 1) {
-  //     // Video
-  //     return GestureDetector(
-  //       onTap: onTapPost /* () {
-  //         // open video player
-  //         // Navigator.push(
-  //         //   context,
-  //         //   MaterialPageRoute(
-  //         //     builder: (_) => VideoPlayerScreen(url: post.media!.url ?? ""),
-  //         //   ),
-  //         // );
-  //       }*/,
-  //       child: Container(
-  //         height: 390,
-  //         color: Colors.black,
-  //         child: Center(
-  //           child: Icon(Icons.play_circle_fill, color: Colors.white, size: 50),
-  //         ),
-  //       ),
-  //     );
-  //   } else {
-  //     // Image (either media.type == 0 OR fallback to postImage)
-  //     final imageUrl =
-  //         post.media?.url != null
-  //             ? (EndPoints.domain + post.media!.url!.toBackslashPath())
-  //             : "";
-  //     // print("image url========== ${EndPoints.domain + widget.post.postImage!.toBackslashPath()}");
-  //     return GestureDetector(
-  //       onTap: onTapPost /*() {
-  //         // open image in fullscreen
-  //         // Navigator.push(
-  //         //   context,
-  //         //   MaterialPageRoute(
-  //         //     builder: (_) => ImagePreviewScreen(imageUrl: imageUrl),
-  //         //   ),
-  //         // );
-  //       }*/,
-  //       child: CachedImage(
-  //         // EndPoints.domain + (widget.post.postImage?.toBackslashPath() ?? ''),
-  //         imageUrl,
-  //         height: 390.0,
-  //         fit: BoxFit.cover,
-  //       ),
-  //       /*Image.network(
-  //         imageUrl,
-  //         height: 390,
-  //         width: double.infinity,
-  //         fit: BoxFit.cover,
-  //         errorBuilder: (c, e, s) => const Icon(Icons.broken_image),
-  //       )*/
-  //     );
-  //   }
-  // }
+  // Create a helper method to safely handle media navigation
+
+
+  void _showErrorMessage(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
 
   String _getProfileImageUrl() {
     if (widget.post.userId?.profile?.profileImage == null) return '';

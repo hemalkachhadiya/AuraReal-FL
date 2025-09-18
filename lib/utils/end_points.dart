@@ -64,4 +64,5 @@ class EndPoints {
   static const createChatRoom = "${baseUrl}createChatRoom";
   static const getAllMessages = "${baseUrl}getAllMessages";
   static const getUserChatRooms = "${baseUrl}getUserChatRooms";
+  static const getChatRoomWithMessages = "${baseUrl}getChatRoomWithMessages";
 }
