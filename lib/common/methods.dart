@@ -281,7 +281,7 @@ Future<File?> generateVideoThumbnail(String videoUrl) async {
   }
 }
 
-// Get FCM token
+/// Get FCM token
   getFCMToken() async {
   try {
     // Request permission for notifications
@@ -308,3 +308,5 @@ Future<File?> generateVideoThumbnail(String videoUrl) async {
     debugPrint("Error getting FCM token: $e");
   }
 }
+
+

@@ -102,6 +102,7 @@ class HomeScreen extends StatelessWidget {
                           decoration: BoxDecoration(color: ColorRes.white),
                           child: CustomListView(
                             controller: scrollController,
+                            padding:EdgeInsets.only(bottom: Constants.horizontalPadding),
                             // Add ScrollController
                             itemCount:
                                 provider.loader
@@ -252,7 +253,7 @@ class HomeScreen extends StatelessWidget {
                           ),
                         ),
                       ),
-                      25.ph.spaceVertical,
+
                     ],
                   ),
                 ),

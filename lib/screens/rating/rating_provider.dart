@@ -19,6 +19,7 @@ import 'package:aura_real/aura_real.dart';
 import 'package:geolocator/geolocator.dart'; // Add for distance calculations
 
 class RatingProvider extends ChangeNotifier {
+  bool isTorchOn = false; // Track torch state
   RatingProvider() {
     init();
   }
@@ -588,4 +589,31 @@ class RatingProvider extends ChangeNotifier {
   Color getMapTabTextColor() {
     return isMapSelected ? ColorRes.white : ColorRes.primaryColor;
   }
+
+  // Future<void> toggleTorch() async {
+  //   try {
+  //     // Request camera permission
+  //     var status = await Permission.camera.request();
+  //     if (status.isGranted) {
+  //       if (isTorchOn) {
+  //         await TorchLight.disableTorch(); // Turn off torch
+  //         isTorchOn = false;
+  //       } else {
+  //         await TorchLight.enableTorch(); // Turn on torch
+  //         isTorchOn = true;
+  //       }
+  //       print('Torch ${isTorchOn ? "on" : "off"}');
+  //       notifyListeners(); // Update UI if needed
+  //     } else if (status.isDenied) {
+  //       print('Camera permission denied');
+  //     } else if (status.isPermanentlyDenied) {
+  //       print('Camera permission permanently denied. Open app settings to grant.');
+  //       await openAppSettings(); // Open settings for user to grant permission
+  //     }
+  //   } catch (e) {
+  //     print('Error toggling torch: $e');
+  //     isTorchOn = false; // Reset state on error
+  //     notifyListeners();
+  //   }
+  // }
 }

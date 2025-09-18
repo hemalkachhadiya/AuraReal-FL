@@ -82,22 +82,36 @@ class PostModel {
 
   factory PostModel.fromJson(Map<String, dynamic> json) {
     return PostModel(
-      location: json['location'] != null ? Location.fromJson(json['location']) : null,
-      geoLocation: json['geo_location'] != null ? GeoLocation.fromJson(json['geo_location']) : null,
+      location:
+          json['location'] != null ? Location.fromJson(json['location']) : null,
+      geoLocation:
+          json['geo_location'] != null
+              ? GeoLocation.fromJson(json['geo_location'])
+              : null,
       id: json['_id'] as String?,
       userId: json['user_id'] != null ? UserId.fromJson(json['user_id']) : null,
       content: json['content'] as String?,
       postImage: json['post_image'] as String?,
-      media: json['media'] != null ? Media.fromJson(json['media']) : null, // Parse media
+      media: json['media'] != null ? Media.fromJson(json['media']) : null,
+      // Parse media
       privacyLevel: json['privacy_level'] as int?,
       locationId: json['location_id'] as String?,
       postRating: (json['post_rating'] as num?)?.toDouble(),
       commentsCount: json['comments_count'] as int?,
       sharesCount: json['shares_count'] as int?,
       isDeleted: json['is_deleted'] as bool?,
-      hashtags: json['hashtags'] as List<dynamic>?,
-      createdAt: json['created_at'] != null ? _parseDateTime(json['created_at']) : null,
-      updatedAt: json['updated_at'] != null ? _parseDateTime(json['updated_at']) : null,
+      hashtags:
+          (json['hashtags'] is List)
+              ? List<dynamic>.from(json['hashtags'])
+              : [],
+      createdAt:
+          json['created_at'] != null
+              ? _parseDateTime(json['created_at'])
+              : null,
+      updatedAt:
+          json['updated_at'] != null
+              ? _parseDateTime(json['updated_at'])
+              : null,
       v: json['__v'] as int?,
     );
   }
