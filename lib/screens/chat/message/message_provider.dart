@@ -59,6 +59,8 @@ class MessageProvider extends ChangeNotifier {
 
   bool get canSendMessage => _messageText.trim().isNotEmpty;
 
+  String? _chatRoomId; // ✅ only internal use
+
   // Initialize chat data
   // Initialize chat with user + fetch API messages
   Future<void> initializeChat({
@@ -66,6 +68,8 @@ class MessageProvider extends ChangeNotifier {
     required String chatRoomId,
   }) async {
     _currentUser = user;
+    _chatRoomId = chatRoomId; // ✅ save it internally
+
     await getAllMessageList(chatRoomId);
   }
 
@@ -76,9 +80,6 @@ class MessageProvider extends ChangeNotifier {
     notifyListeners();
 
     final response = await ChatApis.getAllMessages(chatRoomId: chatRoomId);
-    // final response = await ChatApis.getAllMessages(
-    //   chatRoomId: "68c52730f14e3db5254d3e8c",
-    // );
 
     if (response != null && response.data != null) {
       // Convert API model (GetAllMessageModel) into provider's Message model
@@ -104,72 +105,13 @@ class MessageProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // void initializeChat({required ChatUser user}) {
-  //   _currentUser = user;
-  //   _isLoading = true;
-  //   notifyListeners();
-  //
-  //   // Sample messages similar to the image
-  //   _messages = [
-  //     Message(
-  //       id: '1',
-  //       text: 'Hey there! 👋',
-  //       timestamp: DateTime.now().subtract(const Duration(minutes: 50)),
-  //       isFromMe: false,
-  //     ),
-  //     Message(
-  //       id: '2',
-  //       text: 'This is your delivery driver from Speedy Chow. I\'m just around the corner from your place. 😊',
-  //       timestamp: DateTime.now().subtract(const Duration(minutes: 49)),
-  //       isFromMe: false,
-  //     ),
-  //     Message(
-  //       id: '3',
-  //       text: 'Hi!',
-  //       timestamp: DateTime.now().subtract(const Duration(minutes: 48)),
-  //       isFromMe: true,
-  //       status: MessageStatus.read,
-  //     ),
-  //     Message(
-  //       id: '4',
-  //       text: 'Awesome, thanks for letting me know! Can\'t wait for my delivery. 🚀',
-  //       timestamp: DateTime.now().subtract(const Duration(minutes: 47)),
-  //       isFromMe: true,
-  //       status: MessageStatus.read,
-  //     ),
-  //     Message(
-  //       id: '5',
-  //       text: 'No problem at all! I\'ll be there in about 15 minutes.',
-  //       timestamp: DateTime.now().subtract(const Duration(minutes: 46)),
-  //       isFromMe: false,
-  //     ),
-  //     Message(
-  //       id: '6',
-  //       text: 'I\'ll text you when I arrive.',
-  //       timestamp: DateTime.now().subtract(const Duration(minutes: 45)),
-  //       isFromMe: false,
-  //     ),
-  //     Message(
-  //       id: '7',
-  //       text: 'Great! 😊',
-  //       timestamp: DateTime.now().subtract(const Duration(minutes: 44)),
-  //       isFromMe: true,
-  //       status: MessageStatus.delivered,
-  //     ),
-  //   ];
-  //
-  //   _isLoading = false;
-  //   notifyListeners();
-  // }
-
-  // Update message text
   void updateMessageText(String text) {
     _messageText = text;
     notifyListeners();
   }
 
   /// Send message
-  void sendMessage(String roomId) {
+  void sendMessage({String? receiverId}) {
     if (!canSendMessage) return;
 
     final newMessage = Message(
@@ -184,11 +126,17 @@ class MessageProvider extends ChangeNotifier {
     notifyListeners();
 
     print("Send Message=============================called");
+    print("Chat Room Id=============================${_chatRoomId}");
+    print("currentUser Id=============================${currentUser?.id}");
+
     // 🚀 Send to server via socket
-    socketIoHelper.webSocketData(
+    socketIoHelper.sendMessage(
       text: newMessage.text,
-      roomId: roomId,
-      messageType: "text", // could be text/image/file
+      roomId: _chatRoomId ?? "",
+      messageType: "text",
+      // could be text/image/file,
+      receiverId: currentUser?.id ?? "",
+      senderId: userData?.id.toString() ?? "",
     );
 
     // ✅ Mark as "sent"
@@ -199,26 +147,6 @@ class MessageProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // void sendMessage() {
-  //   if (!canSendMessage) return;
-  //
-  //   final newMessage = Message(
-  //     id: DateTime.now().millisecondsSinceEpoch.toString(),
-  //     text: _messageText.trim(),
-  //     timestamp: DateTime.now(),
-  //     isFromMe: true,
-  //     status: MessageStatus.sending,
-  //   );
-  //
-  //   _messages.add(newMessage);
-  //   _messageText = '';
-  //   notifyListeners();
-  //
-  //   // Simulate message sending
-  //   _simulateMessageSending(newMessage.id);
-  // }
-
-  // Simulate message sending process
   void _simulateMessageSending(String messageId) async {
     await Future.delayed(const Duration(milliseconds: 500));
 
@@ -359,3 +287,210 @@ class MessageProvider extends ChangeNotifier {
     super.dispose();
   }
 }
+
+
+
+///Web Back End Code
+//import { db } from "../models/index.js";
+// import mongoose from "mongoose";
+//
+// function chatSocket(io) {
+//   // ← Declare onlineUsers here so all sockets can access
+//   const onlineUsers = new Map(); // userId → Set of socketIds
+//
+//   io.on("connection", (socket) => {
+//     console.log("🔵 User connected:", socket.id);
+//
+//     // ---------------- Register user for online/offline ----------------
+//     socket.on("registerUser", async (userId) => {
+//       if (!onlineUsers.has(userId)) {
+//         onlineUsers.set(userId, new Set());
+//       }
+//       onlineUsers.get(userId).add(socket.id);
+//
+//       // Update DB status (optional)
+//       await db.User.findByIdAndUpdate(userId, { isOnline: true, lastSeen: new Date() });
+//
+//       // Notify all clients
+//       io.emit("userOnline", { userId });
+//     });
+//
+//     // ---------------- Check online status ----------------
+//     socket.on("checkOnline", (userId, callback) => {
+//       const isOnline = onlineUsers.has(userId);
+//       callback({ userId, isOnline });
+//     });
+//
+//     // ---------------- Join a room ----------------
+//     socket.on("joinRoom", async ({ userId, roomId }) => {
+//       try {
+//         socket.join(roomId);
+//
+//         // Add user to participants if not already there
+//         await db.chatRoom.findByIdAndUpdate(roomId, {
+//           $addToSet: { participants: userId },
+//         });
+//
+//         io.to(roomId).emit("userJoined", { userId, roomId });
+//         console.log(✅ User ${userId} joined room ${roomId});
+//       } catch (err) {
+//         console.error("❌ Error joining room:", err);
+//       }
+//     });
+//
+//     // ---------------- Send message ----------------
+//     socket.on("sendMessage", async ({ roomId, senderId, receiverId, message, messageType, mediaUrl }) => {
+//       try {
+//         // Fetch the chat room first
+//         const room = await db.chatRoom.findById(roomId);
+//         if (!room) {
+//           return io.to(senderId).emit("errorMessage", { error: "Chat room not found" });
+//         }
+//
+//         // Save the chat message
+//         const chatMessage = await db.ChatMessage.create({
+//           chatRoomId: roomId,
+//           senderId,
+//           receiverId,
+//           message,
+//           messageType: messageType || "text",
+//           mediaUrl: mediaUrl || "",
+//           readBy: [senderId], // mark sender as read
+//         });
+//
+//         // Update lastMessage
+//         await db.chatRoom.findByIdAndUpdate(roomId, {
+//           lastMessage: message,
+//           updatedAt: new Date(),
+//         });
+//
+//         // Update unreadCount for other participants
+//         const participants = room.participants?.filter(Boolean) || [];
+//         const unreadCountArray = room.unreadCount || [];
+//
+//         const updatedUnreadCount = participants
+//           .filter(u => u.toString() !== senderId)
+//           .map(u => {
+//             const existing = unreadCountArray.find(x => x.userId?.toString() === u.toString());
+//             return {
+//               userId: new mongoose.Types.ObjectId(u),
+//               count: existing ? existing.count + 1 : 1
+//             };
+//           });
+//
+//
+//         await db.chatRoom.findByIdAndUpdate(roomId, { unreadCount: updatedUnreadCount });
+//
+//         // Emit to socket room
+//         io.to(roomId).emit("newMessage", chatMessage);
+//
+//         // Send notifications to all participants except sender
+//         const receivers = participants.filter(u => u.toString() !== senderId);
+//         for (let rId of receivers) {
+//           const receiver = await db.User.findById(rId);
+//           if (receiver?.device_token) {
+//             await sendPushNotification(
+//               receiver.device_token,
+//               "AuraReal",
+//               "New Message 💬",
+//               message || "You received a new message",
+//               { roomId, senderId, messageType: messageType || "text" },
+//               1
+//             );
+//           }
+//         }
+//
+//         console.log(💬 Message sent by ${senderId} in room ${roomId});
+//       } catch (err) {
+//         console.error("❌ Error sending message:", err);
+//         io.to(senderId).emit("errorMessage", { error: "Message not sent" });
+//       }
+//     });
+//
+//
+//
+//
+//     // ---------------- Mark single message as read ----------------
+//     socket.on("messageSeen", async ({ messageId, readerId }) => {
+//       try {
+//         const message = await db.ChatMessage.findByIdAndUpdate(
+//           messageId,
+//           { $addToSet: { readBy: readerId } },
+//           { new: true }
+//         );
+//
+//         const unreadCount = await db.ChatMessage.countDocuments({
+//           chatRoomId: message.chatRoomId,
+//           readBy: { $ne: readerId },
+//         });
+//
+//         socket.emit("unreadCount", {
+//           roomId: message.chatRoomId,
+//           count: unreadCount,
+//         });
+//       } catch (err) {
+//         console.error("❌ Error marking message as read:", err);
+//       }
+//     });
+//
+//     // ---------------- Mark all messages in room as read ----------------
+//     socket.on("markMessagesAsRead", async ({ roomId, readerId }, callback) => {
+//       try {
+//         const result = await db.ChatMessage.updateMany(
+//           { chatRoomId: roomId, readBy: { $ne: readerId } },
+//           { $addToSet: { readBy: readerId } }
+//         );
+//
+//         const unreadCount = await db.ChatMessage.countDocuments({
+//           chatRoomId: roomId,
+//           readBy: { $ne: readerId },
+//         });
+//
+//         // Emit updated unread count only to this user
+//         socket.emit("unreadCount", { roomId, count: unreadCount });
+//
+//         // ✅ Only call callback if it's provided
+//         if (typeof callback === "function") {
+//           callback({ success: true, updatedCount: result.modifiedCount });
+//         }
+//       } catch (err) {
+//         console.error("❌ Error marking messages as read:", err);
+//         if (typeof callback === "function") {
+//           callback({ success: false, error: err.message });
+//         }
+//       }
+//     });
+//
+//
+//     // ---------------- Typing indicator ----------------
+//     socket.on("typing", ({ senderId, roomId }) => {
+//       socket.to(roomId).emit("typing", { senderId });
+//     });
+//
+//     // ---------------- Disconnect ----------------
+//     socket.on("disconnect", async () => {
+//       console.log("🔴 User disconnected:", socket.id);
+//       console.log("🟡 Total connected clients:", io.engine.clientsCount);
+//
+//       // Remove socket from onlineUsers
+//       for (let [userId, sockets] of onlineUsers.entries()) {
+//         if (sockets.has(socket.id)) {
+//           sockets.delete(socket.id);
+//
+//           if (sockets.size === 0) {
+//             onlineUsers.delete(userId);
+//
+//             // Update DB
+//             await db.User.findByIdAndUpdate(userId, { isOnline: false, lastSeen: new Date() });
+//
+//             // Notify all clients
+//             io.emit("userOffline", { userId });
+//           }
+//           break;
+//         }
+//       }
+//     });
+//   });
+// }
+//
+// export default chatSocket;

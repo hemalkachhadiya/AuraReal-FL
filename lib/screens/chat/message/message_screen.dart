@@ -15,7 +15,6 @@ class _MessageScreenState extends State<MessageScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
-
   // conectCocketFun() async {
   //   socketIoHelper.connectSocket("", setState);
   // }
@@ -57,7 +56,10 @@ class _MessageScreenState extends State<MessageScreen> {
   }
 
   conectCocketFun() async {
-    socketIoHelper.connectSocket(widget.chatUser.id ?? "", setState);
+    socketIoHelper.connectSocket(
+      userData?.id ?? "",
+      roomId: widget.chatUser.id.toString(),
+    );
   }
 
   disconectCocketFun() async {
@@ -92,7 +94,11 @@ class _MessageScreenState extends State<MessageScreen> {
             ),
           ),
           _buildTypingIndicator(),
-          _buildMessageInput(context),
+          _buildMessageInput(
+            context,
+            roomId: widget.chatUser.id,
+            receiveId: widget.chatUser.id,
+          ),
         ],
       ),
     );
@@ -361,7 +367,11 @@ class _MessageScreenState extends State<MessageScreen> {
     );
   }
 
-  Widget _buildMessageInput(BuildContext context) {
+  Widget _buildMessageInput(
+    BuildContext context, {
+    String? roomId,
+    String? receiveId,
+  }) {
     return SafeArea(
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -392,7 +402,8 @@ class _MessageScreenState extends State<MessageScreen> {
                                 (text) =>
                                     messageProvider.updateMessageText(text),
                             onSubmitted:
-                                (text) => _sendMessage(messageProvider),
+                                (text) =>
+                                    _sendMessage(messageProvider, receiveId),
                             decoration: InputDecoration(
                               hintText: context.l10n?.typeAMessage ?? "",
                               hintStyle: TextStyle(fontSize: 12),
@@ -430,7 +441,7 @@ class _MessageScreenState extends State<MessageScreen> {
                 return GestureDetector(
                   onTap:
                       messageProvider.canSendMessage
-                          ? () => _sendMessage(messageProvider)
+                          ? () => _sendMessage(messageProvider, receiveId)
                           : null,
                   child: Container(
                     width: 53,
@@ -457,8 +468,11 @@ class _MessageScreenState extends State<MessageScreen> {
     );
   }
 
-  void _sendMessage(MessageProvider messageProvider) {
-    messageProvider.sendMessage(widget.chatUser.id ?? ""); // 👈 pass roomId
+  void _sendMessage(MessageProvider messageProvider, String? receiveID) {
+    messageProvider.sendMessage(
+      // roomId: "68ca7d9c1a4757664c281b9d",
+      receiverId: receiveID,
+    ); // 👈 pass roomId
     _messageController.clear();
     WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
   }

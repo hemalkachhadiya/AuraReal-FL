@@ -1,5 +1,6 @@
 import 'package:aura_real/aura_real.dart';
-import 'package:http/http.dart' as http; // Ensure http is imported for MediaType
+import 'package:http/http.dart'
+    as http; // Ensure http is imported for MediaType
 import 'package:mime/mime.dart'; // Ensure mime is imported for lookupMimeType
 
 class AddPostProvider extends ChangeNotifier {
@@ -98,12 +99,14 @@ class AddPostProvider extends ChangeNotifier {
       content: textController.text,
       locationId: locationId,
       selectedHashtags: selectedHashtags,
-      postImg: postImg ?? '', // Pass empty string if no image
-      postVideo: postVideo??"", // Pass video path or null
+      postImg: postImg ?? '',
+      // Pass empty string if no image
+      postVideo: postVideo ?? "", // Pass video path or null
     );
     if (result != null) {
       print("Post created successfully");
       navigatorKey.currentState?.context.navigator.pop();
+
       notifyListeners();
     } else {
       print("Failed to create post. Keeping selectedMedia for retry.");

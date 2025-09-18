@@ -67,8 +67,6 @@ class ChatApis {
           (item) => GetAllMessageModel.fromJson(item),
         );
 
-
-
         return appResponse;
       } else {
         showCatchToast(responseBody['message'] ?? "Something went wrong", null);

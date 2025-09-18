@@ -141,6 +141,26 @@ Future<T?> openCommentBottomSheet<T>({
   );
 }
 
+
+/// Format time for chat list
+String formatTime(DateTime dateTime) {
+  final now = DateTime.now();
+
+  final isToday = now.year == dateTime.year &&
+      now.month == dateTime.month &&
+      now.day == dateTime.day;
+
+  if (isToday) {
+    // Show as HH:mm (e.g. 14:05)
+    return "${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}";
+  } else {
+    // Show as dd/MM/yyyy (e.g. 18/09/2025)
+    return "${dateTime.day.toString().padLeft(2, '0')}/"
+        "${dateTime.month.toString().padLeft(2, '0')}/"
+        "${dateTime.year}";
+  }
+}
+
 // Function to open Comments Bottom Sheet specifically
 // void openCommentsBottomSheet(
 //   BuildContext context, {

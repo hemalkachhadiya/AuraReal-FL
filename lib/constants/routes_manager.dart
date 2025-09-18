@@ -1,5 +1,6 @@
 import 'package:aura_real/aura_real.dart';
 import 'package:aura_real/screens/home/post/posts/video_player_screen.dart';
+import 'package:aura_real/screens/home/search/search_screen.dart';
 
 class RouteManager {
   static String get initialRoute => SplashScreen.routeName;
@@ -138,12 +139,12 @@ class RouteManager {
           settings: settings,
         );
 
-      // ///Full Screen Screen
-      // case FullScreenPostScreen.routeName:
-      //   return MaterialPageRoute(
-      //     builder: FullScreenPostScreen.builder,
-      //     settings: settings,
-      //   );
+      ///Search Screen
+      case SearchScreen.routeName:
+        return MaterialPageRoute(
+          builder: SearchScreen.builder,
+          settings: settings,
+        );
 
       /// Message Screen
       case MessageScreen.routeName:

@@ -65,6 +65,8 @@ class PostsProvider extends ChangeNotifier {
   Future<void> getAllPostListAPI({
     bool showLoader = false,
     bool resetData = false,
+    String? searchQuery, // <-- Added search param
+
   }) async {
     // Avoid calling API if no pagination model exists and no reset is requested
     if (paginationModel == null && !resetData) return;
@@ -90,6 +92,7 @@ class PostsProvider extends ChangeNotifier {
       final model = await PostAPI.getAllPostListAPI(
         page: currentPage + 1, // API expects 1-based indexing
         pageSize: pageSize,
+        search: searchQuery, // <-- Pass search param
       );
 
       if (model != null) {

@@ -33,7 +33,11 @@ class PostAPI {
       );
 
       /// Helper to add valid fields
-      void addFieldIfValid(Map<String, String> fields, String key, dynamic value) {
+      void addFieldIfValid(
+        Map<String, String> fields,
+        String key,
+        dynamic value,
+      ) {
         if (value != null &&
             value.toString().trim().isNotEmpty &&
             value.toString() != 'null') {
@@ -67,7 +71,8 @@ class PostAPI {
         File imageFile = File(postImg);
         if (await imageFile.exists()) {
           final multipartFile = await http.MultipartFile.fromPath(
-            'postImg', // ⚡️ use SAME field name as Postman (change if backend expects `postImg`)
+            'postImg',
+            // ⚡️ use SAME field name as Postman (change if backend expects `postImg`)
             postImg,
             contentType: _getMediaType(postImg),
           );
@@ -78,7 +83,8 @@ class PostAPI {
         File videoFile = File(postVideo);
         if (await videoFile.exists()) {
           final multipartFile = await http.MultipartFile.fromPath(
-            'postVideo', // ⚡️ use SAME field name as Postman (change if backend expects `postVideo`)
+            'postVideo',
+            // ⚡️ use SAME field name as Postman (change if backend expects `postVideo`)
             postVideo,
             contentType: _getMediaType(postVideo),
           );
@@ -88,8 +94,9 @@ class PostAPI {
         }
       }
 
-
-      debugPrint('------> Files: ${request.files.map((f) => f.field).toList()}');
+      debugPrint(
+        '------> Files: ${request.files.map((f) => f.field).toList()}',
+      );
 
       // Send request
       final response = await http.Response.fromStream(await request.send());
@@ -107,6 +114,7 @@ class PostAPI {
   static Future<AppResponse2<PostModel>?> getAllPostListAPI({
     int page = 1,
     int pageSize = 5,
+    String? search,
   }) async {
     String token = PrefService.getString(PrefKeys.token);
     try {
@@ -115,10 +123,15 @@ class PostAPI {
       }
 
       final headers = {"token": token};
-
+      // Build query params
+      final queryParams = {
+        "page": page,
+        "page_size": pageSize,
+        if (search != null && search.isNotEmpty) "search": search, // Add search if provided
+      };
       final response = await ApiService.getApi(
         url: EndPoints.getAllPostAPI,
-        queryParams: {"page": page, "page_size": pageSize},
+        queryParams: queryParams,
         header: headers,
       );
 
