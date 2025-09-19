@@ -2,21 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <key>NSCameraUsageDescription</key>
-    <string>This app requires camera access to take photos and videos.</string>
-
-    <key>NSPhotoLibraryUsageDescription</key>
-    <string>This app requires access to your photo library to select and save photos.</string>
-
-    <key>NSMicrophoneUsageDescription</key>
-    <string>This app requires microphone access to record audio with videos.</string>
-
-    <key>NSLocationWhenInUseUsageDescription</key>
-    <string>This app needs your location to show nearby content.</string>
-
-    <key>NSLocationAlwaysUsageDescription</key>
-    <string>This app needs your location to work in the background.</string>
-
+    <key>CADisableMinimumFrameDurationOnPhone</key>
+    <true/>
     <key>CFBundleDevelopmentRegion</key>
     <string>$(DEVELOPMENT_LANGUAGE)</string>
     <key>CFBundleDisplayName</key>
@@ -37,7 +24,28 @@
     <string>????</string>
     <key>CFBundleVersion</key>
     <string>$(FLUTTER_BUILD_NUMBER)</string>
+    <key>ITSAppUsesNonExemptEncryption</key>
+    <false/>
     <key>LSRequiresIPhoneOS</key>
+    <true/>
+    <key>NSAppTransportSecurity</key>
+    <dict>
+        <key>NSAllowsArbitraryLoads</key>
+        <true/>
+    </dict>
+    <key>UIUserInterfaceStyle</key>
+    <string>Light</string>
+    <key>NSCameraUsageDescription</key>
+    <string>This app requires camera access to take photos and videos.</string>
+    <key>NSLocationAlwaysUsageDescription</key>
+    <string>This app needs your location to work in the background.</string>
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>This app needs your location to show nearby content.</string>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>This app requires microphone access to record audio with videos.</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>This app requires access to your photo library to select and save photos.</string>
+    <key>UIApplicationSupportsIndirectInputEvents</key>
     <true/>
     <key>UILaunchStoryboardName</key>
     <string>LaunchScreen</string>
@@ -45,20 +53,17 @@
     <string>Main</string>
     <key>UISupportedInterfaceOrientations</key>
     <array>
-       <string>UIInterfaceOrientationPortrait</string>
-       <string>UIInterfaceOrientationLandscapeLeft</string>
-       <string>UIInterfaceOrientationLandscapeRight</string>
+        <string>UIInterfaceOrientationPortrait</string>
+        <string>UIInterfaceOrientationLandscapeLeft</string>
+        <string>UIInterfaceOrientationLandscapeRight</string>
     </array>
+    <!-- ADD THIS SECTION FOR IPAD SUPPORT -->
     <key>UISupportedInterfaceOrientations~ipad</key>
     <array>
-       <string>UIInterfaceOrientationPortrait</string>
-       <string>UIInterfaceOrientationPortraitUpsideDown</string>
-       <string>UIInterfaceOrientationLandscapeLeft</string>
-       <string>UIInterfaceOrientationLandscapeRight</string>
+        <string>UIInterfaceOrientationPortrait</string>
+        <string>UIInterfaceOrientationPortraitUpsideDown</string>
+        <string>UIInterfaceOrientationLandscapeLeft</string>
+        <string>UIInterfaceOrientationLandscapeRight</string>
     </array>
-    <key>CADisableMinimumFrameDurationOnPhone</key>
-    <true/>
-    <key>UIApplicationSupportsIndirectInputEvents</key>
-    <true/>
 </dict>
 </plist>
