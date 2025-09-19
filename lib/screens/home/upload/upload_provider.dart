@@ -317,7 +317,7 @@ class UploadProvider extends ChangeNotifier {
                     final provider = MessageProvider();
                     provider.initializeChat(
                       user: chatUser,
-                      chatRoomId: chatUser.id!,
+                      roomId: chatUser.id!,
                     ); // <-- preload chat data
                     return provider;
                   },

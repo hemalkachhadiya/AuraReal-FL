@@ -15,6 +15,7 @@ class _MessageScreenState extends State<MessageScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
+
   // conectCocketFun() async {
   //   socketIoHelper.connectSocket("", setState);
   // }
@@ -56,10 +57,7 @@ class _MessageScreenState extends State<MessageScreen> {
   }
 
   conectCocketFun() async {
-    socketIoHelper.connectSocket(
-      userData?.id ?? "",
-      roomId: widget.chatUser.id.toString(),
-    );
+    socketIoHelper.connectSocket(widget.chatUser.id ?? "",);
   }
 
   disconectCocketFun() async {
@@ -94,11 +92,7 @@ class _MessageScreenState extends State<MessageScreen> {
             ),
           ),
           _buildTypingIndicator(),
-          _buildMessageInput(
-            context,
-            roomId: widget.chatUser.id,
-            receiveId: widget.chatUser.id,
-          ),
+          _buildMessageInput(context),
         ],
       ),
     );
@@ -161,7 +155,7 @@ class _MessageScreenState extends State<MessageScreen> {
                   widget.chatUser.isOnline ? 'Online' : 'Offline',
                   style: TextStyle(
                     color:
-                        !widget.chatUser.isOnline ? Colors.green : Colors.grey,
+                    !widget.chatUser.isOnline ? Colors.green : Colors.grey,
                     fontSize: 12,
                   ),
                 ),
@@ -183,111 +177,29 @@ class _MessageScreenState extends State<MessageScreen> {
     );
   }
 
-  Widget _buildMessagesList(MessageProvider provider) {
+  Widget _buildMessagesList(MessageProvider messageProvider) {
     return ListView.builder(
       controller: _scrollController,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      itemCount: provider.messages.length,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      itemCount: messageProvider.messages.length,
       itemBuilder: (context, index) {
-        final msg = provider.messages[index];
-        bool? isFromMe = msg.id==userData?.id;
+        final message = messageProvider.messages[index];
+        final showTimestamp =
+            index == 0 ||
+                messageProvider.messages[index - 1].timestamp
+                    .difference(message.timestamp)
+                    .inMinutes >
+                    5;
 
-        print("Message --- ${msg.id}");
-        print("Login User id -- ${userData?.id}");
-        print("isFromMe -- ${isFromMe}");
-
-        return Align(
-          alignment:
-              msg.isFromMe
-                  ? Alignment
-                      .centerRight // ✅ Right side if I sent
-                  : Alignment.centerLeft, // ✅ Left side if received
-          child: Container(
-            margin: const EdgeInsets.symmetric(vertical: 4),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            constraints: BoxConstraints(
-              maxWidth: MediaQuery.of(context).size.width * 0.7,
-            ),
-            decoration: BoxDecoration(
-              color: msg.isFromMe ? ColorRes.primaryColor : Colors.grey[200],
-              borderRadius: BorderRadius.circular(12).copyWith(
-                bottomRight:
-                    msg.isFromMe
-                        ? const Radius.circular(0)
-                        : const Radius.circular(12),
-                bottomLeft:
-                    msg.isFromMe
-                        ? const Radius.circular(12)
-                        : const Radius.circular(0),
-              ),
-            ),
-            child: Column(
-              crossAxisAlignment:
-                  msg.isFromMe
-                      ? CrossAxisAlignment.end
-                      : CrossAxisAlignment.start,
-              children: [
-                Text(
-                  msg.text,
-                  style: TextStyle(
-                    color: msg.isFromMe ? Colors.white : Colors.black87,
-                    fontSize: 16,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      provider.formatMessageTime(msg.timestamp),
-                      style: TextStyle(
-                        color: msg.isFromMe ? Colors.white70 : Colors.black54,
-                        fontSize: 11,
-                      ),
-                    ),
-                    if (msg.isFromMe) ...[
-                      const SizedBox(width: 4),
-                      Icon(
-                        provider.getStatusIcon(msg.status),
-                        color: provider.getStatusColor(msg.status),
-                        size: 14,
-                      ),
-                    ],
-                  ],
-                ),
-              ],
-            ),
-          ),
+        return Column(
+          children: [
+            if (showTimestamp) _buildTimestamp(message.timestamp),
+            _buildMessageBubble(message, messageProvider),
+          ],
         );
       },
     );
   }
-
-  // Widget _buildMessagesList(MessageProvider messageProvider) {
-  //
-  //   return ListView.builder(
-  //     controller: _scrollController,
-  //     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-  //     itemCount: messageProvider.messages.length,
-  //     itemBuilder: (context, index) {
-  //       final message = messageProvider.messages[index];
-  //       print("message from ${message.isFromMe}");
-  //       final showTimestamp =
-  //           index == 0 ||
-  //           messageProvider.messages[index - 1].timestamp
-  //                   .difference(message.timestamp)
-  //                   .inMinutes >
-  //               5;
-  //
-  //       return Column(
-  //         children: [
-  //           if (showTimestamp) _buildTimestamp(message.timestamp),
-  //           _buildMessageBubble(message, messageProvider),
-  //         ],
-  //       );
-  //     },
-  //   );
-  // }
 
   Widget _buildTimestamp(DateTime timestamp) {
     return Container(
@@ -320,7 +232,7 @@ class _MessageScreenState extends State<MessageScreen> {
       margin: const EdgeInsets.symmetric(vertical: 08),
       child: Row(
         mainAxisAlignment:
-            message.isFromMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+        message.isFromMe ? MainAxisAlignment.end : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           if (message.isFromMe) const Spacer(),
@@ -330,9 +242,9 @@ class _MessageScreenState extends State<MessageScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               decoration: BoxDecoration(
                 color:
-                    message.isFromMe
-                        ? ColorRes.primaryColor
-                        : ColorRes.lightGrey4,
+                message.isFromMe
+                    ? const Color(0xFF7C3AED)
+                    : Colors.grey[100],
                 borderRadius: BorderRadius.only(
                   bottomLeft: Radius.circular(message.isFromMe ? 16 : 0),
                   bottomRight: Radius.circular(message.isFromMe ? 0 : 16),
@@ -344,25 +256,26 @@ class _MessageScreenState extends State<MessageScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(message.text, style: styleW400S16),
-                  8.ph.spaceVertical,
+                  Text(
+                    message.text,
+                    style: TextStyle(
+                      color: message.isFromMe ? Colors.white : Colors.black87,
+                      fontSize: 16,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
                         messageProvider.formatMessageTime(message.timestamp),
-                        style: styleW500S12.copyWith(
+                        style: TextStyle(
                           color:
-                              message.isFromMe
-                                  ? Colors.white70
-                                  : Colors.grey[600],
-                        ) /*TextStyle(
-                          color:
-                              message.isFromMe
-                                  ? Colors.white70
-                                  : Colors.grey[600],
+                          message.isFromMe
+                              ? Colors.white70
+                              : Colors.grey[600],
                           fontSize: 11,
-                        )*/,
+                        ),
                       ),
                       if (message.isFromMe) ...[
                         const SizedBox(width: 4),
@@ -370,10 +283,10 @@ class _MessageScreenState extends State<MessageScreen> {
                           messageProvider.getStatusIcon(message.status),
                           size: 12,
                           color:
-                              messageProvider.getStatusColor(message.status) ==
-                                      ColorRes.primaryColor
-                                  ? Colors.white
-                                  : Colors.white70,
+                          messageProvider.getStatusColor(message.status) ==
+                              ColorRes.primaryColor
+                              ? Colors.white
+                              : Colors.white70,
                         ),
                       ],
                     ],
@@ -407,7 +320,7 @@ class _MessageScreenState extends State<MessageScreen> {
                   vertical: 8,
                 ),
                 decoration: BoxDecoration(
-                  color: ColorRes.lightGrey5,
+                  color: Colors.grey[100],
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Row(
@@ -448,11 +361,7 @@ class _MessageScreenState extends State<MessageScreen> {
     );
   }
 
-  Widget _buildMessageInput(
-    BuildContext context, {
-    String? roomId,
-    String? receiveId,
-  }) {
+  Widget _buildMessageInput(BuildContext context) {
     return SafeArea(
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -481,10 +390,9 @@ class _MessageScreenState extends State<MessageScreen> {
                             controller: _messageController,
                             onChanged:
                                 (text) =>
-                                    messageProvider.updateMessageText(text),
+                                messageProvider.updateMessageText(text),
                             onSubmitted:
-                                (text) =>
-                                    _sendMessage(messageProvider, receiveId),
+                                (text) => _sendMessage(messageProvider),
                             decoration: InputDecoration(
                               hintText: context.l10n?.typeAMessage ?? "",
                               hintStyle: TextStyle(fontSize: 12),
@@ -521,9 +429,9 @@ class _MessageScreenState extends State<MessageScreen> {
               builder: (context, messageProvider, child) {
                 return GestureDetector(
                   onTap:
-                      messageProvider.canSendMessage
-                          ? () => _sendMessage(messageProvider, receiveId)
-                          : null,
+                  messageProvider.canSendMessage
+                      ? () => _sendMessage(messageProvider)
+                      : null,
                   child: Container(
                     width: 53,
                     height: 53,
@@ -549,11 +457,8 @@ class _MessageScreenState extends State<MessageScreen> {
     );
   }
 
-  void _sendMessage(MessageProvider messageProvider, String? receiveID) {
-    messageProvider.sendMessage(
-      // roomId: "68ca7d9c1a4757664c281b9d",
-      receiverId: receiveID,
-    ); // 👈 pass roomId
+  void _sendMessage(MessageProvider messageProvider) {
+    messageProvider.sendMessage(receiverId:widget.chatUser.id ?? ""); // 👈 pass roomId
     _messageController.clear();
     WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
   }

@@ -167,7 +167,7 @@ class RouteManager {
                     (context) =>
                         MessageProvider()..initializeChat(
                           user: chatUser,
-                          chatRoomId: chatRoomId,
+                          roomId: chatRoomId,
                         ),
                 child: MessageScreen(chatUser: chatUser),
               ),

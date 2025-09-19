@@ -142,7 +142,7 @@ class _ChatScreenState extends State<ChatScreen> {
             : "https://via.placeholder.com/150";
 
     // Unread count for current user
-    final unreadCount = chatRoom.unreadCount?[userData!.id!] ?? 0;
+    final unreadCount = chatRoom.unreadCount?[otherParticipant!.id!] ?? 0;
 
     // Last updated time
     final formattedTime =
@@ -174,7 +174,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       final provider = MessageProvider();
                       provider.initializeChat(
                         user: chatUser,
-                        chatRoomId: chatRoom.id ?? "",
+                        roomId: chatRoom.id ?? "",
                       );
                       return provider;
                     },
@@ -185,34 +185,43 @@ class _ChatScreenState extends State<ChatScreen> {
         }
       },
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
         child: Row(
           children: [
             Stack(
               children: [
                 Container(
-                  height: 60,
-                  width: 60,
+                  height: 70.pw,
+                  width: 70.ph,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(
+                      color:
+                          avatarUrl.isEmpty
+                              ? ColorRes.white
+                              : ColorRes.primaryColor,
+                      width: 2,
+                    ),
+                  ),
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(30),
+                    borderRadius: BorderRadius.circular(24.pw),
                     child: CachedImage(avatarUrl),
                   ),
                 ),
                 // Optional online indicator if you add it later
-                // if (otherParticipant?.isOnline == true)
-                //   Positioned(
-                //     right: 0,
-                //     bottom: 0,
-                //     child: Container(
-                //       width: 12,
-                //       height: 12,
-                //       decoration: BoxDecoration(
-                //         color: Colors.green,
-                //         shape: BoxShape.circle,
-                //         border: Border.all(color: Colors.white, width: 2),
-                //       ),
-                //     ),
-                //   ),
+                Positioned(
+                  right: 0,
+                  bottom: 0,
+                  child: Container(
+                    width: 14.pw,
+                    height: 14.ph,
+                    decoration: BoxDecoration(
+                      color: Colors.green,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 2),
+                    ),
+                  ),
+                ),
               ],
             ),
             const SizedBox(width: 12),
@@ -222,17 +231,20 @@ class _ChatScreenState extends State<ChatScreen> {
                 children: [
                   Text(
                     otherParticipant?.fullName ?? "Unknown",
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.black87,
+                    style: styleW700S18.copyWith(
+                      color: ColorRes.darkJungleGreen,
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 4),
+                  4.ph.spaceVertical,
                   Text(
                     "Tap to view messages", // can be replaced with last message
-                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                    style: styleW400S12.copyWith(
+                      color:
+                          unreadCount > 0
+                              ? ColorRes.primaryColor
+                              : ColorRes.black,
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -244,9 +256,9 @@ class _ChatScreenState extends State<ChatScreen> {
               children: [
                 Text(
                   formattedTime,
-                  style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                  style: styleW400S12.copyWith(color: ColorRes.darkJungleGreen),
                 ),
-                const SizedBox(height: 4),
+                5.ph.spaceVertical,
                 if (unreadCount > 0)
                   Container(
                     padding: const EdgeInsets.symmetric(
@@ -254,16 +266,12 @@ class _ChatScreenState extends State<ChatScreen> {
                       vertical: 2,
                     ),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF9B59B6),
+                      color: ColorRes.primaryColor,
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
                       unreadCount.toString(),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: styleW700S12.copyWith(color: ColorRes.white),
                     ),
                   ),
               ],
