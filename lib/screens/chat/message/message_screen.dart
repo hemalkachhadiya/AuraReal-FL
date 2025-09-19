@@ -183,29 +183,111 @@ class _MessageScreenState extends State<MessageScreen> {
     );
   }
 
-  Widget _buildMessagesList(MessageProvider messageProvider) {
+  Widget _buildMessagesList(MessageProvider provider) {
     return ListView.builder(
       controller: _scrollController,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      itemCount: messageProvider.messages.length,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      itemCount: provider.messages.length,
       itemBuilder: (context, index) {
-        final message = messageProvider.messages[index];
-        final showTimestamp =
-            index == 0 ||
-            messageProvider.messages[index - 1].timestamp
-                    .difference(message.timestamp)
-                    .inMinutes >
-                5;
+        final msg = provider.messages[index];
+        bool? isFromMe = msg.id==userData?.id;
 
-        return Column(
-          children: [
-            if (showTimestamp) _buildTimestamp(message.timestamp),
-            _buildMessageBubble(message, messageProvider),
-          ],
+        print("Message --- ${msg.id}");
+        print("Login User id -- ${userData?.id}");
+        print("isFromMe -- ${isFromMe}");
+
+        return Align(
+          alignment:
+              msg.isFromMe
+                  ? Alignment
+                      .centerRight // ✅ Right side if I sent
+                  : Alignment.centerLeft, // ✅ Left side if received
+          child: Container(
+            margin: const EdgeInsets.symmetric(vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            constraints: BoxConstraints(
+              maxWidth: MediaQuery.of(context).size.width * 0.7,
+            ),
+            decoration: BoxDecoration(
+              color: msg.isFromMe ? ColorRes.primaryColor : Colors.grey[200],
+              borderRadius: BorderRadius.circular(12).copyWith(
+                bottomRight:
+                    msg.isFromMe
+                        ? const Radius.circular(0)
+                        : const Radius.circular(12),
+                bottomLeft:
+                    msg.isFromMe
+                        ? const Radius.circular(12)
+                        : const Radius.circular(0),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment:
+                  msg.isFromMe
+                      ? CrossAxisAlignment.end
+                      : CrossAxisAlignment.start,
+              children: [
+                Text(
+                  msg.text,
+                  style: TextStyle(
+                    color: msg.isFromMe ? Colors.white : Colors.black87,
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      provider.formatMessageTime(msg.timestamp),
+                      style: TextStyle(
+                        color: msg.isFromMe ? Colors.white70 : Colors.black54,
+                        fontSize: 11,
+                      ),
+                    ),
+                    if (msg.isFromMe) ...[
+                      const SizedBox(width: 4),
+                      Icon(
+                        provider.getStatusIcon(msg.status),
+                        color: provider.getStatusColor(msg.status),
+                        size: 14,
+                      ),
+                    ],
+                  ],
+                ),
+              ],
+            ),
+          ),
         );
       },
     );
   }
+
+  // Widget _buildMessagesList(MessageProvider messageProvider) {
+  //
+  //   return ListView.builder(
+  //     controller: _scrollController,
+  //     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+  //     itemCount: messageProvider.messages.length,
+  //     itemBuilder: (context, index) {
+  //       final message = messageProvider.messages[index];
+  //       print("message from ${message.isFromMe}");
+  //       final showTimestamp =
+  //           index == 0 ||
+  //           messageProvider.messages[index - 1].timestamp
+  //                   .difference(message.timestamp)
+  //                   .inMinutes >
+  //               5;
+  //
+  //       return Column(
+  //         children: [
+  //           if (showTimestamp) _buildTimestamp(message.timestamp),
+  //           _buildMessageBubble(message, messageProvider),
+  //         ],
+  //       );
+  //     },
+  //   );
+  // }
 
   Widget _buildTimestamp(DateTime timestamp) {
     return Container(
@@ -249,8 +331,8 @@ class _MessageScreenState extends State<MessageScreen> {
               decoration: BoxDecoration(
                 color:
                     message.isFromMe
-                        ? const Color(0xFF7C3AED)
-                        : Colors.grey[100],
+                        ? ColorRes.primaryColor
+                        : ColorRes.lightGrey4,
                 borderRadius: BorderRadius.only(
                   bottomLeft: Radius.circular(message.isFromMe ? 16 : 0),
                   bottomRight: Radius.circular(message.isFromMe ? 0 : 16),
@@ -262,26 +344,25 @@ class _MessageScreenState extends State<MessageScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    message.text,
-                    style: TextStyle(
-                      color: message.isFromMe ? Colors.white : Colors.black87,
-                      fontSize: 16,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
+                  Text(message.text, style: styleW400S16),
+                  8.ph.spaceVertical,
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
                         messageProvider.formatMessageTime(message.timestamp),
-                        style: TextStyle(
+                        style: styleW500S12.copyWith(
+                          color:
+                              message.isFromMe
+                                  ? Colors.white70
+                                  : Colors.grey[600],
+                        ) /*TextStyle(
                           color:
                               message.isFromMe
                                   ? Colors.white70
                                   : Colors.grey[600],
                           fontSize: 11,
-                        ),
+                        )*/,
                       ),
                       if (message.isFromMe) ...[
                         const SizedBox(width: 4),
@@ -326,7 +407,7 @@ class _MessageScreenState extends State<MessageScreen> {
                   vertical: 8,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.grey[100],
+                  color: ColorRes.lightGrey5,
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Row(
