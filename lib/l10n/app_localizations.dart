@@ -49,7 +49,7 @@ import 'app_localizations_en.dart';
 /// To configure the locales supported by your app, you’ll need to edit this
 /// file.
 ///
-/// First, open your project’s ios/Runner.xcworkspace Xcode workspace file.
+/// First, open your project’s ios-/Runner.xcworkspace Xcode workspace file.
 /// Then, in the Project Navigator, open the Info.plist file under the Runner
 /// project’s Runner folder.
 ///

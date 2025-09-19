@@ -8,7 +8,7 @@ Future<void> main() async {
   if (Platform.isIOS) {
     firebaseOptions = const FirebaseOptions(
       apiKey: 'AIzaSyApNVyfagHrb5MUNhOLwKIV5Swh4JSfy8g',
-      appId: '1:382221381003:ios:af9c5c86b94cf26ca1938e',
+      appId: '1:382221381003:ios-:af9c5c86b94cf26ca1938e',
       messagingSenderId: '382221381003',
       projectId: 'aurareal-a2ca3',
     );
