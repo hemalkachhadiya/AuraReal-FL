@@ -325,9 +325,9 @@ class AuthApis {
           jsonEncode(responseBody['user']),
         );
         // Success
-        showSuccessToast(
-          responseBody['message'] ?? 'User updated successfully',
-        );
+        // showSuccessToast(
+        //   responseBody['message'] ?? 'User updated successfully',
+        // );
         return true;
       } else {
         // Failure

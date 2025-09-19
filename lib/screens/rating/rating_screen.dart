@@ -569,8 +569,8 @@ class _RatingScreenContent extends StatelessWidget {
 
                 ///Floating button
                 Positioned(
-                  right: 16,
-                  bottom: 100,
+                  left: Constants.horizontalPadding,
+                  top: 100,
                   child: Column(
                     children: [
                       FloatingActionButton(
@@ -624,7 +624,7 @@ class _RatingScreenContent extends StatelessWidget {
                 ///Profile Rating
                 if (provider.selectedUser != null)
                   Positioned(
-                    bottom: 0,
+                    bottom:80,
                     left: 0,
                     right: 0,
                     child: UserProfileRatingWidget(
@@ -637,10 +637,10 @@ class _RatingScreenContent extends StatelessWidget {
                         print(
                           "Selected User ------- ${provider.selectedUser?.fullName}",
                         );
-                        context.navigator.pushNamed(
-                          UploadScreen.routeName,
-                          arguments: provider.selectedUser,
-                        );
+                        // context.navigator.pushNamed(
+                        //   UploadScreen.routeName,
+                        //   arguments: provider.selectedUser,
+                        // );
 
                         print("On Visit Profile");
                       },
