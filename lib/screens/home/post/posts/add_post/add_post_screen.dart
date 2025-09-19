@@ -35,7 +35,7 @@ class AddPostScreen extends StatelessWidget {
                         : ColorRes.primaryColor,
                 onTap:
                     provider.canPublish()
-                        ? () => provider.createPostAPI
+                        ? () => provider.createPostAPI()
                         : null,
                 title: context.l10n?.publish ?? "",
               ),

@@ -1,7 +1,8 @@
 import 'package:aura_real/aura_real.dart';
 import 'package:http/http.dart'
     as http; // Ensure http is imported for MediaType
-import 'package:mime/mime.dart'; // Ensure mime is imported for lookupMimeType
+import 'package:mime/mime.dart';
+import 'package:video_compress/video_compress.dart'; // Ensure mime is imported for lookupMimeType
 
 class AddPostProvider extends ChangeNotifier {
   final TextEditingController textController = TextEditingController();
@@ -67,6 +68,7 @@ class AddPostProvider extends ChangeNotifier {
     return isTextValid && hasMedia;
   }
 
+
   /// Create Post API
   Future<void> createPostAPI() async {
     if (!canPublish()) {
@@ -77,18 +79,50 @@ class AddPostProvider extends ChangeNotifier {
       print("Cannot publish: User data or ID is null");
       return;
     }
+
     loader = true;
     notifyListeners();
+
     var latitude = PrefService.getDouble(PrefKeys.latitude);
     var longitude = PrefService.getDouble(PrefKeys.longitude);
     var locationId = PrefService.getString(PrefKeys.locationId);
 
-    // Determine if selectedMedia is an image or video
     String? postImg;
     String? postVideo;
+
     final mimeType = lookupMimeType(selectedMedia!.path);
+
     if (mimeType != null && mimeType.startsWith('video/')) {
-      postVideo = selectedMedia!.path;
+      // 👉 Compress the video
+      final compressed = await VideoCompress.compressVideo(
+        selectedMedia!.path,
+        quality: VideoQuality.MediumQuality, // you can tweak
+        deleteOrigin: false,
+      );
+
+      if (compressed != null && compressed.file != null) {
+        final file = compressed.file!;
+
+        // 👉 Check size
+        final sizeInBytes = await file.length();
+        final sizeInMB = sizeInBytes / (1024 * 1024);
+
+        if (sizeInMB <= 2) {
+          postVideo = file.path;
+        } else {
+          print("Video still larger than 2 MB (${sizeInMB.toStringAsFixed(2)} MB)");
+          showErrorMsg("Video still larger than 1 MB (${sizeInMB.toStringAsFixed(2)} MB)");
+          // You can show a toast/snackbar to user here
+          loader = false;
+          notifyListeners();
+          return;
+        }
+      } else {
+        print("Video compression failed");
+        loader = false;
+        notifyListeners();
+        return;
+      }
     } else {
       postImg = selectedMedia!.path;
     }
@@ -100,20 +134,17 @@ class AddPostProvider extends ChangeNotifier {
       locationId: locationId,
       selectedHashtags: selectedHashtags,
       postImg: postImg ?? '',
-      // Pass empty string if no image
-      postVideo: postVideo ?? "", // Pass video path or null
+      postVideo: postVideo ?? "",
     );
+
     if (result != null) {
       print("Post created successfully");
       navigatorKey.currentState?.context.navigator.pop();
-
-      notifyListeners();
     } else {
       print("Failed to create post. Keeping selectedMedia for retry.");
-      // Do not clear selectedMedia on failure to allow retry
     }
+
     loader = false;
-    // Only clear on success or manual reset
     if (result != null) {
       textController.clear();
       selectedMedia = null;
@@ -123,6 +154,63 @@ class AddPostProvider extends ChangeNotifier {
     }
     notifyListeners();
   }
+
+  // Future<void> createPostAPI() async {
+  //   if (!canPublish()) {
+  //     print("Cannot publish: Validation failed");
+  //     return;
+  //   }
+  //   if (userData == null || userData?.id == null) {
+  //     print("Cannot publish: User data or ID is null");
+  //     return;
+  //   }
+  //   loader = true;
+  //   notifyListeners();
+  //   var latitude = PrefService.getDouble(PrefKeys.latitude);
+  //   var longitude = PrefService.getDouble(PrefKeys.longitude);
+  //   var locationId = PrefService.getString(PrefKeys.locationId);
+  //
+  //   // Determine if selectedMedia is an image or video
+  //   String? postImg;
+  //   String? postVideo;
+  //   final mimeType = lookupMimeType(selectedMedia!.path);
+  //   if (mimeType != null && mimeType.startsWith('video/')) {
+  //     postVideo = selectedMedia!.path;
+  //   } else {
+  //     postImg = selectedMedia!.path;
+  //   }
+  //
+  //   final result = await PostAPI.createPostAPI(
+  //     longitude: longitude,
+  //     latitude: latitude,
+  //     content: textController.text,
+  //     locationId: locationId,
+  //     selectedHashtags: selectedHashtags,
+  //     postImg: postImg ?? '',
+  //     // Pass empty string if no image
+  //     postVideo: postVideo ?? "", // Pass video path or null
+  //   );
+  //   if (result != null) {
+  //     print("Post created successfully");
+  //     navigatorKey.currentState?.context.navigator.pop();
+  //
+  //     notifyListeners();
+  //   } else {
+  //     print("Failed to create post. Keeping selectedMedia for retry.");
+  //     // Do not clear selectedMedia on failure to allow retry
+  //   }
+  //   loader = false;
+  //   // Only clear on success or manual reset
+  //   if (result != null) {
+  //     textController.clear();
+  //     selectedMedia = null;
+  //     videoController?.dispose();
+  //     videoController = null;
+  //     selectedHashtags.clear();
+  //   }
+  //   notifyListeners();
+  // }
+
 
   void publishPost(BuildContext context) {
     if (!canPublish()) {

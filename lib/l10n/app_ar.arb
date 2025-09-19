@@ -104,6 +104,9 @@
   "incorrectPassword": "كلمة المرور غير صحيحة",
   "comments": "التعليقات",
   "following": "المتابَعون",
+  "galleryPermission": "نحتاج إلى الوصول إلى معرض الصور للمتابعة",
+  "galleryPermissionContent": "يرجى السماح بالوصول إلى المعرض من الإعدادات.",
+  "galleryPermissionBtn": "فتح الإعدادات",
   "@cameraPermissionContent": {
     "description": "رسالة طلب إذن الكاميرا"
   }

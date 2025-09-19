@@ -103,5 +103,8 @@
   "incorrectPassword": "Incorrect password",
   "comments": "Comments",
   "following": "Following",
+  "galleryPermission": "We need access to your gallery to continue",
+  "galleryPermissionContent": "Please allow gallery access in settings.",
+  "galleryPermissionBtn": "Open Settings",
   "rateThisPost": "Rate this Post"
 }

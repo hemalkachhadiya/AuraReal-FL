@@ -392,8 +392,7 @@ class _RatingScreenContent extends StatelessWidget {
                           ),
                         ],
                       ),
-
-                      const SizedBox(height: 40),
+                      90.ph.spaceVertical,
                     ],
                   ),
                 ),

@@ -61,10 +61,10 @@ class NotificationProvider extends ChangeNotifier {
           paginationModel = model.copyWith();
         } else {
           final existingIds =
-              paginationModel?.list?.map((e) => e.id).toSet() ?? {};
+              paginationModel?.list?.map((e) => e.sId).toSet() ?? {};
           final newItems =
               (model.list ?? [])
-                  .where((e) => !existingIds.contains(e.id))
+                  .where((e) => !existingIds.contains(e.sId))
                   .toList();
 
           paginationModel = paginationModel?.copyWith(
@@ -137,10 +137,10 @@ class NotificationProvider extends ChangeNotifier {
           }
         } else {
           final existingIds =
-              paginationModel?.list?.map((e) => e.id).toSet() ?? {};
+              paginationModel?.list?.map((e) => e.sId).toSet() ?? {};
           final newItems =
               (model.list ?? [])
-                  .where((e) => !existingIds.contains(e.id))
+                  .where((e) => !existingIds.contains(e.sId))
                   .toList();
 
           paginationModel = paginationModel?.copyWith(

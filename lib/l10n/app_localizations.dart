@@ -719,6 +719,24 @@ abstract class AppLocalizations {
   /// **'Following'**
   String get following;
 
+  /// No description provided for @galleryPermission.
+  ///
+  /// In en, this message translates to:
+  /// **'We need access to your gallery to continue'**
+  String get galleryPermission;
+
+  /// No description provided for @galleryPermissionContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Please allow gallery access in settings.'**
+  String get galleryPermissionContent;
+
+  /// No description provided for @galleryPermissionBtn.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Settings'**
+  String get galleryPermissionBtn;
+
   /// No description provided for @rateThisPost.
   ///
   /// In en, this message translates to:

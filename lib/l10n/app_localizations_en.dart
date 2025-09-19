@@ -321,5 +321,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get following => 'Following';
 
   @override
+  String get galleryPermission => 'We need access to your gallery to continue';
+
+  @override
+  String get galleryPermissionContent => 'Please allow gallery access in settings.';
+
+  @override
+  String get galleryPermissionBtn => 'Open Settings';
+
+  @override
   String get rateThisPost => 'Rate this Post';
 }

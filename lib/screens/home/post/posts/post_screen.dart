@@ -107,7 +107,7 @@ class HomeScreen extends StatelessWidget {
                               child: CustomListView(
                                 controller: scrollController,
                                 padding: EdgeInsets.only(
-                                  bottom: Constants.horizontalPadding,
+                                  bottom: Constants.horizontalPadding+50,
                                 ),
                                 // Add ScrollController
                                 itemCount:

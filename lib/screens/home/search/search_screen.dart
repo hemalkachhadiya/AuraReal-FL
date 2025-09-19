@@ -46,98 +46,122 @@ class _SearchScreenState extends State<SearchScreen> {
           loading: provider.loader,
           child: Scaffold(
             backgroundColor: Theme.of(context).colorScheme.surface,
-            appBar: AppBar(
-              backgroundColor: ColorRes.white,
-              title: TextField(
-                controller: _searchController,
-                textInputAction: TextInputAction.search,
-                decoration: InputDecoration(
-                  hintText: "Search posts...",
-                  border: InputBorder.none,
-                ),
-                onSubmitted: (val) => _onSearch(context, val),
-              ),
-              actions: [
-                IconButton(
-                  icon: const Icon(Icons.close),
-                  onPressed: () {
-                    _searchController.clear();
-                    provider.getAllPostListAPI(resetData: true);
-                  },
-                ),
-              ],
-            ),
-            body: CustomListView(
-              controller: _scrollController,
-              padding: EdgeInsets.all(Constants.horizontalPadding),
-              itemCount:
-                  provider.loader ? 0 : provider.postListResponse.length + 1,
-              onRefresh:
-                  () => provider.getAllPostListAPI(
-                    resetData: true,
-                    searchQuery: _searchController.text.trim(),
-                  ),
-              emptyWidget: const Center(child: Text("No posts found")),
-              showEmptyWidget:
-                  !provider.loader && provider.postListResponse.isEmpty,
-              separatorBuilder:
-                  (_, __) =>
-                      Divider(color: ColorRes.black.withValues(alpha: 0.1)),
-              itemBuilder: (context, index) {
-                if (index >= provider.postListResponse.length) {
-                  if (!provider.hasMoreData) {
-                    return Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Center(
-                        child: Text(
-                          'No more items',
-                          style: styleW500S12.copyWith(color: ColorRes.grey),
+            body: SafeArea(
+              child: Column(
+                children: [
+                  ///Space
+                  10.ph.spaceVertical,
+                  Container(
+                    margin: EdgeInsets.symmetric(
+                      horizontal: Constants.horizontalPadding,
+                    ),
+                    child: Row(
+                      children: [
+                        AppBackIcon(title: ""),
+                        Expanded(
+                          child: TextField(
+                            controller: _searchController,
+                            textInputAction: TextInputAction.search,
+                            decoration: const InputDecoration(
+                              hintText: "Search posts...",
+                              border: InputBorder.none,
+                            ),
+                            onSubmitted: (val) => _onSearch(context, val),
+                          ),
                         ),
-                      ),
-                    );
-                  }
-                  if (!provider.isApiCalling) {
-                    provider.getAllPostListAPI(
-                      searchQuery: _searchController.text.trim(),
-                    );
-                  }
-                  return const SizedBox(height: 100, child: SmallLoader());
-                }
+                        IconButton(
+                          icon: const Icon(Icons.close),
+                          onPressed: () {
+                            _searchController.clear();
+                            provider.getAllPostListAPI(resetData: true);
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: CustomListView(
+                      controller: _scrollController,
+                      itemCount:
+                          provider.loader
+                              ? 0
+                              : provider.postListResponse.length + 1,
+                      onRefresh:
+                          () => provider.getAllPostListAPI(
+                            resetData: true,
+                            searchQuery: _searchController.text.trim(),
+                          ),
+                      emptyWidget: const Center(child: Text("No posts found")),
+                      showEmptyWidget:
+                          !provider.loader && provider.postListResponse.isEmpty,
+                      separatorBuilder:
+                          (_, __) => Divider(
+                            color: ColorRes.black.withOpacity(
+                              0.1,
+                            ), // ✅ Fixed here
+                          ),
+                      itemBuilder: (context, index) {
+                        if (index >= provider.postListResponse.length) {
+                          if (!provider.hasMoreData) {
+                            return const Padding(
+                              padding: EdgeInsets.all(16),
+                              child: Center(
+                                child: Text(
+                                  'No more items',
+                                  style: TextStyle(color: Colors.grey),
+                                ),
+                              ),
+                            );
+                          }
+                          if (!provider.isApiCalling) {
+                            provider.getAllPostListAPI(
+                              searchQuery: _searchController.text.trim(),
+                            );
+                          }
+                          return const SizedBox(
+                            height: 100,
+                            child: SmallLoader(),
+                          );
+                        }
 
-                return PostCard(
-                  post: provider.postListResponse[index],
-                  loading: provider.loader,
-                  onTapPost: () {
-                    _handleMediaNavigation(context, provider, index);
-                  },
-                  onTap: () {
-                    context.navigator.pushNamed(
-                      UploadScreen.routeName,
-                      arguments: provider.postListResponse[index],
-                    );
-                  },
-                  onRatingSubmitted: (rate) {
-                    var rating = DoubleRatingExtension(rate).toStars();
-                    final post = provider.postListResponse[index];
-                    if (post.postRating?.toStarCount() == 0) {
-                      provider.newRatePostAPI(
-                        context,
-                        postId: post.id,
-                        rating: rating.toString(),
-                      );
-                    } else {
-                      provider.updateRatePostAPI(
-                        context,
-                        postId: post.id,
-                        rating: rating.toString(),
-                      );
-                    }
-                  },
-                  onCommentSubmitted: (val) {
-                    print("Comment ===== $val");
-                  },
-                );
-              },
+                        return PostCard(
+                          post: provider.postListResponse[index],
+                          loading: provider.loader,
+                          onTapPost: () {
+                            _handleMediaNavigation(context, provider, index);
+                          },
+                          onTap: () {
+                            context.navigator.pushNamed(
+                              UploadScreen.routeName,
+                              arguments: provider.postListResponse[index],
+                            );
+                          },
+                          onRatingSubmitted: (rate) {
+                            var rating = DoubleRatingExtension(rate).toStars();
+                            final post = provider.postListResponse[index];
+                            if (post.postRating?.toStarCount() == 0) {
+                              provider.newRatePostAPI(
+                                context,
+                                postId: post.id,
+                                rating: rating.toString(),
+                              );
+                            } else {
+                              provider.updateRatePostAPI(
+                                context,
+                                postId: post.id,
+                                rating: rating.toString(),
+                              );
+                            }
+                          },
+                          onCommentSubmitted: (val) {
+                            debugPrint("Comment ===== $val");
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         );

@@ -321,5 +321,14 @@ class AppLocalizationsAr extends AppLocalizations {
   String get following => 'المتابَعون';
 
   @override
+  String get galleryPermission => 'نحتاج إلى الوصول إلى معرض الصور للمتابعة';
+
+  @override
+  String get galleryPermissionContent => 'يرجى السماح بالوصول إلى المعرض من الإعدادات.';
+
+  @override
+  String get galleryPermissionBtn => 'فتح الإعدادات';
+
+  @override
   String get rateThisPost => 'قيم هذه المشاركة';
 }

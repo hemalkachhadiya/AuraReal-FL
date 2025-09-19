@@ -4,22 +4,26 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'dart:io';
 
-// Helper function to get media type
+// ================== MEDIA TYPE ==================
 MediaType? getMediaType(String filePath) {
   final mimeType = lookupMimeType(filePath);
   if (mimeType != null) {
     final parts = mimeType.split('/');
     return MediaType(parts[0], parts[1]);
   }
-  return MediaType('application', 'octet-stream'); // Fallback for unknown types
+  return MediaType('application', 'octet-stream'); // fallback
 }
 
+// ================== AUTH ==================
 Future<void> logoutUser() async {
   await PrefService.removeKey(PrefKeys.token);
   await PrefService.removeKey(PrefKeys.userData);
 }
 
+// ================== NORMALIZE ==================
 dynamic normalizeFalseToNull(dynamic input) {
   if (input is Map) {
     return input.map(
@@ -34,24 +38,24 @@ dynamic normalizeFalseToNull(dynamic input) {
   }
 }
 
+// ================== ERROR ==================
 void recordError(dynamic exception, StackTrace? stack) {
   debugPrint(exception.toString());
 }
 
+// ================== KEYBOARD ==================
 void hideKeyboard({BuildContext? context}) {
   context ??= navigatorKey.currentContext;
-  if (context == null) {
-    return;
-  }
+  if (context == null) return;
   if (FocusScope.of(context).hasFocus) {
     FocusScope.of(context).requestFocus(FocusNode());
   }
 }
 
+// ================== USER ==================
 LoginRes? get userData {
   try {
     final str = PrefService.getString(PrefKeys.userData);
-
     if (str.isNotEmpty) {
       return LoginRes.fromJson(jsonDecode(str));
     }
@@ -61,16 +65,17 @@ LoginRes? get userData {
   return null;
 }
 
+// ================== CAMERA PERMISSION ==================
 Future<bool> checkCameraPermission(BuildContext context) async {
-  final permission = await Permission.camera.request();
+  final status = await Permission.camera.request();
 
   if (!context.mounted) return false;
 
-  if (permission.isGranted || permission.isLimited) {
+  if (status.isGranted || status.isLimited) {
     return true;
-  } else if (permission.isDenied ||
-      permission.isPermanentlyDenied ||
-      permission.isRestricted) {
+  } else if (status.isDenied ||
+      status.isPermanentlyDenied ||
+      status.isRestricted) {
     openAppBottomShit(
       context: context,
       title: context.l10n?.cameraPermission,
@@ -87,32 +92,50 @@ Future<bool> checkCameraPermission(BuildContext context) async {
   return false;
 }
 
+// ================== GALLERY PERMISSION ==================
+Future<bool> checkGalleryPermission(BuildContext context) async {
+  final status = await Permission.photos.request(); // iOS Photos permission
+
+  if (!context.mounted) return false;
+
+  if (status.isGranted || status.isLimited) {
+    return true;
+  } else if (status.isDenied ||
+      status.isPermanentlyDenied ||
+      status.isRestricted) {
+    openAppBottomShit(
+      context: context,
+      title: context.l10n?.galleryPermission,
+      content: context.l10n?.galleryPermissionContent,
+      btnText: context.l10n?.openSettings,
+      image: AssetRes.cameraIcon2,
+      onBtnTap: () {
+        openAppSettings();
+        context.navigator.pop();
+      },
+    );
+    return false;
+  }
+  return false;
+}
+
+// ================== STRING HELPERS ==================
 String calculateMd5(String input) {
-  // Compute MD5 hash
   var bytes = utf8.encode(input);
   var digest = md5.convert(bytes);
-
-  // Encode MD5 hex digest to Base64
   var base64Encoded = base64.encode(utf8.encode(digest.toString()));
   return base64Encoded;
 }
 
 String generateCustomString(DateTime dateTime) {
-  // Get current timestamp in milliseconds
   String timestamp = dateTime.millisecondsSinceEpoch.toString();
-
-  // Reverse timestamp
   String timestampReversed = timestamp.split('').reversed.join();
-
-  // Create the original string
   String str = '$timestamp&-api-&$timestampReversed';
-
-  // Compute the encoded MD5 + timestamp
   String result = calculateMd5(str) + timestamp;
-
   return result;
 }
 
+// ================== PERMISSION REQUESTS ==================
 Future<void> requestPermissions() async {
   await [
     Permission.location,
@@ -122,7 +145,7 @@ Future<void> requestPermissions() async {
   ].request();
 }
 
-// Function to open the comment bottom sheet
+// ================== COMMENT SHEET ==================
 Future<T?> openCommentBottomSheet<T>({
   required BuildContext context,
   required PostModel post,
@@ -141,74 +164,32 @@ Future<T?> openCommentBottomSheet<T>({
   );
 }
 
-
-/// Format time for chat list
+// ================== CHAT TIME ==================
 String formatTime(DateTime dateTime) {
   final now = DateTime.now();
-
-  final isToday = now.year == dateTime.year &&
+  final isToday =
+      now.year == dateTime.year &&
       now.month == dateTime.month &&
       now.day == dateTime.day;
 
   if (isToday) {
-    // Show as HH:mm (e.g. 14:05)
     return "${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}";
   } else {
-    // Show as dd/MM/yyyy (e.g. 18/09/2025)
     return "${dateTime.day.toString().padLeft(2, '0')}/"
         "${dateTime.month.toString().padLeft(2, '0')}/"
         "${dateTime.year}";
   }
 }
 
-// Function to open Comments Bottom Sheet specifically
-// void openCommentsBottomSheet(
-//   BuildContext context, {
-//   required List<Comment> comments,
-// }) {
-//   openCustomDraggableBottomSheet(
-//     context,
-//     customChild: CommentsContent(comments: comments),
-//     showButtons: false,
-//     initialChildSize: 0.7,
-//     minChildSize: 0.5,
-//     maxChildSize: 1.0,
-//     padding: EdgeInsets.zero,
-//   );
-// }
-
-// Check camera permission
-// Future<bool>  checkCameraPermission(BuildContext context) async {
-//   final status = await Permission.camera.status;
-//
-//   if (status.isGranted) {
-//     return true;
-//   }
-//
-//   if (status.isDenied) {
-//     final result = await Permission.camera.request();
-//     return result.isGranted;
-//   }
-//
-//   if (status.isPermanentlyDenied) {
-//     if (context.mounted) {
-//       showPermissionDialog(context);
-//     }
-//     return false;
-//   }
-//
-//   return false;
-// }
-
-// Show permission dialog
+// ================== PERMISSION DIALOG ==================
 void showPermissionDialog(BuildContext context) {
   showDialog(
     context: context,
     builder:
         (context) => AlertDialog(
-          title: Text('Camera Permission Required'),
+          title: Text('Permission Required'),
           content: Text(
-            'Please enable camera permission in app settings to take photos.',
+            'Please enable permission in app settings to continue.',
           ),
           actions: [
             TextButton(
@@ -227,33 +208,32 @@ void showPermissionDialog(BuildContext context) {
   );
 }
 
+// ================== LOCATION ==================
 Future<void> fetchLocation(BuildContext context) async {
   final (lat, lon, error) = await GetLocationService.getCurrentLatLon(context);
   if (lat != null && lon != null) {
-    // Use latitude and longitude (e.g., save to PrefService or navigate)
     await PrefService.set('latitude', lat);
     await PrefService.set('longitude', lon);
     if (context.mounted) {
       context.navigator.pushReplacementNamed(DashboardScreen.routeName);
     }
-  } else {}
+  }
 }
 
+// ================== IMAGE COMPRESS ==================
 Future<File?> compressImage(File? file, {double? requestedSize}) async {
-  if (file == null) {
-    return null;
-  }
+  if (file == null) return null;
+
   Directory directory = await getTemporaryDirectory();
   double requiredSize = requestedSize ?? (1024 * 1024 * 2);
   int fileSize = file.lengthSync();
   int quality = ((100 * requiredSize) / fileSize).round();
+
   var byte = await FlutterImageCompress.compressWithList(
     file.absolute.readAsBytesSync(),
     quality: quality > 100 ? 95 : quality,
     rotate: 0,
   );
-
-  debugPrint(file.lengthSync().toString());
 
   File result = File(
     "${directory.path}/${DateTime.now().microsecondsSinceEpoch}.jpg",
@@ -263,19 +243,13 @@ Future<File?> compressImage(File? file, {double? requestedSize}) async {
     await result.delete();
   }
   result.writeAsBytesSync(byte);
-  debugPrint(result.lengthSync().toString());
-
-  final size = result.lengthSync();
-  debugPrint(size.toString());
-
   return result;
 }
 
+// ================== VIDEO THUMBNAIL ==================
 Future<File?> generateVideoThumbnail(String videoUrl) async {
   try {
-    // 1. Download video to temp file
     final response = await http.get(Uri.parse(videoUrl));
-
     if (response.statusCode != 200) return null;
 
     final tempDir = await getTemporaryDirectory();
@@ -284,7 +258,6 @@ Future<File?> generateVideoThumbnail(String videoUrl) async {
     );
     await videoFile.writeAsBytes(response.bodyBytes);
 
-    // 2. Generate thumbnail from local video file
     final String? thumbPath = await VideoThumbnail.thumbnailFile(
       video: videoFile.path,
       imageFormat: ImageFormat.JPEG,
@@ -293,7 +266,6 @@ Future<File?> generateVideoThumbnail(String videoUrl) async {
     );
 
     if (thumbPath == null) return null;
-
     return File(thumbPath);
   } catch (e) {
     debugPrint("Thumbnail generation failed: $e");
@@ -301,32 +273,20 @@ Future<File?> generateVideoThumbnail(String videoUrl) async {
   }
 }
 
-/// Get FCM token
-  getFCMToken() async {
+// ================== FCM TOKEN ==================
+getFCMToken() async {
   try {
-    // Request permission for notifications
     NotificationSettings settings = await FirebaseMessaging.instance
         .requestPermission(alert: true, badge: true, sound: true);
-
-    debugPrint('User granted permission: ${settings.authorizationStatus}');
 
     if (settings.authorizationStatus == AuthorizationStatus.authorized ||
         settings.authorizationStatus == AuthorizationStatus.provisional) {
       String? token = await FirebaseMessaging.instance.getToken();
-
       if (token != null) {
-        debugPrint('FCM Token: $token');
-        // Store the token in shared preferences
         await PrefService.set(PrefKeys.fcmToken, token);
-      } else {
-        debugPrint('Failed to retrieve FCM token');
       }
-    } else {
-      debugPrint('Notification permission denied');
     }
   } catch (e) {
     debugPrint("Error getting FCM token: $e");
   }
 }
-
-
