@@ -1,29 +1,39 @@
 import 'package:aura_real/aura_real.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'dart:io';
 
 Future<File?> openMediaPicker(
     BuildContext context, {
       bool useCameraForImage = false,
     }) async {
-  // If useCameraForImage is true, open the camera directly for images
-  if (useCameraForImage) {
-    final canOpenCamera = await checkCameraPermission(context);
-    print("canOpenCamera============= ${canOpenCamera}");
-    if (canOpenCamera) {
-      final xFile = await ImagePicker().pickImage(source: ImageSource.camera);
-      if (xFile != null) {
-        final compressedFile = await compressImage(
-          File(xFile.path),
-          requestedSize: (1024 * 1024 * 0.5), // 0.5 MB
-        );
-        return compressedFile;
-      }
-    }
-    return null;
+  final picker = ImagePicker();
+
+  Future<bool> requestCameraPermission() async {
+    final status = await Permission.camera.request();
+    if (status.isGranted) return true;
+    if (status.isDenied) return false; // user denied, can try again
+    if (status.isPermanentlyDenied) return false; // user denied permanently
+    return false;
   }
 
-  // Step 1: Choose between Image or Video
+  // If using camera directly for image
+  if (useCameraForImage) {
+    final canOpenCamera = await requestCameraPermission();
+    print("canOpenCamera============= $canOpenCamera");
+    if (canOpenCamera) {
+      final xFile = await picker.pickImage(source: ImageSource.camera);
+      if (xFile != null) {
+        return await compressImage(File(xFile.path),
+            requestedSize: 1024 * 1024 * 0.5);
+      }
+    } else {
+      // Permission denied, do nothing, don't redirect to settings
+      return null;
+    }
+  }
+
+  // Step 1: Choose Media Type
   final mediaType = await showModalBottomSheet<String>(
     context: context,
     isScrollControlled: true,
@@ -61,8 +71,9 @@ Future<File?> openMediaPicker(
 
   if (mediaType == null) return null;
 
-  // Step 2: Show options based on selected media type
   File? selectedFile;
+
+  // Step 2: Show options based on selected media type
   if (mediaType == 'image') {
     final source = await showModalBottomSheet<ImageSource>(
       context: context,
@@ -76,32 +87,23 @@ Future<File?> openMediaPicker(
     );
 
     if (source != null) {
-      if (source == ImageSource.camera && context.mounted) {
-        final canOpenCamera = await checkCameraPermission(context);
+      if (source == ImageSource.camera) {
+        final canOpenCamera = await requestCameraPermission();
         if (canOpenCamera) {
-          // Proceed directly if permission is granted
-          final xFile = await ImagePicker().pickImage(source: source);
+          final xFile = await picker.pickImage(source: ImageSource.camera);
           if (xFile != null) {
-            final compressedFile = await compressImage(
-              File(xFile.path),
-              requestedSize: (1024 * 1024 * 0.5),
-            );
-            if (compressedFile != null) {
-              selectedFile = compressedFile;
-            }
+            selectedFile = await compressImage(File(xFile.path),
+                requestedSize: 1024 * 1024 * 0.5);
           }
+        } else {
+          print("Camera permission denied for image. Not opening Settings.");
+          return null;
         }
       } else {
-        // For gallery, no permission check needed
-        final xFile = await ImagePicker().pickImage(source: source);
+        final xFile = await picker.pickImage(source: source);
         if (xFile != null) {
-          final compressedFile = await compressImage(
-            File(xFile.path),
-            requestedSize: (1024 * 1024 * 0.5),
-          );
-          if (compressedFile != null) {
-            selectedFile = compressedFile;
-          }
+          selectedFile = await compressImage(File(xFile.path),
+              requestedSize: 1024 * 1024 * 0.5);
         }
       }
     }
@@ -126,7 +128,7 @@ Future<File?> openMediaPicker(
 }
 
 class MediaPicker extends StatelessWidget {
-  final String? mediaType; // Determines whether to show image or video options
+  final String? mediaType;
 
   const MediaPicker({super.key, this.mediaType});
 
@@ -147,31 +149,22 @@ class MediaPicker extends StatelessWidget {
             ListTile(
               leading: Icon(Icons.photo_library, color: Colors.blue),
               title: Text("Gallery"),
-              onTap: () async {
-                Navigator.pop(context, ImageSource.gallery);
-              },
+              onTap: () => Navigator.pop(context, ImageSource.gallery),
             ),
             16.ph.spaceVertical,
             ListTile(
               leading: Icon(Icons.camera_alt, color: Colors.green),
               title: Text("Camera"),
-              onTap: () async {
-                Navigator.pop(context, ImageSource.camera);
-              },
+              onTap: () => Navigator.pop(context, ImageSource.camera),
             ),
           ] else if (mediaType == 'video') ...[
             ListTile(
               leading: Icon(Icons.video_library, color: Colors.red),
               title: Text("Gallery"),
               onTap: () async {
-                final xFile = await ImagePicker().pickVideo(
-                  source: ImageSource.gallery,
-                );
-                if (xFile != null) {
-                  Navigator.pop(context, File(xFile.path));
-                } else {
-                  Navigator.pop(context, null);
-                }
+                final xFile =
+                await ImagePicker().pickVideo(source: ImageSource.gallery);
+                Navigator.pop(context, xFile != null ? File(xFile.path) : null);
               },
             ),
             16.ph.spaceVertical,
@@ -179,14 +172,9 @@ class MediaPicker extends StatelessWidget {
               leading: Icon(Icons.videocam, color: Colors.purple),
               title: Text("Camera"),
               onTap: () async {
-                final xFile = await ImagePicker().pickVideo(
-                  source: ImageSource.camera,
-                );
-                if (xFile != null) {
-                  Navigator.pop(context, File(xFile.path));
-                } else {
-                  Navigator.pop(context, null);
-                }
+                final xFile =
+                await ImagePicker().pickVideo(source: ImageSource.camera);
+                Navigator.pop(context, xFile != null ? File(xFile.path) : null);
               },
             ),
           ],

@@ -550,7 +550,12 @@ class RatingProvider extends ChangeNotifier {
       isLoading = true;
       errorMessage = null;
       notifyListeners();
-
+      final hasPermission = await checkGalleryPermission(context);
+      if (!hasPermission) {
+        errorMessage = 'Gallery permission denied';
+        notifyListeners();
+        return;
+      }
       final XFile? image = await _picker.pickImage(
         source: ImageSource.gallery,
         imageQuality: 80,
