@@ -1,6 +1,21 @@
 import 'package:aura_real/aura_real.dart';
 import 'package:aura_real/common/widgets/common_widget.dart';
 
+class LowerCaseTextFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue,
+      TextEditingValue newValue,
+      ) {
+    return TextEditingValue(
+      text: newValue.text.toLowerCase(),
+      selection: newValue.selection,
+      composing: TextRange.empty,
+    );
+  }
+}
+
+
 class AppTextField extends StatelessWidget {
   const AppTextField({
     super.key,
@@ -70,13 +85,29 @@ class AppTextField extends StatelessWidget {
     List<TextInputFormatter> effectiveFormatters = [];
 
     if (textInputType == TextInputType.emailAddress) {
+      // Deny spaces
       effectiveFormatters.add(FilteringTextInputFormatter.deny(RegExp(r'\s')));
-    }  else if (textInputType == TextInputType.name) {
-      // Allow letters, numbers, underscore, hyphen, and space
+
+      // Convert all input to lowercase
       effectiveFormatters.add(
-        FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9_\-\s]')),
+        FilteringTextInputFormatter.allow(RegExp(r'.*')), // allow all characters
+      );
+
+      // Force lowercase
+      effectiveFormatters.add(
+        LowerCaseTextFormatter(),
       );
     }
+
+    // if (textInputType == TextInputType.emailAddress) {
+    //   effectiveFormatters.add(FilteringTextInputFormatter.deny(RegExp(r'\s')));
+    // }  else if (textInputType == TextInputType.name) {
+    //   // Allow letters, numbers, underscore, hyphen, and space
+    //   effectiveFormatters.add(
+    //     FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9_\-\s]')),
+    //   );
+    //
+    // }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

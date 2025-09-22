@@ -45,7 +45,7 @@ class ProfileScreen extends StatelessWidget {
                   86.ph.spaceVertical,
                   InkWell(
                     onTap: () {
-                      openMediaPicker(context);
+                      openMediaPicker(context, useCameraForImage: true);
                     },
                     child: Stack(
                       children: [

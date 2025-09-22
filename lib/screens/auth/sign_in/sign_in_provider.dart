@@ -1,12 +1,5 @@
-import 'package:aura_real/apis/app_response.dart';
-import 'package:aura_real/apis/auth_apis.dart';
 import 'package:aura_real/aura_real.dart';
-import 'package:aura_real/screens/auth/check_your_email/check_your_email_screen.dart';
 import 'package:aura_real/screens/auth/sign_in/model/google_login_response_model.dart';
-import 'package:aura_real/screens/auth/sign_in/model/login_response_model.dart';
-import 'package:aura_real/screens/dahsboard/dashboard_screen.dart';
-import 'package:aura_real/services/api_services.dart';
-import 'package:aura_real/utils/end_points.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 

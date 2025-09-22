@@ -1,18 +1,11 @@
-import 'dart:convert';
-import 'dart:io';
-
 import 'package:aura_real/apis/model/post_model.dart';
 import 'package:aura_real/aura_real.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
-import 'package:mime/mime.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:crypto/crypto.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'dart:io';
 
 // ================== MEDIA TYPE ==================
 MediaType? getMediaType(String filePath) {
@@ -34,7 +27,7 @@ Future<void> logoutUser() async {
 dynamic normalizeFalseToNull(dynamic input) {
   if (input is Map) {
     return input.map(
-          (key, value) => MapEntry(key, normalizeFalseToNull(value)),
+      (key, value) => MapEntry(key, normalizeFalseToNull(value)),
     );
   } else if (input is List) {
     return input.map(normalizeFalseToNull).toList();
@@ -74,42 +67,97 @@ LoginRes? get userData {
 
 // ================== CAMERA PERMISSION ==================
 Future<bool> checkCameraPermission(BuildContext context) async {
-  final status = await Permission.camera.status;
+  final status = await Permission.camera.request();
+
+  if (!context.mounted) return false;
 
   if (status.isGranted || status.isLimited) {
     return true;
-  } else if (status.isDenied || status.isPermanentlyDenied || status.isRestricted) {
-    showPermissionDialog(
-      context,
-      title: context.l10n?.cameraPermission ?? 'Camera Permission',
-      content: context.l10n?.cameraPermissionContent ?? 'Camera access is required.',
+  } else if (status.isDenied ||
+      status.isPermanentlyDenied ||
+      status.isRestricted) {
+    openAppBottomShit(
+      context: context,
+      title: context.l10n?.cameraPermission,
+      content: context.l10n?.cameraPermissionContent,
+      btnText: context.l10n?.openSettings,
       image: AssetRes.cameraIcon,
+      onBtnTap: () {
+        openAppSettings();
+        context.navigator.pop();
+      },
     );
     return false;
-  } else {
-    final result = await Permission.camera.request();
-    return result.isGranted || result.isLimited;
   }
+  return false;
+}
+
+/// --- CAMERA PERMISSION ---
+Future<bool> requestCameraPermission(BuildContext context) async {
+  final status = await Permission.camera.status;
+
+  if (status.isGranted) {
+    return true;
+  } else if (status.isDenied) {
+    final result = await Permission.camera.request();
+    return result.isGranted;
+  } else if (status.isPermanentlyDenied) {
+    // Show dialog directing user to settings
+    await showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: Text('Camera Permission Required'),
+            content: Text(
+              'Camera access is permanently denied. Please enable it from Settings.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () {
+                  openAppSettings();
+                  Navigator.of(context).pop();
+                },
+                child: Text('Open Settings'),
+              ),
+            ],
+          ),
+    );
+    return false;
+  }
+  return false;
 }
 
 // ================== GALLERY PERMISSION ==================
 Future<bool> checkGalleryPermission(BuildContext context) async {
-  final status = await Permission.photos.status;
+  final status = await Permission.photos.request(); // iOS Photos permission
+
+  if (!context.mounted) return false;
 
   if (status.isGranted || status.isLimited) {
     return true;
-  } else if (status.isDenied || status.isPermanentlyDenied || status.isRestricted) {
-    showPermissionDialog(
-      context,
-      title: context.l10n?.galleryPermission ?? 'Gallery Permission',
-      content: context.l10n?.galleryPermissionContent ?? 'Gallery access is required.',
+  } else if (status.isDenied ||
+      status.isPermanentlyDenied ||
+      status.isRestricted) {
+    openAppBottomShit(
+      context: context,
+      title: context.l10n?.galleryPermission,
+      content: context.l10n?.galleryPermissionContent,
+      btnText: context.l10n?.openSettings,
       image: AssetRes.cameraIcon2,
+      onBtnTap: () {
+        openAppSettings();
+        context.navigator.pop();
+      },
     );
     return false;
-  } else {
-    final result = await Permission.photos.request();
-    return result.isGranted || result.isLimited;
   }
+  return false;
 }
 
 // ================== STRING HELPERS ==================
@@ -162,8 +210,8 @@ String formatTime(DateTime dateTime) {
   final now = DateTime.now();
   final isToday =
       now.year == dateTime.year &&
-          now.month == dateTime.month &&
-          now.day == dateTime.day;
+      now.month == dateTime.month &&
+      now.day == dateTime.day;
 
   if (isToday) {
     return "${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}";
@@ -175,31 +223,29 @@ String formatTime(DateTime dateTime) {
 }
 
 // ================== PERMISSION DIALOG ==================
-void showPermissionDialog(
-    BuildContext context, {
-      String? title,
-      String? content,
-      String? image,
-    }) {
+void showPermissionDialog(BuildContext context) {
   showDialog(
     context: context,
-    builder: (context) => AlertDialog(
-      title: Text(title ?? 'Permission Required'),
-      content: Text(content ?? 'Please enable permission in app settings to continue.'),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
+    builder:
+        (context) => AlertDialog(
+          title: Text('Permission Required'),
+          content: Text(
+            'Please enable permission in app settings to continue.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                openAppSettings();
+              },
+              child: Text('Settings'),
+            ),
+          ],
         ),
-        TextButton(
-          onPressed: () {
-            Navigator.pop(context);
-            openAppSettings();
-          },
-          child: const Text('Settings'),
-        ),
-      ],
-    ),
   );
 }
 
@@ -237,7 +283,7 @@ Future<File?> compressImage(File? file, {double? requestedSize}) async {
   if (result.existsSync()) {
     await result.delete();
   }
-  await result.writeAsBytes(byte);
+  result.writeAsBytesSync(byte);
   return result;
 }
 
@@ -248,7 +294,9 @@ Future<File?> generateVideoThumbnail(String videoUrl) async {
     if (response.statusCode != 200) return null;
 
     final tempDir = await getTemporaryDirectory();
-    final videoFile = File("${tempDir.path}/${DateTime.now().millisecondsSinceEpoch}.mp4");
+    final videoFile = File(
+      "${tempDir.path}/${DateTime.now().millisecondsSinceEpoch}.mp4",
+    );
     await videoFile.writeAsBytes(response.bodyBytes);
 
     final String? thumbPath = await VideoThumbnail.thumbnailFile(
@@ -267,7 +315,7 @@ Future<File?> generateVideoThumbnail(String videoUrl) async {
 }
 
 // ================== FCM TOKEN ==================
-Future<void> getFCMToken() async {
+getFCMToken() async {
   try {
     NotificationSettings settings = await FirebaseMessaging.instance
         .requestPermission(alert: true, badge: true, sound: true);
