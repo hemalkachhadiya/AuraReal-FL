@@ -275,6 +275,11 @@ class AuthApis {
       final responseBody = jsonDecode(response.body);
       if (response.statusCode == 200 || response.statusCode == 201) {
         print("Res Body Data ${responseBody['profile']}");
+        print("Full Response Body: ${response.body}"); // Add this line
+        print("Profile Data: ${responseBody['profile']}"); // Add this line
+        print("isOnline value: ${responseBody['profile']?['isOnline']}"); // Add this line
+        print("isOnline type: ${responseBody['profile']?['isOnline'].runtimeType}"); // Add this line
+
         if (responseBody['profile'] != null && responseBody != null) {
           return Profile.fromJson(responseBody['profile']);
         }

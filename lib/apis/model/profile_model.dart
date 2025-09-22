@@ -4,6 +4,7 @@ class Profile {
   final String? profileImage;
   final String? email;
   final String? bio;
+  int? followersCount;
   int? followingCount;
   final int? totalPosts;
   final double? ratingsAvg;
@@ -20,6 +21,7 @@ class Profile {
     this.profileImage,
     this.email,
     this.bio,
+    this.followersCount,
     this.followingCount,
     this.totalPosts,
     this.ratingsAvg,
@@ -37,6 +39,7 @@ class Profile {
     profileImage: json['profile_image'] as String?,
     email: json['email'] as String?,
     bio: json['bio'] as String?,
+    followersCount: json['followers_count'] as int?,
     followingCount: json['following_count'] as int?,
     totalPosts: json['total_posts'] as int?,
     ratingsAvg:
@@ -47,7 +50,7 @@ class Profile {
     gender: json['gender'] as int?,
     website: json['website'] as String?,
     is_following: json['is_following'] as bool?,
-    isOnline: json['isOnline'] as bool?,
+    isOnline: json['isOnline'] as bool? ?? json['is_online'] as bool?,
     lastSeen: json['last_seen'] as String?, // Added last_seen field
   );
 
@@ -57,6 +60,7 @@ class Profile {
     'profile_image': profileImage,
     'email': email,
     'bio': bio,
+    'followers_count': followersCount,
     'following_count': followingCount,
     'total_posts': totalPosts,
     'ratings_avg': ratingsAvg,
@@ -67,5 +71,4 @@ class Profile {
     'isOnline': isOnline,
     'last_seen': lastSeen, // Added last_seen field
   };
-
 }

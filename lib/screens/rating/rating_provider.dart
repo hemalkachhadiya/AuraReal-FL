@@ -1,20 +1,11 @@
-import 'dart:io';
 import 'dart:ui' as ui;
 import 'package:aura_real/apis/model/geo_location_model.dart';
 import 'package:aura_real/apis/model/post_model.dart';
-import 'package:aura_real/apis/model/user_marker_data.dart';
 import 'package:aura_real/apis/model/user_model.dart';
 import 'package:aura_real/apis/rating_profile_apis.dart';
-import 'package:aura_real/common/methods.dart';
 import 'package:aura_real/screens/rating/model/rating_profile_list_model.dart';
-import 'package:aura_real/services/location_permission.dart';
-import 'package:aura_real/utils/color_res.dart';
-import 'package:flip_card/flip_card.dart';
 import 'package:flip_card/flip_card_controller.dart';
-import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:aura_real/aura_real.dart';
 import 'package:geolocator/geolocator.dart'; // Add for distance calculations
 

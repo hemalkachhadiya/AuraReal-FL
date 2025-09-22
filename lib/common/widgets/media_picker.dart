@@ -1,4 +1,5 @@
 import 'package:aura_real/aura_real.dart';
+import 'package:file_picker/file_picker.dart';
 
 Future<File?> openMediaPicker(
     BuildContext context, {
@@ -7,7 +8,6 @@ Future<File?> openMediaPicker(
   // If useCameraForImage is true, open the camera directly for images
   if (useCameraForImage) {
     final canOpenCamera = await checkCameraPermission(context);
-    print("canOpenCamera============= ${canOpenCamera}");
     if (canOpenCamera) {
       final xFile = await ImagePicker().pickImage(source: ImageSource.camera);
       if (xFile != null) {
@@ -122,6 +122,32 @@ Future<File?> openMediaPicker(
 
   return selectedFile;
 }
+
+Future<File?> openFilePicker({
+  required BuildContext context,
+  List<String>? allowedExtensions, // e.g. ['pdf', 'docx', 'jpg']
+  bool allowMultiple = false,
+}) async {
+  try {
+    final result = await FilePicker.platform.pickFiles(
+      type: allowedExtensions != null ? FileType.custom : FileType.any,
+      allowedExtensions: allowedExtensions,
+      allowMultiple: allowMultiple,
+    );
+
+    if (result == null || result.files.isEmpty) return null;
+
+    // If multiple, you can return a list of files instead
+    final path = result.files.first.path;
+    if (path != null) return File(path);
+
+    return null;
+  } catch (e) {
+    print("Error picking file: $e");
+    return null;
+  }
+}
+
 
 class MediaPicker extends StatelessWidget {
   final String? mediaType; // Determines whether to show image or video options

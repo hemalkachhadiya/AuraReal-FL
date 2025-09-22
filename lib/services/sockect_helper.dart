@@ -5,9 +5,12 @@ SocketIoHelper socketIoHelper = SocketIoHelper();
 
 class SocketIoHelper {
   IO.Socket? socketApp;
+  MessageProvider? _messageProvider; // Reference to provider
 
   /// ✅ Connect and authenticate socket
-  void connectSocket(String userId, {String? roomId}) {
+  void connectSocket(String userId, {String? roomId, MessageProvider? provider}) {
+    _messageProvider = provider; // Store provider reference
+
     socketApp = IO.io(
       EndPoints.domain,
       <String, dynamic>{
@@ -70,6 +73,10 @@ class SocketIoHelper {
     socketApp?.emit("typing", {"senderId": senderId, "roomId": roomId});
   }
 
+  void stopTyping({required String senderId, required String roomId}) {
+    socketApp?.emit("stopTyping", {"senderId": senderId, "roomId": roomId});
+  }
+
   /// ✅ Mark all messages as read
   void markMessagesAsRead({required String roomId, required String readerId}) {
     socketApp?.emit("markMessagesAsRead", {
@@ -82,7 +89,7 @@ class SocketIoHelper {
   void _listenEvents() {
     // New message
     socketApp!.on("newMessage", (data) {
-      debugPrint("💬 New message: $data");
+      debugPrint("💬 New message received: $data");
       try {
         final decodedData = jsonDecode(jsonEncode(data));
         final msg = Message(
@@ -94,12 +101,17 @@ class SocketIoHelper {
           status: MessageStatus.sent,
         );
 
-        final provider = Provider.of<MessageProvider>(
-          navigatorKey.currentContext!,
-          listen: false,
-        );
-        provider.messages.add(msg);
-        provider.notifyListeners();
+        // Use stored provider reference or get from context
+        if (_messageProvider != null) {
+          _messageProvider!.handleNewMessage(decodedData);
+        } else {
+          // Fallback to getting provider from context
+          final context = navigatorKey.currentContext;
+          if (context != null) {
+            final provider = Provider.of<MessageProvider>(context, listen: false);
+            provider.handleNewMessage(decodedData);
+          }
+        }
       } catch (e) {
         debugPrint("❌ Error parsing new message: $e");
       }
@@ -107,21 +119,76 @@ class SocketIoHelper {
 
     // Typing indicator
     socketApp!.on("typing", (data) {
-      debugPrint("⌨️ Typing: $data");
+      debugPrint("⌨️ User typing: $data");
+      try {
+        final senderId = data["senderId"];
+        if (senderId != userData?.id) {
+          _messageProvider?.setTypingStatus(true);
+        }
+      } catch (e) {
+        debugPrint("❌ Error handling typing event: $e");
+      }
+    });
+
+    socketApp!.on("stopTyping", (data) {
+      debugPrint("⌨️ User stopped typing: $data");
+      try {
+        final senderId = data["senderId"];
+        if (senderId != userData?.id) {
+          _messageProvider?.setTypingStatus(false);
+        }
+      } catch (e) {
+        debugPrint("❌ Error handling stop typing event: $e");
+      }
     });
 
     // Online/offline users
     socketApp!.on("userOnline", (data) {
       debugPrint("🟢 User online: $data");
+      try {
+        final userId = data["userId"];
+        _messageProvider?.updateUserOnlineStatus(userId, true);
+      } catch (e) {
+        debugPrint("❌ Error handling user online event: $e");
+      }
     });
 
     socketApp!.on("userOffline", (data) {
       debugPrint("🔴 User offline: $data");
+      try {
+        final userId = data["userId"];
+        _messageProvider?.updateUserOnlineStatus(userId, false);
+      } catch (e) {
+        debugPrint("❌ Error handling user offline event: $e");
+      }
+    });
+
+    // Message delivered
+    socketApp!.on("messageDelivered", (data) {
+      debugPrint("📬 Message delivered: $data");
+      try {
+        final messageId = data["messageId"];
+        _messageProvider?.handleDelivered(messageId);
+      } catch (e) {
+        debugPrint("❌ Error handling message delivered: $e");
+      }
+    });
+
+    // Message read
+    socketApp!.on("messageRead", (data) {
+      debugPrint("👁️ Message read: $data");
+      try {
+        final messageId = data["messageId"];
+        _messageProvider?.handleRead(messageId);
+      } catch (e) {
+        debugPrint("❌ Error handling message read: $e");
+      }
     });
 
     // Unread count updates
     socketApp!.on("unreadCount", (data) {
       debugPrint("📊 Unread count: $data");
+      // Handle unread count update if needed
     });
 
     // Debug: log all socket events
@@ -132,6 +199,7 @@ class SocketIoHelper {
 
   /// ✅ Disconnect
   void disconnectSocket() {
+    _messageProvider = null; // Clear provider reference
     socketApp?.disconnect();
     socketApp?.dispose();
     debugPrint("🔌 Socket disconnected");

@@ -1,5 +1,6 @@
 import 'package:aura_real/aura_real.dart';
 import 'package:flutter/material.dart';
+import 'package:uuid/uuid.dart'; // Add dependency: flutter pub add uuid
 
 class Message {
   final String id;
@@ -61,135 +62,249 @@ class ChatUser {
 }
 
 class MessageProvider extends ChangeNotifier {
-  MessageProvider() {
-    // init(); // Don't call init here; call explicitly in the screen
-  }
+  MessageProvider();
 
-  List<Message> messages = [];
-  ChatUser? currentUser;
-  bool isLoading = false;
-  bool isTyping = false;
-  String messageText = '';
-  String? chatRoomId;
-  bool loader = false;
+  List<Message> _messages = [];
+  ChatUser? _currentUser;
+  bool _isLoading = false;
+  bool _isTyping = false;
+  String _messageText = '';
+  String? _chatRoomId;
+  bool _loader = false;
+  File? _selectedMedia;
+  VideoPlayerController? _videoController;
 
-  /// Call this when screen opens
+  // Getters
+  List<Message> get messages => _messages;
+  ChatUser? get currentUser => _currentUser;
+  bool get isLoading => _isLoading;
+  bool get isTyping => _isTyping;
+  String get messageText => _messageText;
+  String? get chatRoomId => _chatRoomId;
+  bool get loader => _loader;
+  File? get selectedMedia => _selectedMedia;
+  VideoPlayerController? get videoController => _videoController;
+
   Future<void> initializeChat({
     required ChatUser user,
     required String roomId,
   }) async {
-    currentUser = user;
-    chatRoomId = roomId;
+    if (user.id == null || roomId.isEmpty) {
+      debugPrint("❌ Cannot initialize chat: Invalid user ID or room ID");
+      ScaffoldMessenger.of(navigatorKey.currentContext!).showSnackBar(
+        const SnackBar(content: Text("Error: Invalid user or room ID")),
+      );
+      return;
+    }
 
-    // ✅ Fetch profile to update online status
+    _currentUser = user;
+    _chatRoomId = roomId;
+
+    // Connect socket with provider reference
+    socketIoHelper.connectSocket(user.id!, roomId: roomId, provider: this);
+
+    // Fetch profile to update online status
     await getCurrentUserProfileAPI();
 
-    // ✅ Fetch messages
+    // Fetch messages
     await getAllMessageList(roomId);
   }
 
-  /// Fetch the latest profile for the current user
   Future<void> getCurrentUserProfileAPI() async {
-    if (currentUser == null || currentUser?.id == null) return;
-
-    loader = true;
-    notifyListeners();
-
-    print("Get Current Profile ---- ${currentUser?.id}");
-
-    final result = await AuthApis.getUserProfile(userId: currentUser!.id!);
-
-    if (result != null) {
-      print("Current user online status: ${result.isOnline}");
-      currentUser = currentUser?.copyWith(
-        isOnline: result.isOnline ?? false,
-        name: result.username,
-        avatarUrl: result.profileImage,
-        // lastSeen: result.lastSeen,
-      );
-      notifyListeners();
+    if (_currentUser == null || _currentUser?.id == null) {
+      debugPrint("❌ No current user or user ID for profile fetch");
+      return;
     }
 
-    loader = false;
+    _loader = true;
+    notifyListeners();
+
+    debugPrint("Get Current Profile ---- ${_currentUser?.id}");
+
+    try {
+      final result = await AuthApis.getUserProfile(userId: _currentUser!.id!);
+      if (result != null) {
+        debugPrint("Current user online status: ${result.isOnline}");
+        _currentUser = _currentUser?.copyWith(
+          isOnline: result.isOnline ?? false,
+          name: result.username,
+          avatarUrl: result.profileImage,
+        );
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint("❌ Error fetching user profile: $e");
+      ScaffoldMessenger.of(navigatorKey.currentContext!).showSnackBar(
+        SnackBar(content: Text("Failed to fetch user profile: $e")),
+      );
+    }
+
+    _loader = false;
     notifyListeners();
   }
 
-  /// Get all messages for the chat room
+  Future<void> pickMedia() async {
+    try {
+      final File? mediaFile = await openMediaPicker(navigatorKey.currentContext!);
+      if (mediaFile != null) {
+        final mimeType = lookupMimeType(mediaFile.path);
+        if (mimeType != null && mimeType.startsWith('video/')) {
+          _selectedMedia = mediaFile;
+          _videoController?.dispose();
+          _videoController = VideoPlayerController.file(_selectedMedia!)
+            ..initialize().then((_) {
+              notifyListeners();
+            });
+        } else {
+          _selectedMedia = mediaFile;
+          _videoController?.dispose();
+          _videoController = null;
+        }
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint('❌ Error picking media: $e');
+      ScaffoldMessenger.of(navigatorKey.currentContext!).showSnackBar(
+        SnackBar(content: Text("Failed to pick media: $e")),
+      );
+    }
+  }
+
   Future<void> getAllMessageList(String chatRoomId) async {
-    isLoading = true;
-    notifyListeners();
-
-    final response = await ChatApis.getAllMessages(chatRoomId: chatRoomId);
-
-    if (response != null && response.data != null) {
-      messages =
-          response.data!
-              .map(
-                (GetAllMessageModel msg) => Message(
-                  id: msg.id ?? "",
-                  text: msg.message ?? "",
-                  timestamp: msg.createdAt ?? DateTime.now(),
-                  isFromMe: msg.sender?.id == userData?.id,
-                  status:
-                      (msg.readBy?.contains(userData?.id) ?? false)
-                          ? MessageStatus.read
-                          : MessageStatus.sent,
-                ),
-              )
-              .toList();
-    } else {
-      messages = [];
+    if (chatRoomId.isEmpty) {
+      debugPrint("❌ Cannot fetch messages: Invalid chat room ID");
+      return;
     }
 
-    isLoading = false;
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      final response = await ChatApis.getAllMessages(chatRoomId: chatRoomId);
+      if (response != null && response.data != null) {
+        _messages = response.data!
+            .map(
+              (GetAllMessageModel msg) => Message(
+            id: msg.id ?? const Uuid().v4(),
+            text: msg.message ?? "",
+            timestamp: msg.createdAt ?? DateTime.now(),
+            isFromMe: msg.sender?.id == userData?.id,
+            status: (msg.readBy?.contains(userData?.id) ?? false)
+                ? MessageStatus.read
+                : MessageStatus.sent,
+          ),
+        )
+            .toList();
+      } else {
+        _messages = [];
+      }
+    } catch (e) {
+      debugPrint("❌ Error fetching messages: $e");
+      ScaffoldMessenger.of(navigatorKey.currentContext!).showSnackBar(
+        SnackBar(content: Text("Failed to load messages: $e")),
+      );
+    }
+
+    _isLoading = false;
     notifyListeners();
   }
 
   void sendMessage({String? receiverId}) {
-    if (messageText.trim().isEmpty) return;
+    if (_messageText.trim().isEmpty ||
+        _chatRoomId == null ||
+        _chatRoomId!.isEmpty ||
+        userData?.id == null ||
+        receiverId == null ||
+        receiverId.isEmpty) {
+      debugPrint(
+          "❌ Cannot send message: text=$_messageText, roomId=$_chatRoomId, senderId=${userData?.id}, receiverId=$receiverId");
+      ScaffoldMessenger.of(navigatorKey.currentContext!).showSnackBar(
+        const SnackBar(content: Text("Error: Invalid message or user data")),
+      );
+      return;
+    }
 
     final newMessage = Message(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      text: messageText.trim(),
+      id: const Uuid().v4(), // Use UUID for unique ID
+      text: _messageText.trim(),
       timestamp: DateTime.now(),
       isFromMe: true,
       status: MessageStatus.sending,
     );
 
-    messages.add(newMessage);
+    _messages.add(newMessage);
     notifyListeners();
+
+    debugPrint("📤 Sending message: ID=${newMessage.id}, text=${newMessage.text}");
+
+    if (socketIoHelper.socketApp == null || !socketIoHelper.socketApp!.connected) {
+      debugPrint("❌ Socket not connected, marking message as failed");
+      _updateMessageStatus(newMessage.id, MessageStatus.failed);
+      ScaffoldMessenger.of(navigatorKey.currentContext!).showSnackBar(
+        const SnackBar(content: Text("Failed to send message: No connection")),
+      );
+      return;
+    }
 
     socketIoHelper.sendMessage(
       text: newMessage.text,
-      roomId: chatRoomId ?? "",
+      roomId: _chatRoomId!,
       messageType: "text",
-      receiverId: currentUser?.id ?? "",
-      senderId: userData?.id.toString() ?? "",
+      receiverId: receiverId,
+      senderId: userData!.id!,
     );
 
-    _updateMessageStatus(newMessage.id, MessageStatus.sent);
-    messageText = '';
+    // Listen for server acknowledgment (if supported by your server)
+    socketIoHelper.socketApp!.once("messageSent", (data) {
+      debugPrint("✅ Server acknowledged message: $data");
+      _updateMessageStatus(newMessage.id, MessageStatus.sent);
+    });
+
+    socketIoHelper.socketApp!.once("error", (error) {
+      debugPrint("❌ Server error on sendMessage: $error");
+      _updateMessageStatus(newMessage.id, MessageStatus.failed);
+      ScaffoldMessenger.of(navigatorKey.currentContext!).showSnackBar(
+        SnackBar(content: Text("Failed to send message: $error")),
+      );
+    });
+
+    _messageText = '';
     notifyListeners();
   }
 
   void _updateMessageStatus(String messageId, MessageStatus status) {
-    final index = messages.indexWhere((m) => m.id == messageId);
+    final index = _messages.indexWhere((m) => m.id == messageId);
     if (index != -1) {
-      messages[index] = messages[index].copyWith(status: status);
+      _messages[index] = _messages[index].copyWith(status: status);
       notifyListeners();
     }
   }
 
   void handleNewMessage(dynamic data) {
-    final msg = Message(
-      id: data["_id"] ?? DateTime.now().toString(),
-      text: data["message"] ?? "",
-      timestamp: DateTime.tryParse(data["createdAt"] ?? "") ?? DateTime.now(),
-      isFromMe: data["senderId"] == userData?.id,
-      status: MessageStatus.sent,
-    );
-    messages.add(msg);
-    notifyListeners();
+    debugPrint("📥 Handling new message in provider: $data");
+    try {
+      final msg = Message(
+        id: data["_id"] ?? const Uuid().v4(),
+        text: data["message"] ?? "",
+        timestamp: DateTime.tryParse(data["createdAt"] ?? "") ?? DateTime.now(),
+        isFromMe: data["senderId"] == userData?.id,
+        status: MessageStatus.sent,
+      );
+
+      final exists = _messages.any((m) => m.id == msg.id);
+      if (!exists) {
+        _messages.add(msg);
+        notifyListeners();
+        debugPrint("✅ New message added to UI");
+      } else {
+        debugPrint("⚠️ Message already exists, skipping");
+      }
+    } catch (e) {
+      debugPrint("❌ Error handling new message: $e");
+      ScaffoldMessenger.of(navigatorKey.currentContext!).showSnackBar(
+        SnackBar(content: Text("Error processing message: $e")),
+      );
+    }
   }
 
   void handleDelivered(String messageId) {
@@ -200,24 +315,49 @@ class MessageProvider extends ChangeNotifier {
     _updateMessageStatus(messageId, MessageStatus.read);
   }
 
+  void setTypingStatus(bool typing) {
+    if (_isTyping != typing) {
+      _isTyping = typing;
+      notifyListeners();
+      debugPrint("⌨️ Typing status updated: $typing");
+    }
+  }
+
+  void updateUserOnlineStatus(String userId, bool isOnline) {
+    if (_currentUser?.id == userId) {
+      _currentUser = _currentUser?.copyWith(isOnline: isOnline);
+      notifyListeners();
+      debugPrint("🔄 User online status updated: $isOnline");
+    }
+  }
+
   void markAllAsRead() {
-    for (int i = 0; i < messages.length; i++) {
-      if (!messages[i].isFromMe && messages[i].status != MessageStatus.read) {
-        messages[i] = messages[i].copyWith(status: MessageStatus.read);
+    if (_chatRoomId == null || userData?.id == null) return;
+
+    bool hasChanges = false;
+    for (int i = 0; i < _messages.length; i++) {
+      if (!_messages[i].isFromMe && _messages[i].status != MessageStatus.read) {
+        _messages[i] = _messages[i].copyWith(status: MessageStatus.read);
+        hasChanges = true;
       }
     }
-    notifyListeners();
+    if (hasChanges) {
+      socketIoHelper.markMessagesAsRead(
+        roomId: _chatRoomId!,
+        readerId: userData!.id!,
+      );
+      notifyListeners();
+    }
   }
 
   void updateMessageText(String text) {
-    messageText = text;
-    notifyListeners();
+    _messageText = text;
   }
 
-  bool get canSendMessage => messageText.trim().isNotEmpty;
+  bool get canSendMessage => _messageText.trim().isNotEmpty;
 
   void clearMessages() {
-    messages.clear();
+    _messages.clear();
     notifyListeners();
   }
 
@@ -273,5 +413,12 @@ class MessageProvider extends ChangeNotifier {
       case MessageStatus.failed:
         return Colors.red;
     }
+  }
+
+  @override
+  void dispose() {
+    _videoController?.dispose();
+    socketIoHelper.disconnectSocket();
+    super.dispose();
   }
 }
