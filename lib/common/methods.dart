@@ -67,70 +67,164 @@ LoginRes? get userData {
 
 // ================== CAMERA PERMISSION ==================
 Future<bool> checkCameraPermission(BuildContext context) async {
-  final status = await Permission.camera.request();
+  MethodChannel _platform = MethodChannel("camera_permission_channel");
+  if (Platform.isAndroid) {
+    final status = await Permission.camera.request();
 
-  if (!context.mounted) return false;
+    if (!context.mounted) return false;
 
-  if (status.isGranted || status.isLimited) {
-    return true;
-  } else if (status.isDenied ||
-      status.isPermanentlyDenied ||
-      status.isRestricted) {
-    openAppBottomShit(
-      context: context,
-      title: context.l10n?.cameraPermission,
-      content: context.l10n?.cameraPermissionContent,
-      btnText: context.l10n?.openSettings,
-      image: AssetRes.cameraIcon,
-      onBtnTap: () {
-        openAppSettings();
-        context.navigator.pop();
-      },
-    );
+    if (status.isGranted || status.isLimited) {
+      return true;
+    } else if (status.isDenied ||
+        status.isPermanentlyDenied ||
+        status.isRestricted) {
+      openAppBottomShit(
+        context: context,
+        title: context.l10n?.cameraPermission,
+        content: context.l10n?.cameraPermissionContent,
+        btnText: context.l10n?.openSettings,
+        image: AssetRes.cameraIcon,
+        onBtnTap: () {
+          openAppSettings();
+          context.navigator.pop();
+        },
+      );
+      return false;
+    }
     return false;
+  } else {
+    try {
+      final status = await _platform.invokeMethod<String>(
+        "checkCameraPermission",
+      );
+      debugPrint("📸 iOS Camera permission status = $status");
+
+      switch (status) {
+        case "authorized":
+        case "granted":
+          return true;
+        case "denied":
+        case "permanentlyDenied":
+          await showDialog(
+            context: context,
+            builder:
+                (context) => AlertDialog(
+                  title: const Text('Camera Permission Required'),
+                  content: const Text(
+                    'Camera access is permanently denied. Please enable it from Settings.',
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: const Text('Cancel'),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        openAppSettings();
+                        Navigator.of(context).pop();
+                      },
+                      child: const Text('Open Settings'),
+                    ),
+                  ],
+                ),
+          );
+          return false;
+        default:
+          return false;
+      }
+    } on PlatformException catch (e) {
+      debugPrint("⚠️ iOS permission channel error: $e");
+      return false;
+    }
   }
-  return false;
 }
 
 /// --- CAMERA PERMISSION ---
 Future<bool> requestCameraPermission(BuildContext context) async {
+  MethodChannel _platform = MethodChannel("camera_permission_channel");
   final status = await Permission.camera.status;
 
-  if (status.isGranted) {
-    return true;
-  } else if (status.isDenied) {
-    final result = await Permission.camera.request();
-    return result.isGranted;
-  } else if (status.isPermanentlyDenied) {
-    // Show dialog directing user to settings
-    await showDialog(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            title: Text('Camera Permission Required'),
-            content: Text(
-              'Camera access is permanently denied. Please enable it from Settings.',
+  if (Platform.isAndroid) {
+    if (status.isGranted) {
+      return true;
+    } else if (status.isDenied) {
+      final result = await Permission.camera.request();
+      return result.isGranted;
+    } else if (status.isPermanentlyDenied) {
+      // Show dialog directing user to settings
+      await showDialog(
+        context: context,
+        builder:
+            (context) => AlertDialog(
+              title: Text('Camera Permission Required'),
+              content: Text(
+                'Camera access is permanently denied. Please enable it from Settings.',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text('Cancel'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    openAppSettings();
+                    Navigator.of(context).pop();
+                  },
+                  child: Text('Open Settings'),
+                ),
+              ],
             ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: Text('Cancel'),
-              ),
-              TextButton(
-                onPressed: () {
-                  openAppSettings();
-                  Navigator.of(context).pop();
-                },
-                child: Text('Open Settings'),
-              ),
-            ],
-          ),
-    );
+      );
+      return false;
+    }
     return false;
+  } else {
+    try {
+      final status = await _platform.invokeMethod<String>(
+        "checkCameraPermission",
+      );
+      debugPrint("📸 iOS Camera permission status = $status");
+
+      switch (status) {
+        case "authorized":
+        case "granted":
+          return true;
+        case "denied":
+        case "permanentlyDenied":
+          await showDialog(
+            context: context,
+            builder:
+                (context) => AlertDialog(
+                  title: const Text('Camera Permission Required'),
+                  content: const Text(
+                    'Camera access is permanently denied. Please enable it from Settings.',
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: const Text('Cancel'),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        openAppSettings();
+                        Navigator.of(context).pop();
+                      },
+                      child: const Text('Open Settings'),
+                    ),
+                  ],
+                ),
+          );
+          return false;
+        default:
+          return false;
+      }
+    } on PlatformException catch (e) {
+      debugPrint("⚠️ iOS permission channel error: $e");
+      return false;
+    }
   }
-  return false;
 }
 
 // ================== GALLERY PERMISSION ==================
