@@ -1,6 +1,4 @@
-import 'package:aura_real/apis/chat_apis.dart';
 import 'package:aura_real/aura_real.dart';
-import 'package:flutter/material.dart';
 
 class Message {
   final String id;
@@ -80,15 +78,22 @@ class MessageProvider extends ChangeNotifier {
     final response = await ChatApis.getAllMessages(chatRoomId: chatRoomId);
 
     if (response != null && response.data != null) {
-      messages = response.data!
-          .map((msg) => Message(
-        id: msg.id ?? "",
-        text: msg.message ?? "",
-        timestamp: msg.createdAt ?? DateTime.now(),
-        isFromMe: msg.senderId == currentUser?.id,
-        status: MessageStatus.sent,
-      ))
-          .toList();
+      messages =
+          response.data!
+              .map(
+                (GetAllMessageModel msg) => Message(
+                  id: msg.id ?? "",
+                  text: msg.message ?? "",
+                  timestamp: msg.createdAt ?? DateTime.now(),
+                  isFromMe:
+                      msg.sender?.id == userData?.id, // ✅ correct comparison
+                  status:
+                      (msg.readBy?.contains(userData?.id) ?? false)
+                          ? MessageStatus.read
+                          : MessageStatus.sent,
+                ),
+              )
+              .toList();
     } else {
       messages = [];
     }
@@ -96,6 +101,30 @@ class MessageProvider extends ChangeNotifier {
     isLoading = false;
     notifyListeners();
   }
+
+  // Future<void> getAllMessageList(String chatRoomId) async {
+  //   isLoading = true;
+  //   notifyListeners();
+  //
+  //   final response = await ChatApis.getAllMessages(chatRoomId: chatRoomId);
+  //
+  //   if (response != null && response.data != null) {
+  //     messages = response.data!
+  //         .map((msg) => Message(
+  //       id: msg.id ?? "",
+  //       text: msg.message ?? "",
+  //       timestamp: msg.createdAt ?? DateTime.now(),
+  //       isFromMe: msg.senderId == currentUser?.id,
+  //       status: MessageStatus.sent,
+  //     ))
+  //         .toList();
+  //   } else {
+  //     messages = [];
+  //   }
+  //
+  //   isLoading = false;
+  //   notifyListeners();
+  // }
 
   void sendMessage({String? receiverId}) {
     if (messageText.trim().isEmpty) return;
@@ -164,15 +193,29 @@ class MessageProvider extends ChangeNotifier {
 
   String formatMessageTime(DateTime timestamp) {
     final now = DateTime.now();
-    final diff = now.difference(timestamp);
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = today.subtract(const Duration(days: 1));
+    final messageDate = DateTime(timestamp.year, timestamp.month, timestamp.day);
 
-    if (diff.inMinutes < 1) return 'now';
-    if (diff.inHours < 1) return '${diff.inMinutes}m';
-    if (diff.inDays < 1) {
-      return '${timestamp.hour.toString().padLeft(2, '0')}:${timestamp.minute.toString().padLeft(2, '0')}';
+    // Today → show time (like 2:15 PM)
+    if (messageDate == today) {
+      final hour = timestamp.hour % 12 == 0 ? 12 : timestamp.hour % 12;
+      final minute = timestamp.minute.toString().padLeft(2, '0');
+      final period = timestamp.hour >= 12 ? 'PM' : 'AM';
+      return "$hour:$minute $period";
     }
-    return '${timestamp.day}/${timestamp.month}';
+
+    // Yesterday
+    if (messageDate == yesterday) {
+      return "Yesterday";
+    }
+
+    // Else → dd/MM/yyyy
+    return "${timestamp.day.toString().padLeft(2, '0')}/"
+        "${timestamp.month.toString().padLeft(2, '0')}/"
+        "${timestamp.year}";
   }
+
 
   IconData getStatusIcon(MessageStatus status) {
     switch (status) {
@@ -188,7 +231,6 @@ class MessageProvider extends ChangeNotifier {
         return Icons.error_outline;
     }
   }
-
 
   /// ✅ Update message text when user types
   void updateMessageText(String text) {
