@@ -11,8 +11,6 @@ Future<void> showCatchToast(
   StackTrace? stack, {
   String? msg,
 }) async {
-  print('starck----- ${stack}');
-  print('msg====== ${msg}');
   bool isInternetOn = false;
   try {
     final result = await InternetAddress.lookup('example.com');

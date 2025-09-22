@@ -30,6 +30,7 @@ class AssetRes {
   static const settingGrayIcon = "${_icons}setting_gray_icon.svg";
   static const logoNameIcon = "${_icons}logo_name.svg";
   static const searchIcon = "${_icons}search_icon.svg";
+  static const serchIcon = "${_icons}serch_icon.svg";
   static const warnIcon = "${_icons}warn_icon.svg";
   static const userIcon = "${_icons}user_icon.svg";
   static const lockIcon2 = "${_icons}lock.svg";

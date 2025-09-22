@@ -12,6 +12,7 @@ class Profile {
   final String? website;
   final String? lastSeen; // Added last_seen field
   final bool? is_following;
+  final bool? isOnline;
 
   Profile({
     this.username,
@@ -26,6 +27,7 @@ class Profile {
     this.gender,
     this.website,
     this.is_following,
+    this.isOnline,
     this.lastSeen, // Added last_seen field
   });
 
@@ -45,6 +47,7 @@ class Profile {
     gender: json['gender'] as int?,
     website: json['website'] as String?,
     is_following: json['is_following'] as bool?,
+    isOnline: json['isOnline'] as bool?,
     lastSeen: json['last_seen'] as String?, // Added last_seen field
   );
 
@@ -61,6 +64,7 @@ class Profile {
     'gender': gender,
     'website': website,
     'is_following': is_following,
+    'isOnline': isOnline,
     'last_seen': lastSeen, // Added last_seen field
   };
 

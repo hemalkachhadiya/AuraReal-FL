@@ -105,7 +105,6 @@ class AuthApis {
           String fcmToken = PrefService.getString(PrefKeys.fcmToken);
           // 🔹 Call update API
 
-
           await PrefService.set(
             PrefKeys.userData,
             jsonEncode(responseBody['data']),
@@ -277,7 +276,6 @@ class AuthApis {
       if (response.statusCode == 200 || response.statusCode == 201) {
         print("Res Body Data ${responseBody['profile']}");
         if (responseBody['profile'] != null && responseBody != null) {
-          showSuccessToast(responseBody['message'] ?? 'Login successful');
           return Profile.fromJson(responseBody['profile']);
         }
       }

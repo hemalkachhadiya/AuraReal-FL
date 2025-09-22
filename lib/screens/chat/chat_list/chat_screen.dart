@@ -108,7 +108,7 @@ class _ChatScreenState extends State<ChatScreen> {
               right: 15,
             ),
             child: SvgAsset(
-              imagePath: "assets/images/serch_icon.svg",
+              imagePath: AssetRes.serchIcon,
               height: 20,
               width: 20,
             ),

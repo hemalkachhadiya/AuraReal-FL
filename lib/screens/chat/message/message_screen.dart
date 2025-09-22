@@ -1,4 +1,5 @@
 import 'package:aura_real/aura_real.dart';
+import 'package:emoji_keyboard_flutter/emoji_keyboard_flutter.dart';
 
 class MessageScreen extends StatefulWidget {
   final ChatUser chatUser;
@@ -15,10 +16,21 @@ class _MessageScreenState extends State<MessageScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
+  bool _isEmojiVisible = false;
+  final FocusNode _focusNode = FocusNode();
+
   @override
   void initState() {
     super.initState();
     connectSocketFun(); // ✅ connect when screen opens
+
+    _focusNode.addListener(() {
+      if (_focusNode.hasFocus && _isEmojiVisible) {
+        setState(() {
+          _isEmojiVisible = false;
+        });
+      }
+    });
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _scrollToBottom();
@@ -29,6 +41,7 @@ class _MessageScreenState extends State<MessageScreen> {
   void dispose() {
     _messageController.dispose();
     _scrollController.dispose();
+    _focusNode.dispose();
     disconnectSocketFun(); // ✅ disconnect when leaving
     super.dispose();
   }
@@ -104,66 +117,138 @@ class _MessageScreenState extends State<MessageScreen> {
       ),
       actionsPadding: EdgeInsets.zero,
       titleSpacing: 0,
-
-      title: Row(
-        children: [
-          Stack(
+      title: Consumer<MessageProvider>(
+        builder: (context, messageProvider, child) {
+          final user = messageProvider.currentUser ?? widget.chatUser;
+          return Row(
             children: [
-              CircleAvatar(
-                radius: 20,
-                backgroundImage: NetworkImage(widget.chatUser.avatarUrl ?? ""),
-                backgroundColor: Colors.grey[300],
-              ),
-              // if (widget.chatUser.isOnline)
-              Positioned(
-                right: 0,
-                bottom: 0,
-                child: Container(
-                  width: 14,
-                  height: 14,
-                  decoration: BoxDecoration(
-                    color: Colors.green,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 2),
+              Stack(
+                children: [
+                  CircleAvatar(
+                    radius: 20,
+                    backgroundImage: NetworkImage(user.avatarUrl ?? ""),
+                    backgroundColor: Colors.grey[300],
                   ),
+                  if (user.isOnline)
+                    Positioned(
+                      right: 0,
+                      bottom: 0,
+                      child: Container(
+                        width: 14,
+                        height: 14,
+                        decoration: BoxDecoration(
+                          color: Colors.green,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 2),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      user.name ?? "",
+                      style: styleW700S20.copyWith(color: ColorRes.primaryColor),
+                    ),
+                    Text(
+                      user.isOnline ? "Online" : "Offline",
+                      style: TextStyle(
+                        color: user.isOnline ? Colors.green : Colors.grey,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  widget.chatUser.name ?? "",
-                  style: styleW700S20.copyWith(color: ColorRes.primaryColor),
-                ),
-                Text(
-                  widget.chatUser.isOnline ? 'Online' : 'Offline',
-                  style: TextStyle(
-                    color:
-                        !widget.chatUser.isOnline ? Colors.green : Colors.grey,
-                    fontSize: 12,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
+          );
+        },
       ),
-      // actions: [
-      //   IconButton(
-      //     icon: const Icon(Icons.videocam, color: Colors.blue),
-      //     onPressed: () {},
-      //   ),
-      //   IconButton(
-      //     icon: const Icon(Icons.call, color: Colors.blue),
-      //     onPressed: () {},
-      //   ),
-      // ],
     );
   }
+
+  // AppBar _buildAppBar(BuildContext context) {
+  //   return AppBar(
+  //     backgroundColor: Colors.white,
+  //     surfaceTintColor: ColorRes.white,
+  //     elevation: 0,
+  //     leading: Padding(
+  //       padding: const EdgeInsets.all(0),
+  //       child: IconButton(
+  //         icon: const Icon(
+  //           Icons.arrow_back_ios,
+  //           color: ColorRes.primaryColor,
+  //           size: 20,
+  //         ),
+  //         onPressed: () => Navigator.of(context).pop(),
+  //       ),
+  //     ),
+  //     actionsPadding: EdgeInsets.zero,
+  //     titleSpacing: 0,
+  //
+  //     title: Row(
+  //       children: [
+  //         Stack(
+  //           children: [
+  //             CircleAvatar(
+  //               radius: 20,
+  //               backgroundImage: NetworkImage(widget.chatUser.avatarUrl ?? ""),
+  //               backgroundColor: Colors.grey[300],
+  //             ),
+  //             // if (widget.chatUser.isOnline)
+  //             Positioned(
+  //               right: 0,
+  //               bottom: 0,
+  //               child: Container(
+  //                 width: 14,
+  //                 height: 14,
+  //                 decoration: BoxDecoration(
+  //                   color: Colors.green,
+  //                   shape: BoxShape.circle,
+  //                   border: Border.all(color: Colors.white, width: 2),
+  //                 ),
+  //               ),
+  //             ),
+  //           ],
+  //         ),
+  //         const SizedBox(width: 12),
+  //         Expanded(
+  //           child: Column(
+  //             crossAxisAlignment: CrossAxisAlignment.start,
+  //             children: [
+  //               Text(
+  //                 widget.chatUser.name ?? "",
+  //                 style: styleW700S20.copyWith(color: ColorRes.primaryColor),
+  //               ),
+  //               Text(
+  //                 "Offline",
+  //                 style: TextStyle(
+  //                   color:
+  //                       !widget.chatUser.isOnline ? Colors.green : Colors.grey,
+  //                   fontSize: 12,
+  //                 ),
+  //               ),
+  //             ],
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //     // actions: [
+  //     //   IconButton(
+  //     //     icon: const Icon(Icons.videocam, color: Colors.blue),
+  //     //     onPressed: () {},
+  //     //   ),
+  //     //   IconButton(
+  //     //     icon: const Icon(Icons.call, color: Colors.blue),
+  //     //     onPressed: () {},
+  //     //   ),
+  //     // ],
+  //   );
+  // }
 
   Widget _buildMessagesList(MessageProvider messageProvider) {
     return ListView.builder(
@@ -355,100 +440,278 @@ class _MessageScreenState extends State<MessageScreen> {
   }
 
   Widget _buildMessageInput(BuildContext context) {
-    return SafeArea(
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: const BoxDecoration(color: ColorRes.white),
-        child: Row(
-          children: [
-            Expanded(
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 15),
-                decoration: BoxDecoration(
-                  color: ColorRes.lightGrey2,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Row(
-                  children: [
-                    SvgAsset(
-                      imagePath: AssetRes.smileIcon,
-                      width: 18.pw,
-                      height: 18.ph,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Consumer<MessageProvider>(
-                        builder: (context, messageProvider, child) {
-                          return TextField(
-                            controller: _messageController,
-                            onChanged:
-                                (text) =>
-                                    messageProvider.updateMessageText(text),
-                            onSubmitted:
-                                (text) => _sendMessage(messageProvider),
-                            decoration: InputDecoration(
-                              hintText: context.l10n?.typeAMessage ?? "",
-                              hintStyle: TextStyle(fontSize: 12),
-                              border: InputBorder.none,
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 05,
-                                vertical: 05,
-                              ),
-                            ),
-                            maxLines: null,
-                            textCapitalization: TextCapitalization.sentences,
-                          );
-                        },
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    SvgAsset(
-                      imagePath: AssetRes.attachIcon,
-                      width: 18.pw,
-                      height: 18.ph,
-                    ),
-                    const SizedBox(width: 8),
-                    SvgAsset(
-                      imagePath: AssetRes.cameraIcon2,
-                      width: 18.pw,
-                      height: 18.ph,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(width: 14),
-            Consumer<MessageProvider>(
-              builder: (context, messageProvider, child) {
-                return GestureDetector(
-                  onTap:
-                      messageProvider.canSendMessage
-                          ? () => _sendMessage(messageProvider)
-                          : null,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // ✅ input bar
+        SafeArea(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: const BoxDecoration(color: ColorRes.white),
+            child: Row(
+              children: [
+                Expanded(
                   child: Container(
-                    width: 53,
-                    height: 53,
+                    padding: const EdgeInsets.symmetric(horizontal: 15),
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(28),
-                      color: ColorRes.primaryColor,
+                      color: ColorRes.lightGrey2,
+                      borderRadius: BorderRadius.circular(16),
                     ),
-                    child: Center(
-                      child: Icon(Icons.send, color: ColorRes.white) /*SvgAsset(
-                        imagePath: AssetRes.voiceIcon,
-                        color: ColorRes.white,
-                        height: 28.ph,
-                        width: 28.pw,
-                      )*/,
+                    child: Row(
+                      children: [
+                        InkWell(
+                          onTap: () {
+                            setState(() {
+                              _isEmojiVisible = !_isEmojiVisible;
+                            });
+
+                            if (_isEmojiVisible) {
+                              // Hide keyboard when emoji panel opens
+                              FocusScope.of(context).unfocus();
+                            } else {
+                              // Show keyboard when emoji panel closes
+                              FocusScope.of(context).requestFocus(_focusNode);
+                            }
+                          },
+                          child: SvgAsset(
+                            imagePath: AssetRes.smileIcon,
+                            width: 18.pw,
+                            height: 18.ph,
+                          ),
+                        ),
+
+                        const SizedBox(width: 8),
+
+                             Expanded(
+                              child: TextField(
+                                focusNode: _focusNode,
+                                controller: _messageController,
+                                onChanged: (text) {
+                                  context
+                                      .read<MessageProvider>()
+                                      .updateMessageText(text);
+
+                                  // hide emoji if typing starts
+                                  if (_isEmojiVisible) {
+                                    setState(() {
+                                      _isEmojiVisible = false;
+                                    });
+                                  }
+                                },
+                                decoration: InputDecoration(
+                                  hintText: "Type a message...",
+                                  border: InputBorder.none,
+                                  hintStyle: styleW400S12,
+                                  isDense: true,
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 5,
+                                    vertical: 5,
+                                  ),
+                                ),
+                                maxLines: null,
+                                textCapitalization:
+                                    TextCapitalization.sentences,
+                              ),
+                            )
+                            ,
+
+                        const SizedBox(width: 8),
+                        SvgAsset(
+                          imagePath: AssetRes.attachIcon,
+                          width: 18.pw,
+                          height: 18.ph,
+                        ),
+                        const SizedBox(width: 8),
+                        SvgAsset(
+                          imagePath: AssetRes.cameraIcon2,
+                          width: 18.pw,
+                          height: 18.ph,
+                        ),
+                      ],
                     ),
                   ),
-                );
-              },
+                ),
+                const SizedBox(width: 14),
+                Consumer<MessageProvider>(
+                  builder: (context, messageProvider, child) {
+                    return GestureDetector(
+                      onTap:
+                          messageProvider.canSendMessage
+                              ? () => _sendMessage(messageProvider)
+                              : null,
+                      child: Container(
+                        width: 53,
+                        height: 53,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(28),
+                          color: ColorRes.primaryColor,
+                        ),
+                        child: const Center(
+                          child: Icon(Icons.send, color: ColorRes.white),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ],
             ),
-          ],
+          ),
         ),
-      ),
+
+        // ✅ emoji picker shown separately
+        if (_isEmojiVisible)
+          Flexible(
+            child: SizedBox(
+              height: 350,
+              width: double.infinity,
+              child: EmojiKeyboard(
+                onEmojiChanged: (emoji) {
+                  final newText = _messageController.text + emoji;
+                  _messageController
+                    ..text = newText
+                    ..selection = TextSelection.fromPosition(
+                      TextPosition(offset: newText.length),
+                    );
+                  context.read<MessageProvider>().updateMessageText(newText);
+                },
+              ),
+            ),
+          ),
+      ],
     );
   }
+
+  // Widget _buildMessageInput(BuildContext context) {
+  //   return SafeArea(
+  //     child: Container(
+  //       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+  //       decoration: const BoxDecoration(color: ColorRes.white),
+  //       child: Row(
+  //         children: [
+  //           Expanded(
+  //             child: Container(
+  //               padding: const EdgeInsets.symmetric(horizontal: 15),
+  //               decoration: BoxDecoration(
+  //                 color: ColorRes.lightGrey2,
+  //                 borderRadius: BorderRadius.circular(16),
+  //               ),
+  //               child: Row(
+  //                 children: [
+  //                   InkWell(
+  //                     onTap: () {
+  //                       setState(() {
+  //                         _isEmojiVisible = !_isEmojiVisible;
+  //                       });
+  //                       if (_isEmojiVisible) {
+  //                         FocusScope.of(context).unfocus(); // hide keyboard
+  //                       } else {
+  //                         FocusScope.of(context).requestFocus(_focusNode);
+  //                       }
+  //                     },
+  //                     child: SvgAsset(
+  //                       imagePath: AssetRes.smileIcon,
+  //                       width: 18.pw,
+  //                       height: 18.ph,
+  //                     ),
+  //                   ),
+  //                   _isEmojiVisible
+  //                       ? Expanded(
+  //                         child: SizedBox(
+  //                           width: double.infinity,
+  //                           child: EmojiKeyboard(
+  //                             onEmojiChanged: (emoji) {
+  //                               final newText = _messageController.text + emoji;
+  //                               _messageController
+  //                                 ..text = newText
+  //                                 ..selection = TextSelection.fromPosition(
+  //                                   TextPosition(offset: newText.length),
+  //                                 );
+  //
+  //                               // ✅ sync with provider
+  //                               context
+  //                                   .read<MessageProvider>()
+  //                                   .updateMessageText(newText);
+  //                             },
+  //                           ),
+  //                         ),
+  //                       )
+  //                       : const SizedBox.shrink(),
+  //
+  //                   const SizedBox(width: 8),
+  //                   Expanded(
+  //                     child: Consumer<MessageProvider>(
+  //                       builder: (context, messageProvider, child) {
+  //                         return TextField(
+  //                           focusNode: _focusNode,
+  //                           controller: _messageController,
+  //                           onChanged:
+  //                               (text) =>
+  //                                   messageProvider.updateMessageText(text),
+  //                           onSubmitted:
+  //                               (text) => _sendMessage(messageProvider),
+  //                           decoration: InputDecoration(
+  //                             hintText: context.l10n?.typeAMessage ?? "",
+  //                             hintStyle: TextStyle(fontSize: 12),
+  //                             border: InputBorder.none,
+  //                             contentPadding: const EdgeInsets.symmetric(
+  //                               horizontal: 05,
+  //                               vertical: 05,
+  //                             ),
+  //                           ),
+  //                           maxLines: null,
+  //                           textCapitalization: TextCapitalization.sentences,
+  //                         );
+  //                       },
+  //                     ),
+  //                   ),
+  //                   const SizedBox(width: 8),
+  //                   SvgAsset(
+  //                     imagePath: AssetRes.attachIcon,
+  //                     width: 18.pw,
+  //                     height: 18.ph,
+  //                   ),
+  //                   const SizedBox(width: 8),
+  //                   SvgAsset(
+  //                     imagePath: AssetRes.cameraIcon2,
+  //                     width: 18.pw,
+  //                     height: 18.ph,
+  //                   ),
+  //                 ],
+  //               ),
+  //             ),
+  //           ),
+  //           const SizedBox(width: 14),
+  //           Consumer<MessageProvider>(
+  //             builder: (context, messageProvider, child) {
+  //               return GestureDetector(
+  //                 onTap:
+  //                     messageProvider.canSendMessage
+  //                         ? () => _sendMessage(messageProvider)
+  //                         : null,
+  //                 child: Container(
+  //                   width: 53,
+  //                   height: 53,
+  //                   decoration: BoxDecoration(
+  //                     borderRadius: BorderRadius.circular(28),
+  //                     color: ColorRes.primaryColor,
+  //                   ),
+  //                   child: Center(
+  //                     child: Icon(Icons.send, color: ColorRes.white) /*SvgAsset(
+  //                       imagePath: AssetRes.voiceIcon,
+  //                       color: ColorRes.white,
+  //                       height: 28.ph,
+  //                       width: 28.pw,
+  //                     )*/,
+  //                   ),
+  //                 ),
+  //               );
+  //             },
+  //           ),
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
 
   void _sendMessage(MessageProvider messageProvider) {
     messageProvider.sendMessage(
