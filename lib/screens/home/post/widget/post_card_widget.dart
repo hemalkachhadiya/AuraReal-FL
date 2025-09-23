@@ -141,6 +141,67 @@ class _PostCardState extends State<PostCard> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               ///Rate Section
+              // InkWell(
+              //   onTap: () async {
+              //     if (widget.loading == true) return; // Prevent if loading
+              //     print('Rating InkWell tapped - opening dialog');
+              //     final selectedRating = await showRatingDialog(
+              //       context,
+              //       widget.post,
+              //       loading: widget.loading,
+              //
+              //       onSubmit: () {
+              //         print('Submit callback executed from PostCard');
+              //         // Add API call here if needed
+              //       },
+              //     );
+              //     print('Dialog closed with rating: $selectedRating');
+              //     if (selectedRating != null) {
+              //       setState(() {
+              //         _localRating = selectedRating; // Optimistic local update
+              //       });
+              //       if (widget.onRatingSubmitted != null) {
+              //         widget.onRatingSubmitted!(selectedRating);
+              //       }
+              //     }
+              //   },
+              //   child: Column(
+              //     mainAxisAlignment: MainAxisAlignment.start,
+              //     crossAxisAlignment: CrossAxisAlignment.start,
+              //     children: [
+              //       Row(
+              //         children: [
+              //           StarRatingWidget(
+              //             rating: _localRating.toStarRating(),
+              //             // Use local for immediate feedback
+              //             size: 20,
+              //             activeColor: ColorRes.primaryColor,
+              //             inactiveColor:
+              //                 ColorRes.primaryColor, // Faded inactive
+              //           ),
+              //           10.pw.spaceHorizontal,
+              //           Text(
+              //             widget.post.postRating.toString(),
+              //             style: styleW700S16,
+              //           ),
+              //         ],
+              //       ),
+              //
+              //       10.ph.spaceVertical,
+              //       if (_localRating == 0)
+              //         Align(
+              //           alignment: Alignment.topLeft,
+              //           child: Text(
+              //             context.l10n?.rateThisPost ?? "Rate this post",
+              //             style: styleW400S13.copyWith(
+              //               color: ColorRes.primaryColor,
+              //             ),
+              //             textAlign: TextAlign.start,
+              //           ),
+              //         ),
+              //     ],
+              //   ),
+              // ),
               InkWell(
                 onTap: () async {
                   if (widget.loading == true) return; // Prevent if loading
@@ -149,7 +210,6 @@ class _PostCardState extends State<PostCard> {
                     context,
                     widget.post,
                     loading: widget.loading,
-
                     onSubmit: () {
                       print('Submit callback executed from PostCard');
                       // Add API call here if needed
@@ -172,21 +232,18 @@ class _PostCardState extends State<PostCard> {
                     Row(
                       children: [
                         StarRatingWidget(
-                          rating: _localRating.toStarRating(),
-                          // Use local for immediate feedback
+                          rating: _localRating, // Use _localRating directly, not toStarRating()
                           size: 20,
                           activeColor: ColorRes.primaryColor,
-                          inactiveColor:
-                              ColorRes.primaryColor, // Faded inactive
+                          inactiveColor: ColorRes.primaryColor, // Faded inactive
                         ),
                         10.pw.spaceHorizontal,
                         Text(
-                          widget.post.postRating.toString(),
+                          _localRating.toStringAsFixed(1), // Show local rating value
                           style: styleW700S16,
                         ),
                       ],
                     ),
-
                     10.ph.spaceVertical,
                     if (_localRating == 0)
                       Align(

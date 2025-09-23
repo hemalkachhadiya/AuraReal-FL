@@ -29,6 +29,7 @@ class PostsProvider extends ChangeNotifier {
   int pageSize = 20;
   bool isApiCalling = false;
   bool loader = false;
+  bool rateLoader = false;
   bool refreshLoader = false;
   bool _disposed = false;
 
@@ -66,7 +67,6 @@ class PostsProvider extends ChangeNotifier {
     bool showLoader = false,
     bool resetData = false,
     String? searchQuery, // <-- Added search param
-
   }) async {
     // Avoid calling API if no pagination model exists and no reset is requested
     if (paginationModel == null && !resetData) return;
@@ -186,43 +186,181 @@ class PostsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  ///RateAPI
+  /// Helper method to update post rating locally
+  void _updatePostRatingLocally(String? postId, String? newRating) {
+    if (postId == null || newRating == null) return;
+
+    try {
+      final ratingValue = double.tryParse(newRating) ?? 0.0;
+
+      // Update the post in paginationModel list
+      if (paginationModel?.list != null) {
+        final postIndex = paginationModel!.list!.indexWhere(
+          (post) => post.id == postId,
+        );
+        if (postIndex != -1) {
+          final currentPost = paginationModel!.list![postIndex];
+
+          // Create updated post with new rating
+          final updatedPost = currentPost.copyWith(
+            postRating: ratingValue,
+            // Update other rating-related fields if needed
+            // userRating: ratingValue,
+            // averageRating: calculateNewAverage(currentPost, ratingValue),
+            // totalRatings: currentPost.totalRatings + 1,
+          );
+
+          // Replace the post in paginationModel list
+          paginationModel!.list![postIndex] = updatedPost;
+
+          print(
+            "Updated post rating locally for postId: $postId to rating: $ratingValue",
+          );
+        }
+      }
+
+      // Also update in posts list if it exists and is being used
+      final postsIndex = posts.indexWhere((post) => post.id == postId);
+      if (postsIndex != -1) {
+        final currentPost = posts[postsIndex];
+        final updatedPost = currentPost.copyWith(postRating: ratingValue);
+        posts[postsIndex] = updatedPost;
+      }
+
+      // Notify listeners to update UI
+      _safeNotifyListeners();
+    } catch (e) {
+      print('Error updating post rating locally: $e');
+      // Handle error - maybe show a message or revert changes
+    }
+  }
+
+  /// Updated Rating APIs with local updates
+  ///RateAPI - Update existing rating
   Future<void> updateRatePostAPI(
     BuildContext context, {
     String? postId,
     String? rating,
   }) async {
     if (userData == null || userData?.id == null) return;
-    loader = true;
-    notifyListeners();
-    final result = await PostAPI.updateRatePostAPI(
-      postId: postId.toString(),
-      rating: rating.toString(),
+
+    // Store original rating for rollback if needed
+    final originalPost = paginationModel?.list?.firstWhere(
+      (post) => post.id == postId,
+      orElse: () => PostModel(),
     );
-    await getAllPostListAPI(resetData: true, showLoader: true);
-    if (result) {}
-    loader = false;
-    notifyListeners();
+    final originalRating = originalPost?.postRating;
+
+    // Update UI immediately for better UX
+    _updatePostRatingLocally(postId, rating);
+
+    try {
+      rateLoader = true;
+      notifyListeners();
+
+      final result = await PostAPI.updateRatePostAPI(
+        postId: postId.toString(),
+        rating: rating.toString(),
+      );
+
+      if (!result) {
+        // Revert changes if API failed
+        if (originalRating != null) {
+          _updatePostRatingLocally(postId, originalRating.toString());
+        }
+      }
+    } catch (e) {
+      // Revert changes on error
+      if (originalRating != null) {
+        _updatePostRatingLocally(postId, originalRating.toString());
+      }
+      showCatchToast("Error updating rating: ${e.toString()}", null);
+    } finally {
+      rateLoader = false;
+      notifyListeners();
+    }
   }
 
-  ///New Rate API
+  ///New Rate API - Add new rating
   Future<void> newRatePostAPI(
     BuildContext context, {
     String? postId,
     String? rating,
   }) async {
     if (userData == null || userData?.id == null) return;
-    loader = true;
-    notifyListeners();
-    final result = await PostAPI.newRatePostAPI(
-      postId: postId.toString(),
-      newRating: rating.toString(),
+
+    // Store original rating for rollback if needed
+    final originalPost = paginationModel?.list?.firstWhere(
+      (post) => post.id == postId,
+      orElse: () => PostModel(),
     );
-    await getAllPostListAPI(resetData: true, showLoader: true);
-    if (result) {}
-    loader = false;
-    notifyListeners();
+    final originalRating =
+        originalPost?.postRating ?? 0.0; // Store original rating
+
+    // Update UI immediately for better UX
+    _updatePostRatingLocally(postId, rating);
+
+    try {
+      rateLoader = true;
+      notifyListeners();
+
+      final result = await PostAPI.newRatePostAPI(
+        postId: postId.toString(),
+        newRating: rating.toString(),
+      );
+
+      if (!result) {
+        // Revert changes if API failed - use original rating instead of 0.0
+        _updatePostRatingLocally(postId, originalRating.toString());
+        // showCatchToast(result, null);
+      }
+    } catch (e) {
+      // Revert changes on error - use original rating instead of 0.0
+      _updatePostRatingLocally(postId, originalRating.toString());
+      showCatchToast("Error adding rating: ${e.toString()}", null);
+    } finally {
+      rateLoader = false;
+      notifyListeners();
+    }
   }
+
+  // ///RateAPI
+  // Future<void> updateRatePostAPI(
+  //   BuildContext context, {
+  //   String? postId,
+  //   String? rating,
+  // }) async {
+  //   if (userData == null || userData?.id == null) return;
+  //   loader = true;
+  //   notifyListeners();
+  //   final result = await PostAPI.updateRatePostAPI(
+  //     postId: postId.toString(),
+  //     rating: rating.toString(),
+  //   );
+  //   await getAllPostListAPI(resetData: true, showLoader: true);
+  //   if (result) {}
+  //   loader = false;
+  //   notifyListeners();
+  // }
+  //
+  // ///New Rate API
+  // Future<void> newRatePostAPI(
+  //   BuildContext context, {
+  //   String? postId,
+  //   String? rating,
+  // }) async {
+  //   if (userData == null || userData?.id == null) return;
+  //   loader = true;
+  //   notifyListeners();
+  //   final result = await PostAPI.newRatePostAPI(
+  //     postId: postId.toString(),
+  //     newRating: rating.toString(),
+  //   );
+  //   await getAllPostListAPI(resetData: true, showLoader: true);
+  //   if (result) {}
+  //   loader = false;
+  //   notifyListeners();
+  // }
 
   ///Comment Post API
   Future<void> commentPostAPI(

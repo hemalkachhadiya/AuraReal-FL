@@ -127,7 +127,8 @@ class PostAPI {
       final queryParams = {
         "page": page,
         "page_size": pageSize,
-        if (search != null && search.isNotEmpty) "search": search, // Add search if provided
+        if (search != null && search.isNotEmpty) "search": search,
+        // Add search if provided
       };
       final response = await ApiService.getApi(
         url: EndPoints.getAllPostAPI,
@@ -228,6 +229,7 @@ class PostAPI {
         showSuccessToast(model.message ?? "Message Form Register API");
         return true;
       } else {
+        showSuccessToast(model.message ?? "Message Form Register API");
         return false;
       }
     } catch (exception, stack) {
