@@ -8,10 +8,11 @@ class DashboardProvider extends ChangeNotifier {
   bool loader = false;
 
   Future<void> init() async {
+    getFCMToken();
     try {
       loader = true;
       notifyListeners();
-      requestCameraPermission(navigatorKey.currentState!.context,);
+      requestCameraPermission(navigatorKey.currentState!.context);
       // Get location first
       await GetLocationService.getCurrentLocation(
         navigatorKey.currentState!.context,
@@ -37,8 +38,6 @@ class DashboardProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-
-
   // Optional: Get current tab name
   String get currentTabName {
     switch (_selectedIndex) {
@@ -54,7 +53,6 @@ class DashboardProvider extends ChangeNotifier {
         return 'Home';
     }
   }
-
 
   // Add your API call method
   Future<void> _callUpdateApi() async {
@@ -84,8 +82,6 @@ class DashboardProvider extends ChangeNotifier {
       }
     } catch (e) {
       print('Error calling update API: $e');
-
-
     }
   }
 }

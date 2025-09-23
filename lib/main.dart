@@ -1,14 +1,16 @@
 import 'package:aura_real/aura_real.dart';
+import 'package:aura_real/services/notification_service.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-   FirebaseOptions firebaseOptions;
+  FirebaseOptions firebaseOptions;
 
   if (Platform.isIOS) {
     firebaseOptions = const FirebaseOptions(
       apiKey: 'AIzaSyApNVyfagHrb5MUNhOLwKIV5Swh4JSfy8g',
-      appId: '1:382221381003:ios-:af9c5c86b94cf26ca1938e',
+      appId: '1:382221381003:ios:61d0c8c35658a972a1938e',
       messagingSenderId: '382221381003',
       projectId: 'aurareal-a2ca3',
     );
@@ -21,6 +23,31 @@ Future<void> main() async {
       projectId: 'aurareal-a2ca3',
       // projectId: 'com.smarttechnica.aura.real.social.media',
     );
+    initializeNotifications();
+    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      debugPrint('Got a message whilst in the foreground!');
+      String payload = jsonEncode(message.data);
+
+      debugPrint("${payload}");
+
+      if (message.notification != null) {
+        // if (AppState.screenStatus == "ScreenShow" &&
+        //     AppState.currentChatUserId == message.data['chatRoomId']) {
+        //   debugPrint("🔕 Don't show notification - already in chat with sender");
+        // } else {
+        String payload = jsonEncode(message.data);
+        debugPrint('🔥 Showing notification with payload: $payload');
+        RemoteNotification notification = message.notification!;
+        showNotification(
+          title: notification.title ?? '',
+          body: notification.body ?? '',
+          payload: payload,
+        );
+        // }
+      }
+    });
     debugPrint("Firebase connect Andoid");
     debugPrint("test");
   }
@@ -37,4 +64,21 @@ Future<void> main() async {
   }
 
   runApp(AppView());
+}
+
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  String payload = jsonEncode(message.data);
+
+  if (message.notification != null) {
+    String payload = jsonEncode(message.data);
+    debugPrint('🔥 Showing notification with payload: $payload');
+    RemoteNotification notification = message.notification!;
+    // showNotification(
+    //   title: notification.title ?? '',
+    //   body: notification.body ?? '',
+    //   payload: payload,
+    // );
+  }
+  debugPrint('👉 Full message: ${message.toMap()}'); // Logs everything
+  debugPrint('Handling background message: ${message.data}');
 }

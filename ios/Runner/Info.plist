@@ -26,6 +26,13 @@
     <string>4</string>
     <key>ITSAppUsesNonExemptEncryption</key>
     <false/>
+    <key>FirebaseAppDelegateProxyEnabled</key>
+<true/>
+<key>UIBackgroundModes</key>
+<array>
+    <string>fetch</string>
+    <string>remote-notification</string>
+</array>
     <key>LSRequiresIPhoneOS</key>
     <true/>
     <key>NSAppTransportSecurity</key>
@@ -65,5 +72,7 @@
         <string>UIInterfaceOrientationLandscapeLeft</string>
         <string>UIInterfaceOrientationLandscapeRight</string>
     </array>
+    <key>aps-environment</key>
+	<string>development</string>
 </dict>
 </plist>

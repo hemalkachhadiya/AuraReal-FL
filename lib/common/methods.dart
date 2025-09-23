@@ -418,6 +418,7 @@ getFCMToken() async {
         settings.authorizationStatus == AuthorizationStatus.provisional) {
       String? token = await FirebaseMessaging.instance.getToken();
       if (token != null) {
+        debugPrint("FCM KEY:- ${token}");
         await PrefService.set(PrefKeys.fcmToken, token);
       }
     }
