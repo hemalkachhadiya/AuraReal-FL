@@ -37,15 +37,16 @@ class GetAllMessageModel {
       message: json['message'] as String?,
       messageType: json['messageType'] as String?,
       mediaUrl: json['mediaUrl'] as String?,
-      readBy: (json['readBy'] as List<dynamic>?)
-          ?.map((e) => e as String)
-          .toList(),
-      createdAt: json['createdAt'] != null
-          ? DateTime.tryParse(json['createdAt'])
-          : null,
-      updatedAt: json['updatedAt'] != null
-          ? DateTime.tryParse(json['updatedAt'])
-          : null,
+      readBy:
+          (json['readBy'] as List<dynamic>?)?.map((e) => e as String).toList(),
+      createdAt:
+          json['created_at'] != null
+              ? DateTime.tryParse(json['created_at'])
+              : null,
+      updatedAt:
+          json['updatedAt'] != null
+              ? DateTime.tryParse(json['updatedAt'])
+              : null,
       v: json['__v'] as int?,
     );
   }
@@ -70,7 +71,7 @@ class GetAllMessageModel {
       'messageType': messageType,
       'mediaUrl': mediaUrl,
       'readBy': readBy,
-      'createdAt': createdAt?.toIso8601String(),
+      'created_at': createdAt?.toIso8601String(),
       'updatedAt': updatedAt?.toIso8601String(),
       '__v': v,
     };
@@ -78,5 +79,6 @@ class GetAllMessageModel {
 
   // Convenience getters to get just the IDs (for backward compatibility)
   String? get senderId => sender?.id;
+
   String? get receiverId => receiver?.id;
 }

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:aura_real/aura_real.dart';
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart'; // Add dependency: flutter pub add uuid
@@ -62,7 +64,13 @@ class ChatUser {
 }
 
 class MessageProvider extends ChangeNotifier {
-  MessageProvider();
+  Timer? _timeUpdater;
+
+  MessageProvider() {
+    _timeUpdater = Timer.periodic(const Duration(minutes: 1), (_) {
+      notifyListeners(); // UI will rebuild and call formatMessageTime again
+    });
+  }
 
   List<Message> _messages = [];
   ChatUser? _currentUser;
@@ -76,13 +84,21 @@ class MessageProvider extends ChangeNotifier {
 
   // Getters
   List<Message> get messages => _messages;
+
   ChatUser? get currentUser => _currentUser;
+
   bool get isLoading => _isLoading;
+
   bool get isTyping => _isTyping;
+
   String get messageText => _messageText;
+
   String? get chatRoomId => _chatRoomId;
+
   bool get loader => _loader;
+
   File? get selectedMedia => _selectedMedia;
+
   VideoPlayerController? get videoController => _videoController;
 
   Future<void> initializeChat({
@@ -145,7 +161,9 @@ class MessageProvider extends ChangeNotifier {
 
   Future<void> pickMedia() async {
     try {
-      final File? mediaFile = await openMediaPicker(navigatorKey.currentContext!);
+      final File? mediaFile = await openMediaPicker(
+        navigatorKey.currentContext!,
+      );
       if (mediaFile != null) {
         final mimeType = lookupMimeType(mediaFile.path);
         if (mimeType != null && mimeType.startsWith('video/')) {
@@ -164,9 +182,9 @@ class MessageProvider extends ChangeNotifier {
       }
     } catch (e) {
       debugPrint('❌ Error picking media: $e');
-      ScaffoldMessenger.of(navigatorKey.currentContext!).showSnackBar(
-        SnackBar(content: Text("Failed to pick media: $e")),
-      );
+      ScaffoldMessenger.of(
+        navigatorKey.currentContext!,
+      ).showSnackBar(SnackBar(content: Text("Failed to pick media: $e")));
     }
   }
 
@@ -182,27 +200,29 @@ class MessageProvider extends ChangeNotifier {
     try {
       final response = await ChatApis.getAllMessages(chatRoomId: chatRoomId);
       if (response != null && response.data != null) {
-        _messages = response.data!
-            .map(
-              (GetAllMessageModel msg) => Message(
-            id: msg.id ?? const Uuid().v4(),
-            text: msg.message ?? "",
-            timestamp: msg.createdAt ?? DateTime.now(),
-            isFromMe: msg.sender?.id == userData?.id,
-            status: (msg.readBy?.contains(userData?.id) ?? false)
-                ? MessageStatus.read
-                : MessageStatus.sent,
-          ),
-        )
-            .toList();
+        _messages =
+            response.data!
+                .map(
+                  (GetAllMessageModel msg) => Message(
+                    id: msg.id ?? const Uuid().v4(),
+                    text: msg.message ?? "",
+                    timestamp: msg.createdAt ?? DateTime.now(),
+                    isFromMe: msg.sender?.id == userData?.id,
+                    status:
+                        (msg.readBy?.contains(userData?.id) ?? false)
+                            ? MessageStatus.read
+                            : MessageStatus.sent,
+                  ),
+                )
+                .toList();
       } else {
         _messages = [];
       }
     } catch (e) {
       debugPrint("❌ Error fetching messages: $e");
-      ScaffoldMessenger.of(navigatorKey.currentContext!).showSnackBar(
-        SnackBar(content: Text("Failed to load messages: $e")),
-      );
+      ScaffoldMessenger.of(
+        navigatorKey.currentContext!,
+      ).showSnackBar(SnackBar(content: Text("Failed to load messages: $e")));
     }
 
     _isLoading = false;
@@ -217,27 +237,34 @@ class MessageProvider extends ChangeNotifier {
         receiverId == null ||
         receiverId.isEmpty) {
       debugPrint(
-          "❌ Cannot send message: text=$_messageText, roomId=$_chatRoomId, senderId=${userData?.id}, receiverId=$receiverId");
+        "❌ Cannot send message: text=$_messageText, roomId=$_chatRoomId, senderId=${userData?.id}, receiverId=$receiverId",
+      );
       ScaffoldMessenger.of(navigatorKey.currentContext!).showSnackBar(
         const SnackBar(content: Text("Error: Invalid message or user data")),
       );
       return;
     }
 
+    final currentTime = DateTime.now();
     final newMessage = Message(
-      id: const Uuid().v4(), // Use UUID for unique ID
+      id: const Uuid().v4(),
       text: _messageText.trim(),
-      timestamp: DateTime.now(),
+      timestamp: currentTime,
+      // Use current local time
       isFromMe: true,
       status: MessageStatus.sending,
     );
 
-    _messages.add(newMessage);
+    // _messages.add(newMessage); // Add the message immediately to UI
     notifyListeners();
 
-    debugPrint("📤 Sending message: ID=${newMessage.id}, text=${newMessage.text}");
+    debugPrint("📤 Sending message at: $currentTime");
+    debugPrint(
+      "📤 Message details: ID=${newMessage.id}, text=${newMessage.text}",
+    );
 
-    if (socketIoHelper.socketApp == null || !socketIoHelper.socketApp!.connected) {
+    if (socketIoHelper.socketApp == null ||
+        !socketIoHelper.socketApp!.connected) {
       debugPrint("❌ Socket not connected, marking message as failed");
       _updateMessageStatus(newMessage.id, MessageStatus.failed);
       ScaffoldMessenger.of(navigatorKey.currentContext!).showSnackBar(
@@ -254,7 +281,7 @@ class MessageProvider extends ChangeNotifier {
       senderId: userData!.id!,
     );
 
-    // Listen for server acknowledgment (if supported by your server)
+    // Listen for server acknowledgment
     socketIoHelper.socketApp!.once("messageSent", (data) {
       debugPrint("✅ Server acknowledged message: $data");
       _updateMessageStatus(newMessage.id, MessageStatus.sent);
@@ -263,14 +290,15 @@ class MessageProvider extends ChangeNotifier {
     socketIoHelper.socketApp!.once("error", (error) {
       debugPrint("❌ Server error on sendMessage: $error");
       _updateMessageStatus(newMessage.id, MessageStatus.failed);
-      ScaffoldMessenger.of(navigatorKey.currentContext!).showSnackBar(
-        SnackBar(content: Text("Failed to send message: $error")),
-      );
+      ScaffoldMessenger.of(
+        navigatorKey.currentContext!,
+      ).showSnackBar(SnackBar(content: Text("Failed to send message: $error")));
     });
 
     _messageText = '';
     notifyListeners();
   }
+
 
   void _updateMessageStatus(String messageId, MessageStatus status) {
     final index = _messages.indexWhere((m) => m.id == messageId);
@@ -283,10 +311,21 @@ class MessageProvider extends ChangeNotifier {
   void handleNewMessage(dynamic data) {
     debugPrint("📥 Handling new message in provider: $data");
     try {
+      // Debug timestamp parsing
+      final timestampString = data["created_at"] ?? "";
+      final parsedTimestamp = DateTime.tryParse(timestampString);
+      final currentTime = DateTime.now();
+
+      debugPrint("🕒 Raw timestamp: $timestampString");
+      debugPrint("🕒 Parsed timestamp: $parsedTimestamp");
+      debugPrint("🕒 Current time: $currentTime");
+      debugPrint("🕒 Timezone offset: ${currentTime.timeZoneOffset}");
+
       final msg = Message(
         id: data["_id"] ?? const Uuid().v4(),
         text: data["message"] ?? "",
-        timestamp: DateTime.tryParse(data["createdAt"] ?? "") ?? DateTime.now(),
+        timestamp: parsedTimestamp ?? currentTime,
+        // Use current time as fallback
         isFromMe: data["senderId"] == userData?.id,
         status: MessageStatus.sent,
       );
@@ -295,15 +334,17 @@ class MessageProvider extends ChangeNotifier {
       if (!exists) {
         _messages.add(msg);
         notifyListeners();
-        debugPrint("✅ New message added to UI");
+        debugPrint(
+          "✅ New message added to UI with timestamp: ${msg.timestamp}",
+        );
       } else {
         debugPrint("⚠️ Message already exists, skipping");
       }
     } catch (e) {
       debugPrint("❌ Error handling new message: $e");
-      ScaffoldMessenger.of(navigatorKey.currentContext!).showSnackBar(
-        SnackBar(content: Text("Error processing message: $e")),
-      );
+      ScaffoldMessenger.of(
+        navigatorKey.currentContext!,
+      ).showSnackBar(SnackBar(content: Text("Error processing message: $e")));
     }
   }
 
@@ -372,10 +413,20 @@ class MessageProvider extends ChangeNotifier {
     );
 
     if (messageDate == today) {
-      final hour = timestamp.hour % 12 == 0 ? 12 : timestamp.hour % 12;
+      // Use 24-hour format to avoid AM/PM confusion
+      final hour = timestamp.hour;
       final minute = timestamp.minute.toString().padLeft(2, '0');
-      final period = timestamp.hour >= 12 ? 'PM' : 'AM';
-      return "$hour:$minute $period";
+
+      // Convert to 12-hour format properly
+      if (hour == 0) {
+        return "12:$minute AM";
+      } else if (hour < 12) {
+        return "$hour:$minute AM";
+      } else if (hour == 12) {
+        return "12:$minute PM";
+      } else {
+        return "${hour - 12}:$minute PM";
+      }
     }
 
     if (messageDate == yesterday) {
@@ -417,6 +468,7 @@ class MessageProvider extends ChangeNotifier {
 
   @override
   void dispose() {
+    _timeUpdater?.cancel();
     _videoController?.dispose();
     socketIoHelper.disconnectSocket();
     super.dispose();

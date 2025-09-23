@@ -53,9 +53,9 @@ class _MessageScreenState extends State<MessageScreen> {
 
     if (widget.chatUser.id == null || widget.chatUser.id!.isEmpty) {
       debugPrint("❌ Invalid chat user ID: ${widget.chatUser.id}");
-      ScaffoldMessenger.of(navigatorKey.currentContext!).showSnackBar(
-        const SnackBar(content: Text("Error: Invalid chat user")),
-      );
+      ScaffoldMessenger.of(
+        navigatorKey.currentContext!,
+      ).showSnackBar(const SnackBar(content: Text("Error: Invalid chat user")));
       Navigator.of(navigatorKey.currentContext!).pop();
       return;
     }
@@ -68,7 +68,9 @@ class _MessageScreenState extends State<MessageScreen> {
     // Force scroll to bottom after messages are loaded
     if (mounted) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (_scrollController.hasClients && _messageProvider != null && !_messageProvider!.isLoading) {
+        if (_scrollController.hasClients &&
+            _messageProvider != null &&
+            !_messageProvider!.isLoading) {
           _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
           debugPrint("📜 Scrolled to bottom on screen entry");
         }
@@ -99,32 +101,45 @@ class _MessageScreenState extends State<MessageScreen> {
   Widget build(BuildContext context) {
     final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
 
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: _buildAppBar(context),
-      body: Column(
-        children: [
-          Expanded(
-            child: Consumer<MessageProvider>(
-              builder: (context, messageProvider, child) {
-                if (messageProvider.isLoading) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                // Trigger scroll to bottom when messages are first loaded
-                if (messageProvider.messages.isNotEmpty && _isUserAtBottom) {
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    if (_scrollController.hasClients) {
-                      _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
-                    }
-                  });
-                }
-                return _buildMessagesList(messageProvider);
-              },
+    return GestureDetector(
+      onTap: () {
+        // ✅ Hide keyboard + emoji picker on outside tap
+        FocusScope.of(context).unfocus();
+        if (_isEmojiVisible) {
+          setState(() {
+            _isEmojiVisible = false;
+          });
+        }
+      },
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        appBar: _buildAppBar(context),
+        body: Column(
+          children: [
+            Expanded(
+              child: Consumer<MessageProvider>(
+                builder: (context, messageProvider, child) {
+                  if (messageProvider.isLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  // Trigger scroll to bottom when messages are first loaded
+                  if (messageProvider.messages.isNotEmpty && _isUserAtBottom) {
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (_scrollController.hasClients) {
+                        _scrollController.jumpTo(
+                          _scrollController.position.maxScrollExtent,
+                        );
+                      }
+                    });
+                  }
+                  return _buildMessagesList(messageProvider);
+                },
+              ),
             ),
-          ),
-          _buildTypingIndicator(),
-          _buildMessageInput(context, keyboardHeight),
-        ],
+            _buildTypingIndicator(),
+            _buildMessageInput(context, keyboardHeight),
+          ],
+        ),
       ),
     );
   }
@@ -156,16 +171,21 @@ class _MessageScreenState extends State<MessageScreen> {
                 children: [
                   CircleAvatar(
                     radius: 20,
-                    backgroundImage: user.avatarUrl != null && user.avatarUrl!.isNotEmpty
-                        ? NetworkImage(user.avatarUrl!)
-                        : null,
+                    backgroundImage:
+                        user.avatarUrl != null && user.avatarUrl!.isNotEmpty
+                            ? NetworkImage(user.avatarUrl!)
+                            : null,
                     backgroundColor: Colors.grey[300],
-                    child: user.avatarUrl == null || user.avatarUrl!.isEmpty
-                        ? Text(
-                      user.name?.substring(0, 1).toUpperCase() ?? "?",
-                      style: const TextStyle(fontSize: 18, color: Colors.white),
-                    )
-                        : null,
+                    child:
+                        user.avatarUrl == null || user.avatarUrl!.isEmpty
+                            ? Text(
+                              user.name?.substring(0, 1).toUpperCase() ?? "?",
+                              style: const TextStyle(
+                                fontSize: 18,
+                                color: Colors.white,
+                              ),
+                            )
+                            : null,
                   ),
                   if (user.isOnline)
                     Positioned(
@@ -228,14 +248,16 @@ class _MessageScreenState extends State<MessageScreen> {
       itemBuilder: (context, index) {
         final message = messageProvider.messages[index];
         final prevMessage =
-        index > 0 ? messageProvider.messages[index - 1] : null;
+            index > 0 ? messageProvider.messages[index - 1] : null;
         final showTimestamp =
             prevMessage == null ||
-                message.timestamp.difference(prevMessage.timestamp).inMinutes > 5;
+            message.timestamp.difference(prevMessage.timestamp).inMinutes > 5;
 
         // Only scroll for new messages if user is at bottom
         if (index == messageProvider.messages.length - 1 && _isUserAtBottom) {
-          WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
+          WidgetsBinding.instance.addPostFrameCallback(
+            (_) => _scrollToBottom(),
+          );
         }
 
         return Column(
@@ -279,7 +301,7 @@ class _MessageScreenState extends State<MessageScreen> {
       margin: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         mainAxisAlignment:
-        message.isFromMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+            message.isFromMe ? MainAxisAlignment.end : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           if (message.isFromMe) const Spacer(),
@@ -289,7 +311,9 @@ class _MessageScreenState extends State<MessageScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               decoration: BoxDecoration(
                 color:
-                message.isFromMe ? const Color(0xFF7C3AED) : Colors.grey[100],
+                    message.isFromMe
+                        ? const Color(0xFF7C3AED)
+                        : Colors.grey[100],
                 borderRadius: BorderRadius.only(
                   bottomLeft: Radius.circular(message.isFromMe ? 16 : 0),
                   bottomRight: Radius.circular(message.isFromMe ? 0 : 16),
@@ -315,7 +339,9 @@ class _MessageScreenState extends State<MessageScreen> {
                         messageProvider.formatMessageTime(message.timestamp),
                         style: TextStyle(
                           color:
-                          message.isFromMe ? Colors.white70 : Colors.grey[600],
+                              message.isFromMe
+                                  ? Colors.white70
+                                  : Colors.grey[600],
                           fontSize: 11,
                         ),
                       ),
@@ -350,22 +376,31 @@ class _MessageScreenState extends State<MessageScreen> {
             children: [
               CircleAvatar(
                 radius: 14,
-                backgroundImage: widget.chatUser.avatarUrl != null &&
-                    widget.chatUser.avatarUrl!.isNotEmpty
-                    ? NetworkImage(widget.chatUser.avatarUrl!)
-                    : null,
+                backgroundImage:
+                    widget.chatUser.avatarUrl != null &&
+                            widget.chatUser.avatarUrl!.isNotEmpty
+                        ? NetworkImage(widget.chatUser.avatarUrl!)
+                        : null,
                 backgroundColor: Colors.grey[300],
-                child: widget.chatUser.avatarUrl == null ||
-                    widget.chatUser.avatarUrl!.isEmpty
-                    ? Text(
-                  widget.chatUser.name?.substring(0, 1).toUpperCase() ?? "?",
-                  style: const TextStyle(fontSize: 14, color: Colors.white),
-                )
-                    : null,
+                child:
+                    widget.chatUser.avatarUrl == null ||
+                            widget.chatUser.avatarUrl!.isEmpty
+                        ? Text(
+                          widget.chatUser.name?.substring(0, 1).toUpperCase() ??
+                              "?",
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: Colors.white,
+                          ),
+                        )
+                        : null,
               ),
               const SizedBox(width: 8),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.grey[200],
                   borderRadius: BorderRadius.circular(16),
@@ -453,7 +488,9 @@ class _MessageScreenState extends State<MessageScreen> {
                             focusNode: _focusNode,
                             controller: _messageController,
                             onChanged: (text) {
-                              context.read<MessageProvider>().updateMessageText(text);
+                              context.read<MessageProvider>().updateMessageText(
+                                text,
+                              );
                               if (_isEmojiVisible) {
                                 setState(() {
                                   _isEmojiVisible = false;
@@ -515,17 +552,19 @@ class _MessageScreenState extends State<MessageScreen> {
                 Consumer<MessageProvider>(
                   builder: (context, messageProvider, child) {
                     return GestureDetector(
-                      onTap: messageProvider.canSendMessage
-                          ? () => _sendMessage(messageProvider)
-                          : null,
+                      onTap:
+                          messageProvider.canSendMessage
+                              ? () => _sendMessage(messageProvider)
+                              : null,
                       child: Container(
                         width: 53,
                         height: 53,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(28),
-                          color: messageProvider.canSendMessage
-                              ? ColorRes.primaryColor
-                              : Colors.grey,
+                          color:
+                              messageProvider.canSendMessage
+                                  ? ColorRes.primaryColor
+                                  : Colors.grey,
                         ),
                         child: const Center(
                           child: Icon(Icons.send, color: ColorRes.white),
