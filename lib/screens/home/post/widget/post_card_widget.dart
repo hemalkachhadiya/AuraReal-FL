@@ -76,8 +76,6 @@ class _PostCardState extends State<PostCard> {
 
   @override
   Widget build(BuildContext context) {
-    final postsProvider = Provider.of<PostsProvider>(context, listen: false);
-
     return Column(
       children: [
         /// Profile Section
@@ -136,7 +134,9 @@ class _PostCardState extends State<PostCard> {
                           // ),
                           const SizedBox(width: 4),
                           Text(
-                            _localRawRating.toStringAsFixed(2),
+                            widget.post.userId?.profile?.ratingsAvg!
+                                    .toStringAsFixed(2) ??
+                                "0.0",
                             // Display raw rating (e.g., 0.06)
                             style: styleW600S12,
                           ),
@@ -190,7 +190,7 @@ class _PostCardState extends State<PostCard> {
                           // Convert to star rating (0–5)
                           size: 20,
                           activeColor: ColorRes.primaryColor,
-                          inactiveColor: ColorRes.primaryColor.withOpacity(0.3),
+                          inactiveColor: ColorRes.primaryColor,
                         ),
                         10.pw.spaceHorizontal,
                         Text(
