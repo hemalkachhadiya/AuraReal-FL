@@ -29,12 +29,12 @@ class _PostCardState extends State<PostCard> {
   late double _localRawRating; // Store rating in raw format (0.0–0.1)
   int _localCommentCount = 0;
   String? _commentString;
+  bool _isCommentTapped = false; // Track comment tap state
 
   @override
   void initState() {
     super.initState();
-    _localRawRating =
-        widget.post.postRating?.toRawRating() ?? 0.0; // Use raw rating
+    _localRawRating = widget.post.postRating?.toRawRating() ?? 0.0; // Use raw rating
     _localCommentCount = widget.post.commentsCount ?? 0;
     _commentString = widget.post.content ?? "";
     print("widget.post.postRating (raw) === $_localRawRating");
@@ -66,11 +66,9 @@ class _PostCardState extends State<PostCard> {
 
   void _handleRatingSubmitted(double starRating) {
     setState(() {
-      _localRawRating =
-          starRating.toRawRating(); // Convert stars (0–5) to raw (0.0–0.1)
+      _localRawRating = starRating.toRawRating(); // Convert stars (0–5) to raw (0.0–0.1)
     });
     print("Star Rating -- ${_localRawRating}");
-
     widget.onRatingSubmitted?.call(_localRawRating); // Pass raw rating
   }
 
@@ -123,21 +121,11 @@ class _PostCardState extends State<PostCard> {
                             height: 16.ph,
                             width: 16.pw,
                           ),
-                          // StarRatingWidget(
-                          //   rating: _localRawRating.toStarRating(),
-                          //   Convert to star rating (0–5)
-                          // size: 16,
-                          // activeColor: ColorRes.primaryColor,
-                          // inactiveColor: ColorRes.primaryColor.withOpacity(
-                          //   0.3,
-                          // ),
-                          // ),
                           const SizedBox(width: 4),
                           Text(
                             widget.post.userId?.profile?.ratingsAvg!
-                                    .toStringAsFixed(2) ??
+                                .toStringAsFixed(2) ??
                                 "0.0",
-                            // Display raw rating (e.g., 0.06)
                             style: styleW600S12,
                           ),
                         ],
@@ -175,9 +163,7 @@ class _PostCardState extends State<PostCard> {
                     },
                   );
                   if (selectedRating != null) {
-                    _handleRatingSubmitted(
-                      selectedRating,
-                    ); // Handle star rating (0–5)
+                    _handleRatingSubmitted(selectedRating); // Handle star rating (0–5)
                   }
                 },
                 child: Column(
@@ -187,7 +173,6 @@ class _PostCardState extends State<PostCard> {
                       children: [
                         StarRatingWidget(
                           rating: _localRawRating.toStarRating(),
-                          // Convert to star rating (0–5)
                           size: 20,
                           activeColor: ColorRes.primaryColor,
                           inactiveColor: ColorRes.primaryColor,
@@ -195,8 +180,6 @@ class _PostCardState extends State<PostCard> {
                         10.pw.spaceHorizontal,
                         Text(
                           widget.post.postRating!.toStringAsFixed(2),
-                          // _localRawRating.toStringAsFixed(2),
-                          // Display raw rating (e.g., 0.06)
                           style: styleW700S16,
                         ),
                       ],
@@ -218,9 +201,10 @@ class _PostCardState extends State<PostCard> {
               /// Comment Section
               InkWell(
                 onTap: () async {
-                  print(
-                    "Opening comment bottom sheet for post ${widget.post.id}",
-                  );
+                  setState(() {
+                    _isCommentTapped = true; // Set flag when comment is tapped
+                  });
+                  print("Opening comment bottom sheet for post ${widget.post.id}");
                   try {
                     final postsProvider = Provider.of<PostsProvider>(
                       context,
@@ -247,11 +231,6 @@ class _PostCardState extends State<PostCard> {
                               onCommentSubmitted: (val) async {
                                 print("Submitting comment: $val");
                                 _handleCommentSubmitted(val);
-                                await provider.commentPostAPI(
-                                  context,
-                                  postId: widget.post.id,
-                                  content: val,
-                                );
                                 print("Comment submitted successfully");
                               },
                             );
@@ -291,10 +270,10 @@ class _PostCardState extends State<PostCard> {
   }
 
   Widget buildMedia(
-    BuildContext context,
-    PostModel post,
-    VoidCallback onTapPost,
-  ) {
+      BuildContext context,
+      PostModel post,
+      VoidCallback onTapPost,
+      ) {
     if (post.media != null && post.media?.type == 1) {
       final videoUrl = EndPoints.domain + post.media!.url!.toBackslashPath();
       return GestureDetector(
@@ -302,6 +281,38 @@ class _PostCardState extends State<PostCard> {
         child: FutureBuilder<File?>(
           future: generateVideoThumbnail(videoUrl),
           builder: (context, snapshot) {
+            if (_isCommentTapped) {
+              // Skip shimmer if comment is tapped
+              if (!snapshot.hasData || snapshot.data == null) {
+                return Container(
+                  height: 390,
+                  width: double.infinity,
+                  color: Colors.black,
+                  child: const Icon(
+                    Icons.play_circle_fill,
+                    color: Colors.white,
+                    size: 60,
+                  ),
+                );
+              }
+              return Stack(
+                alignment: Alignment.center,
+                children: [
+                  Image.file(
+                    snapshot.data!,
+                    height: 390,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                  ),
+                  const Icon(
+                    Icons.play_circle_fill,
+                    color: Colors.white,
+                    size: 60,
+                  ),
+                ],
+              );
+            }
+            // Show shimmer during loading if comment is not tapped
             if (snapshot.connectionState == ConnectionState.waiting) {
               return CustomShimmer(height: 390, width: double.infinity);
             }
@@ -338,9 +349,9 @@ class _PostCardState extends State<PostCard> {
       );
     } else {
       final imageUrl =
-          post.media?.url != null
-              ? EndPoints.domain + post.media!.url!.toBackslashPath()
-              : "";
+      post.media?.url != null
+          ? EndPoints.domain + post.media!.url!.toBackslashPath()
+          : "";
       return GestureDetector(
         onTap: onTapPost,
         child: CachedImage(imageUrl, height: 390.0, fit: BoxFit.cover),

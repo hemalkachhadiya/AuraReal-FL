@@ -24,8 +24,11 @@ class _MessageScreenState extends State<MessageScreen> {
   @override
   void initState() {
     super.initState();
-    _initializeChat();
-
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _initializeChat(); // 👈 use widget’s own context
+      }
+    });
     _scrollController.addListener(() {
       final offset = _scrollController.offset;
       final maxExtent = _scrollController.position.maxScrollExtent;
@@ -430,26 +433,20 @@ class _MessageScreenState extends State<MessageScreen> {
     );
   }
 
-  Widget _buildTypingDot(int delay) {
-    return TweenAnimationBuilder<double>(
-      duration: const Duration(milliseconds: 800), // Smoother animation
-      tween: Tween(begin: 0.0, end: 1.0),
-      builder: (context, value, child) {
-        return Opacity(
-          opacity: 0.5 + 0.5 * (0.5 - (value - 0.5).abs()) * 2,
-          child: Transform.scale(
-            scale: 1.0 + 0.3 * (0.5 - (value - 0.5).abs()) * 2,
-            child: Container(
-              width: 8, // Slightly larger dots
-              height: 8,
-              decoration: BoxDecoration(
-                color: Colors.grey[700], // Darker for better visibility
-                shape: BoxShape.circle,
-              ),
-            ),
-          ),
-        );
-      },
+  Widget _buildTypingDot(int index) {
+    return AnimatedOpacity(
+      opacity: 1.0,
+      duration: const Duration(milliseconds: 600),
+      curve: Interval(index * 0.2, 1.0, curve: Curves.easeInOut),
+      child: Container(
+        width: 8,
+        height: 8,
+        margin: const EdgeInsets.symmetric(horizontal: 2),
+        decoration: BoxDecoration(
+          color: Colors.grey[700],
+          shape: BoxShape.circle,
+        ),
+      ),
     );
   }
 

@@ -12,7 +12,7 @@ class CommentModel {
   final DateTime? updatedAt;
   final int? v;
   final bool? isOptimistic; // Flag for optimistic comments
-  final List<CommentModel>? replies; // 👈 nested replies
+  final List<CommentModel> replies; // 👈 always a list, default []
 
   CommentModel({
     this.id,
@@ -26,8 +26,8 @@ class CommentModel {
     this.updatedAt,
     this.v,
     this.isOptimistic = false,
-    this.replies, // 👈 include in constructor
-  });
+    List<CommentModel>? replies,
+  }) : replies = replies ?? []; // 👈 safe default
 
   CommentModel copyWith({
     String? id,
@@ -55,7 +55,7 @@ class CommentModel {
       updatedAt: updatedAt ?? this.updatedAt,
       v: v ?? this.v,
       isOptimistic: isOptimistic ?? this.isOptimistic,
-      replies: replies ?? this.replies, // 👈 copy replies
+      replies: replies ?? this.replies,
     );
   }
 
@@ -70,20 +70,25 @@ class CommentModel {
       content: json['content'] as String?,
       likesCount: json['likes_count'] as int?,
       isDeleted: json['is_deleted'] as bool?,
-      createdAt: json['created_at'] != null ? _parseDateTime(json['created_at']) : null,
-      updatedAt: json['updated_at'] != null ? _parseDateTime(json['updated_at']) : null,
+      createdAt: json['created_at'] != null
+          ? _parseDateTime(json['created_at'])
+          : null,
+      updatedAt: json['updated_at'] != null
+          ? _parseDateTime(json['updated_at'])
+          : null,
       v: json['__v'] as int?,
       isOptimistic: json['isOptimistic'] as bool? ?? false,
       replies: (json['replies'] as List<dynamic>?)
           ?.map((e) => CommentModel.fromJson(e as Map<String, dynamic>))
-          .toList(), // 👈 parse nested replies
+          .toList() ??
+          [], // 👈 safe fallback
     );
   }
 
   static DateTime? _parseDateTime(dynamic value) {
     try {
       if (value is String && value.isNotEmpty) {
-        return DateTime.tryParse(value) ?? DateTime.parse(value);
+        return DateTime.tryParse(value);
       }
     } catch (e) {
       print('Error parsing DateTime: $e');
@@ -104,7 +109,7 @@ class CommentModel {
       'updated_at': updatedAt?.toIso8601String(),
       '__v': v,
       'isOptimistic': isOptimistic,
-      'replies': replies?.map((e) => e.toJson()).toList(), // 👈 export nested replies
+      'replies': replies.map((e) => e.toJson()).toList(), // 👈 always list
     };
   }
 }

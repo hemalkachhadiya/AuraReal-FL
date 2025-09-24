@@ -13,6 +13,7 @@ TextStyle styleW400S11 = TextStyle(
   fontWeight: FontWeight.w400,
 );
 
+
 TextStyle styleW400S12 = TextStyle(
   color: ColorRes.black2,
   fontSize: 12,

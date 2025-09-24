@@ -1,6 +1,6 @@
 import 'package:aura_real/aura_real.dart';
 
-/// Enhanced function to open Custom Draggable BottomSheet
+/// Enhanced function to open Custom Draggable BottomSheet with animation
 Future<T?> openCustomDraggableBottomSheet<T>(
   BuildContext context, {
   String? title,
@@ -15,9 +15,9 @@ Future<T?> openCustomDraggableBottomSheet<T>(
   EdgeInsets? padding,
   bool isDismissible = true,
   bool enableDrag = true,
-  double initialChildSize = 0.9, // Increased from 0.8
-  double minChildSize = 0.6, // Increased from 0.5
-  double maxChildSize = 0.9, // Increased from 0.9 to allow full screen
+  double initialChildSize = 0.9,
+  double minChildSize = 0.6,
+  double maxChildSize = 0.9,
 }) async {
   final result = await showModalBottomSheet<T>(
     context: context,
@@ -25,6 +25,11 @@ Future<T?> openCustomDraggableBottomSheet<T>(
     isDismissible: isDismissible,
     enableDrag: enableDrag,
     backgroundColor: Colors.transparent,
+    transitionAnimationController: AnimationController(
+      vsync: Navigator.of(context).overlay!,
+      duration: const Duration(milliseconds: 300),
+    )..forward(),
+
     builder: (context) {
       return DraggableCustomBottomSheet<T>(
         title: title,
@@ -46,8 +51,8 @@ Future<T?> openCustomDraggableBottomSheet<T>(
   return result;
 }
 
-/// Custom Draggable BottomSheet Widget
-class DraggableCustomBottomSheet<T> extends StatelessWidget {
+/// Custom Draggable BottomSheet Widget with Comment Tree
+class DraggableCustomBottomSheet<T> extends StatefulWidget {
   const DraggableCustomBottomSheet({
     super.key,
     this.title,
@@ -80,28 +85,65 @@ class DraggableCustomBottomSheet<T> extends StatelessWidget {
   final double maxChildSize;
 
   @override
+  State<DraggableCustomBottomSheet<T>> createState() =>
+      _DraggableCustomBottomSheetState<T>();
+}
+
+class _DraggableCustomBottomSheetState<T>
+    extends State<DraggableCustomBottomSheet<T>>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+  bool _isExpanded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+    _animation = CurvedAnimation(parent: _controller, curve: Curves.easeInOut);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return DraggableScrollableSheet(
       expand: false,
-      initialChildSize: initialChildSize,
-      minChildSize: minChildSize,
-      maxChildSize: maxChildSize,
+      initialChildSize: widget.initialChildSize,
+      minChildSize: widget.minChildSize,
+      maxChildSize: widget.maxChildSize,
       builder: (context, scrollController) {
-        return Container(
-          padding: padding ?? const EdgeInsets.all(20),
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          padding: widget.padding ?? const EdgeInsets.all(20),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.vertical(
-              top: Radius.circular(borderRadius ?? 16),
+              top: Radius.circular(widget.borderRadius ?? 16),
             ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black26,
+                blurRadius: 10,
+                offset: const Offset(0, -2),
+              ),
+            ],
           ),
           child: SafeArea(
             top: false,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Handle bar
-                Container(
+                // Handle bar with animation
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
                   width: 40,
                   height: 4,
                   margin: const EdgeInsets.only(bottom: 12),
@@ -112,9 +154,9 @@ class DraggableCustomBottomSheet<T> extends StatelessWidget {
                 ),
 
                 // Title
-                if (title != null) ...[
+                if (widget.title != null) ...[
                   Text(
-                    title!,
+                    widget.title!,
                     style: styleW700S20,
                     textAlign: TextAlign.center,
                   ),
@@ -122,35 +164,37 @@ class DraggableCustomBottomSheet<T> extends StatelessWidget {
                 ],
 
                 // Subtitle
-                if (subtitle != null) ...[
+                if (widget.subtitle != null) ...[
                   Text(
-                    subtitle!,
+                    widget.subtitle!,
                     style: styleW400S16.copyWith(color: ColorRes.grey6),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 16),
                 ],
 
-                // Custom Child with scrollable content
-                if (customChild != null) ...[
-                  Expanded(
+                // Comment Tree with scroll animation
+                Expanded(
+                  child: ScrollConfiguration(
+                    behavior: ScrollBehavior().copyWith(overscroll: false),
                     child: SingleChildScrollView(
                       controller: scrollController,
-                      child: customChild!,
+                      physics: const BouncingScrollPhysics(),
+                      child: widget.customChild ?? Container(),
                     ),
                   ),
-                  if (showButtons) const SizedBox(height: 20),
-                ],
+                ),
 
                 // Buttons
-                if (showButtons) ...[
+                if (widget.showButtons) ...[
+                  const SizedBox(height: 20),
                   Row(
                     children: [
-                      if (cancelBtnTitle != null) ...[
+                      if (widget.cancelBtnTitle != null) ...[
                         Expanded(
                           child: OutlinedButton(
                             onPressed: () {
-                              onCancelTap?.call();
+                              widget.onCancelTap?.call();
                               Navigator.of(context).pop();
                             },
                             style: OutlinedButton.styleFrom(
@@ -162,7 +206,7 @@ class DraggableCustomBottomSheet<T> extends StatelessWidget {
                               padding: const EdgeInsets.symmetric(vertical: 12),
                             ),
                             child: Text(
-                              cancelBtnTitle!,
+                              widget.cancelBtnTitle!,
                               style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w500,
@@ -172,11 +216,11 @@ class DraggableCustomBottomSheet<T> extends StatelessWidget {
                         ),
                         const SizedBox(width: 12),
                       ],
-                      if (confirmBtnTitle != null)
+                      if (widget.confirmBtnTitle != null)
                         Expanded(
                           child: ElevatedButton(
                             onPressed: () {
-                              onConfirmTap?.call();
+                              widget.onConfirmTap?.call();
                               Navigator.of(context).pop(true);
                             },
                             style: ElevatedButton.styleFrom(
@@ -189,7 +233,7 @@ class DraggableCustomBottomSheet<T> extends StatelessWidget {
                               elevation: 0,
                             ),
                             child: Text(
-                              confirmBtnTitle ?? 'OK',
+                              widget.confirmBtnTitle ?? 'OK',
                               style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,

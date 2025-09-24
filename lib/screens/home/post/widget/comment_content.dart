@@ -1,10 +1,10 @@
 import 'package:aura_real/apis/model/post_model.dart';
-import 'package:aura_real/apis/model/comment_model.dart';
 import 'package:aura_real/aura_real.dart';
+import 'package:flutter/material.dart';
 
 class CommentsWidget extends StatefulWidget {
   final PostModel post;
-  final List<CommentModel>? comments; // Accept dynamic comment list
+  final List<CommentModel>? comments;
   final Function(String)? onCommentSubmitted;
 
   const CommentsWidget({
@@ -20,7 +20,37 @@ class CommentsWidget extends StatefulWidget {
 
 class _CommentsWidgetState extends State<CommentsWidget> {
   final TextEditingController _commentController = TextEditingController();
+  final FocusNode _commentFocusNode = FocusNode(); // Added FocusNode
   CommentModel? _replyToComment;
+  final Set<String?> _repliedCommentIds =
+      <String?>{}; // Track replied comment IDs
+
+  @override
+  void dispose() {
+    _commentController.dispose();
+    _commentFocusNode.dispose(); // Dispose FocusNode
+    super.dispose();
+  }
+
+  // Function to hide keyboard
+  void _hideKeyboard() {
+    FocusScope.of(navigatorKey.currentContext!).unfocus();
+  }
+
+  // Function to show keyboard and focus on TextField
+  void _showKeyboard() {
+    FocusScope.of(navigatorKey.currentContext!).requestFocus(_commentFocusNode);
+  }
+
+  // Recursive function to check if any reply exists in the subtree with null safety
+  bool hasAnyReply(CommentModel? comment) {
+    if (comment == null) return false;
+    if (comment.replies?.isNotEmpty ?? false) return true;
+    for (var reply in comment.replies ?? <CommentModel>[]) {
+      if (hasAnyReply(reply)) return true;
+    }
+    return false;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -110,20 +140,28 @@ class _CommentsWidgetState extends State<CommentsWidget> {
           Expanded(
             child: SingleChildScrollView(
               child: Column(
-                children: (widget.comments ?? []).map((comment) {
-                  return CommentTile(
-                    comment: comment,
-                    onReply: (c) {
-                      setState(() {
-                        _replyToComment = c;
-                      });
-                    },
-                  );
-                }).toList(),
+                children:
+                    (widget.comments ?? []).map((comment) {
+                      // Check if the parent comment has a direct reply
+                      bool hasDirectReply = _repliedCommentIds.contains(
+                        comment.id,
+                      );
+
+                      return CommentTile(
+                        comment: comment,
+                        onReply: (c) {
+                          setState(() {
+                            _replyToComment = c;
+                            _showKeyboard(); // Show keyboard on reply
+                          });
+                        },
+                        hasReplied:
+                            hasDirectReply, // Only consider direct replies to parent
+                      );
+                    }).toList(),
               ),
             ),
           ),
-
 
           // Persistent input field with keyboard padding
           Padding(
@@ -139,20 +177,21 @@ class _CommentsWidgetState extends State<CommentsWidget> {
               ),
               child: Row(
                 children: [
-                  const CircleAvatar(
-                    radius: 16,
-                    backgroundColor: Colors.grey,
-                    child: Icon(Icons.person, color: Colors.white, size: 16),
-                  ),
-                  const SizedBox(width: 12),
+                  // const CircleAvatar(
+                  //   radius: 16,
+                  //   backgroundColor: Colors.grey,
+                  //   child: Icon(Icons.person, color: Colors.white, size: 16),
+                  // ),
+                  // const SizedBox(width: 12),
                   Expanded(
                     child: TextField(
                       controller: _commentController,
+                      focusNode: _commentFocusNode, // Assign FocusNode
                       style: styleW400S12,
                       decoration: InputDecoration(
                         hintText:
                             _replyToComment != null
-                                ? "Replying to ${_replyToComment!.userId?.fullName ?? "user"}"
+                                ? "Replying to ${_replyToComment!.userId?.fullName ?? 'user'}"
                                 : context.l10n?.whatDoYouThink ?? "",
                         hintStyle: TextStyle(color: Colors.grey.shade500),
                         border: OutlineInputBorder(
@@ -163,7 +202,6 @@ class _CommentsWidgetState extends State<CommentsWidget> {
                           borderRadius: BorderRadius.circular(20),
                           borderSide: BorderSide(color: Colors.grey.shade700),
                         ),
-
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(20),
                           borderSide: BorderSide(color: ColorRes.primaryColor),
@@ -185,7 +223,7 @@ class _CommentsWidgetState extends State<CommentsWidget> {
 
                       final provider = context.read<PostsProvider>();
 
-                      // ✅ only call API, provider will refresh comments list
+                      // Call API to post comment
                       await provider.commentPostAPI(
                         context,
                         postId: widget.post.id,
@@ -193,10 +231,24 @@ class _CommentsWidgetState extends State<CommentsWidget> {
                         parentCommentId: _replyToComment?.id,
                       );
 
+                      // Update replied state if it's a reply
+                      if (_replyToComment?.id != null) {
+                        setState(() {
+                          _repliedCommentIds.add(
+                            _replyToComment!.id,
+                          ); // Mark as replied
+                        });
+                      }
+
+                      // Clear text field and hide keyboard
                       _commentController.clear();
+                      _hideKeyboard();
                       setState(() {
-                        _replyToComment = null;
+                        _replyToComment = null; // Reset reply state
                       });
+
+                      // Notify parent if needed
+                      widget.onCommentSubmitted?.call(text);
                     },
                     icon: const Icon(Icons.send, color: ColorRes.primaryColor),
                   ),
@@ -208,45 +260,49 @@ class _CommentsWidgetState extends State<CommentsWidget> {
       ),
     );
   }
-
-  @override
-  void dispose() {
-    _commentController.dispose();
-    super.dispose();
-  }
 }
 
-// Individual comment tile widget (unchanged)
+// Updated CommentTile widget
 class CommentTile extends StatelessWidget {
   final CommentModel comment;
   final Function(CommentModel) onReply;
-  final int depth; // 👈 nesting level
+  final int depth;
+  final bool hasReplied; // New parameter to check if a reply exists
 
   const CommentTile({
     super.key,
     required this.comment,
     required this.onReply,
     this.depth = 0,
+    required this.hasReplied,
   });
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.only(
-        left: 16.0 + (depth * 24), // 👈 indent replies
+        left: 16.0 + (depth * 0),
         right: 16,
-        top: 8,
+        top: 8 + (depth * 4),
         bottom: 8,
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Avatar
-          CircleAvatar(
-            radius: 16,
-            backgroundColor:
-            comment.userId != null ? ColorRes.primaryColor : Colors.grey,
-            child: const Icon(Icons.person, color: Colors.white, size: 16),
+          // CircleAvatar(
+          //   radius: 16,
+          //   backgroundColor:
+          //       comment.userId != null ? ColorRes.primaryColor : Colors.grey,
+          //   child: const Icon(Icons.person, color: Colors.white, size: 16),
+          // ),
+          Container(
+            width: 45.pw,
+            height: 45.ph,
+            child: CachedImage(
+              borderRadius: 50,
+              "${EndPoints.domain}${comment.userId!.profile?.profileImage?.toBackslashPath()}",
+            ),
           ),
           const SizedBox(width: 12),
 
@@ -277,38 +333,41 @@ class CommentTile extends StatelessWidget {
                 const SizedBox(height: 4),
 
                 // Comment text
-                Text(
-                  comment.content ?? "",
-                  style: styleW500S14,
-                ),
+                Text(comment.content ?? "", style: styleW500S14),
                 const SizedBox(height: 6),
 
                 // Actions: Like + Reply
                 Row(
                   children: [
-                    GestureDetector(
-                      onTap: () => onReply(comment),
-                      child: Text(
-                        context.l10n?.reply ?? "Reply",
-                        style: styleW400S12.copyWith(
-                          color: ColorRes.primaryColor,
-                          fontWeight: FontWeight.w500,
+                    // Only show "Reply" for parent comments (depth = 0) and if no direct reply exists
+                    if (depth == 0)
+                      GestureDetector(
+                        onTap: () => onReply(comment),
+                        child: Text(
+                          context.l10n?.reply ?? "Reply",
+                          style: styleW400S12.copyWith(
+                            color: ColorRes.primaryColor,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ),
-                    ),
                   ],
                 ),
 
-                // 👇 Nested replies
-                if (comment.replies != null && comment.replies!.isNotEmpty)
+                // Nested replies with null safety
+                if (comment.replies?.isNotEmpty ?? false)
                   Column(
-                    children: comment.replies!
-                        .map((reply) => CommentTile(
-                      comment: reply,
-                      onReply: onReply,
-                      depth: depth + 1,
-                    ))
-                        .toList(),
+                    children:
+                        (comment.replies ?? <CommentModel>[])
+                            .map(
+                              (reply) => CommentTile(
+                                comment: reply,
+                                onReply: onReply,
+                                depth: depth + 1,
+                                hasReplied: hasReplied,
+                              ),
+                            )
+                            .toList(),
                   ),
               ],
             ),
@@ -328,4 +387,3 @@ class CommentTile extends StatelessWidget {
     return "now";
   }
 }
-
