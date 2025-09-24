@@ -1,7 +1,5 @@
 import 'package:aura_real/aura_real.dart';
 
-import 'package:aura_real/aura_real.dart';
-
 class SubmitButton2 extends StatelessWidget {
   const SubmitButton2({
     super.key,

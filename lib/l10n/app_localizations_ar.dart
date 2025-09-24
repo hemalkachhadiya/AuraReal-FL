@@ -330,5 +330,14 @@ class AppLocalizationsAr extends AppLocalizations {
   String get galleryPermissionBtn => 'فتح الإعدادات';
 
   @override
+  String get whatDoYouThink => 'ما رأيك في هذا؟';
+
+  @override
+  String get reply => 'رد';
+
+  @override
+  String get writeCaption => 'اكتب تعليقًا';
+
+  @override
   String get rateThisPost => 'قيم هذه المشاركة';
 }

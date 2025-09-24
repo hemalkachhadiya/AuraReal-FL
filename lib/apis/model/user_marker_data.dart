@@ -1,4 +1,3 @@
-import 'package:aura_real/aura_real.dart';
 import 'package:map_location_picker/map_location_picker.dart';
 // User model for map markers
 class UserMarkerData {

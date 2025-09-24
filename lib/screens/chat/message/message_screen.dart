@@ -65,6 +65,8 @@ class _MessageScreenState extends State<MessageScreen> {
       roomId: widget.chatUser.id!,
     );
 
+    // ✅ Mark all messages as read when opening the chat
+    _messageProvider?.markAllAsRead();
     // Force scroll to bottom after messages are loaded
     if (mounted) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -122,16 +124,21 @@ class _MessageScreenState extends State<MessageScreen> {
                   if (messageProvider.isLoading) {
                     return const Center(child: CircularProgressIndicator());
                   }
-                  // Trigger scroll to bottom when messages are first loaded
-                  if (messageProvider.messages.isNotEmpty && _isUserAtBottom) {
+
+                  // ✅ Mark messages as read when new messages arrive and user is viewing
+                  if (messageProvider.messages.isNotEmpty) {
                     WidgetsBinding.instance.addPostFrameCallback((_) {
-                      if (_scrollController.hasClients) {
+                      // Mark as read when user is viewing the chat
+                      messageProvider.markAllAsRead();
+
+                      if (_scrollController.hasClients && _isUserAtBottom) {
                         _scrollController.jumpTo(
                           _scrollController.position.maxScrollExtent,
                         );
                       }
                     });
                   }
+
                   return _buildMessagesList(messageProvider);
                 },
               ),

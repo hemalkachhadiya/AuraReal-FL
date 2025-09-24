@@ -330,5 +330,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get galleryPermissionBtn => 'Open Settings';
 
   @override
+  String get whatDoYouThink => 'What do you think of this?';
+
+  @override
+  String get reply => 'Reply';
+
+  @override
+  String get writeCaption => 'Write a Caption';
+
+  @override
   String get rateThisPost => 'Rate this Post';
 }

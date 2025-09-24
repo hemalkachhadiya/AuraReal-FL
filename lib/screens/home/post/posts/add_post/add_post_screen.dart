@@ -1,5 +1,7 @@
 import 'package:aura_real/aura_real.dart';
 import 'package:video_player/video_player.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class AddPostScreen extends StatelessWidget {
   const AddPostScreen({super.key});
@@ -35,9 +37,19 @@ class AddPostScreen extends StatelessWidget {
                         : ColorRes.primaryColor,
                 onTap:
                     provider.canPublish()
-                        ? () => provider.createPostAPI()
+                        ? () async {
+                          final success = await provider.createPostAPI(context);
+                          if (success && context.mounted) {
+                            // ScaffoldMessenger.of(context).showSnackBar(
+                            //   SnackBar(
+                            //     content: Text(
+                            //         context.l10n?.postCreated ?? "Post created successfully"),
+                            //   ),
+                            // );
+                          }
+                        }
                         : null,
-                title: context.l10n?.publish ?? "",
+                title: context.l10n?.publish ?? "Publish",
               ),
             ),
           ),
@@ -45,15 +57,13 @@ class AddPostScreen extends StatelessWidget {
             child: Column(
               children: [
                 8.ph.spaceVertical,
-                // Header
                 Padding(
                   padding: EdgeInsets.symmetric(
                     horizontal: Constants.horizontalPadding,
                   ),
-                  child: AppBackIcon(title: context.l10n?.post ?? ""),
+                  child: AppBackIcon(title: context.l10n?.post ?? "Post"),
                 ),
                 34.ph.spaceVertical,
-                // Main content area
                 SizedBox(
                   height: 200,
                   child: Padding(
@@ -64,7 +74,6 @@ class AddPostScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Post composition area
                         Expanded(
                           child: Container(
                             decoration: BoxDecoration(
@@ -73,7 +82,6 @@ class AddPostScreen extends StatelessWidget {
                             child: Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                // Text input area
                                 Expanded(
                                   flex: 4,
                                   child: Container(
@@ -84,7 +92,9 @@ class AddPostScreen extends StatelessWidget {
                                     child: AppTextField(
                                       controller: provider.textController,
                                       textInputType: TextInputType.multiline,
-                                      hintText: "Write a Caption?",
+                                      hintText:
+                                          context.l10n?.writeCaption ??
+                                          "Write a Caption?",
                                       customPadding: const EdgeInsets.only(
                                         left: 10,
                                         right: 5,
@@ -99,7 +109,7 @@ class AddPostScreen extends StatelessWidget {
                                       customBorder: InputBorder.none,
                                       textAlign: TextAlign.left,
                                       onChanged: (value) {
-                                        // handle text change
+                                        provider.notifyListeners();
                                       },
                                     ),
                                   ),

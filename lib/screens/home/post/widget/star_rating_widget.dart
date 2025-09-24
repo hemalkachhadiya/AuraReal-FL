@@ -4,18 +4,20 @@ class StarRatingWidget extends StatefulWidget {
   final double rating;
   final double space;
   final double size;
-  final Color activeColor;
+  final Color? activeColor;
   final Color inactiveColor;
   final ValueChanged<double>? onRatingChanged;
+  final bool cumulative; // NEW: whether tapping adds to current rating
 
   const StarRatingWidget({
     super.key,
     this.rating = 0.0,
     this.size = 20.0,
     this.space = 12.0,
-    this.activeColor = Colors.amber,
+    this.activeColor,
     this.inactiveColor = Colors.grey,
     this.onRatingChanged,
+    this.cumulative = false,
   });
 
   @override
@@ -29,6 +31,22 @@ class _StarRatingWidgetState extends State<StarRatingWidget> {
   void initState() {
     super.initState();
     _rating = widget.rating;
+    _rating = widget.rating.clamp(0.0, 5.0); // Clamp to valid range 0-5
+    print("StarRatingWidget initState: rating = $_rating");
+  }
+
+  @override
+  void didUpdateWidget(StarRatingWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // CRITICAL: Update local rating when widget rating changes
+    if (oldWidget.rating != widget.rating) {
+      setState(() {
+        _rating = widget.rating;
+      });
+      print(
+        "StarRatingWidget didUpdateWidget: rating updated from ${oldWidget.rating} to ${widget.rating}",
+      );
+    }
   }
 
   @override
@@ -37,50 +55,42 @@ class _StarRatingWidgetState extends State<StarRatingWidget> {
       spacing: widget.space,
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(5, (index) {
+        String starIcon;
+        if (index < _rating.floor()) {
+          starIcon = AssetRes.starFillIcon; // full star
+        } else if (index < _rating) {
+          starIcon = AssetRes.halfStarIcon; // half star
+        } else {
+          starIcon = AssetRes.starUnFillIcon; // empty star
+        }
+
+        Color starColor =
+            index < _rating
+                ? (widget.activeColor ?? Colors.amber)
+                : widget.inactiveColor;
+
         return InkWell(
           onTap:
-              (widget.onRatingChanged != null)
+              widget.onRatingChanged != null
                   ? () {
                     setState(() {
-                      _rating = index + 1.0;
+                      double tappedStars = index + 1.0;
+                      if (widget.cumulative) {
+                        _rating = (_rating + tappedStars).clamp(0.0, 5.0);
+                      } else {
+                        _rating = tappedStars;
+                      }
                     });
-                    if (widget.onRatingChanged != null) {
-                      widget.onRatingChanged!(_rating);
-                    }
+                    widget.onRatingChanged!(_rating);
                   }
                   : null,
           child: SvgAsset(
-            imagePath:
-                index < _rating.floor()
-                    ? AssetRes.starFillIcon
-                    : index < _rating
-                    ? AssetRes.halfStarIcon
-                    : AssetRes.starUnFillIcon,
+            imagePath: starIcon,
             width: widget.size,
             height: widget.size,
-
-            color:
-                index < _rating
-                    ? widget.inactiveColor
-                    : index < _rating
-                    ? widget.activeColor
-                    : widget.inactiveColor,
+            color: starColor,
           ),
-        ) /*IconButton(
-          icon: Icon(
-            index < _rating ? Icons.star : Icons.star_border,
-            color: index < _rating ? widget.activeColor : widget.inactiveColor,
-            size: widget.size,
-          ),
-          onPressed: () {
-            setState(() {
-              _rating = index + 1.0;
-            });
-            if (widget.onRatingChanged != null) {
-              widget.onRatingChanged!(_rating);
-            }
-          },
-        )*/;
+        );
       }),
     );
   }

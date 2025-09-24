@@ -1,6 +1,7 @@
 class Profile {
   final String? username;
   final String? fullName;
+  final String? phoneNumber;
   final String? profileImage;
   final String? email;
   final String? bio;
@@ -19,6 +20,7 @@ class Profile {
     this.username,
     this.fullName,
     this.profileImage,
+    this.phoneNumber,
     this.email,
     this.bio,
     this.followersCount,
@@ -37,6 +39,7 @@ class Profile {
     username: json['username'] as String?,
     fullName: json['full_name'] as String?,
     profileImage: json['profile_image'] as String?,
+    phoneNumber: json['phoneNumber'] as String?,
     email: json['email'] as String?,
     bio: json['bio'] as String?,
     followersCount: json['followers_count'] as int?,
@@ -58,6 +61,7 @@ class Profile {
     'username': username,
     'full_name': fullName,
     'profile_image': profileImage,
+    'phoneNumber': phoneNumber,
     'email': email,
     'bio': bio,
     'followers_count': followersCount,

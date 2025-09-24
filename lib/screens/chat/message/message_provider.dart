@@ -250,21 +250,17 @@ class MessageProvider extends ChangeNotifier {
       id: const Uuid().v4(),
       text: _messageText.trim(),
       timestamp: currentTime,
-      // Use current local time
       isFromMe: true,
       status: MessageStatus.sending,
     );
 
-    // _messages.add(newMessage); // Add the message immediately to UI
+    _messages.add(newMessage); // Add the message immediately to UI
     notifyListeners();
 
     debugPrint("📤 Sending message at: $currentTime");
-    debugPrint(
-      "📤 Message details: ID=${newMessage.id}, text=${newMessage.text}",
-    );
+    debugPrint("📤 Message details: ID=${newMessage.id}, text=${newMessage.text}");
 
-    if (socketIoHelper.socketApp == null ||
-        !socketIoHelper.socketApp!.connected) {
+    if (socketIoHelper.socketApp == null || !socketIoHelper.socketApp!.connected) {
       debugPrint("❌ Socket not connected, marking message as failed");
       _updateMessageStatus(newMessage.id, MessageStatus.failed);
       ScaffoldMessenger.of(navigatorKey.currentContext!).showSnackBar(
@@ -279,26 +275,57 @@ class MessageProvider extends ChangeNotifier {
       messageType: "text",
       receiverId: receiverId,
       senderId: userData!.id!,
+      messageId: newMessage.id, // Pass the message ID for tracking
     );
 
-    // Listen for server acknowledgment
-    socketIoHelper.socketApp!.once("messageSent", (data) {
-      debugPrint("✅ Server acknowledged message: $data");
-      _updateMessageStatus(newMessage.id, MessageStatus.sent);
-    });
+    // Listen for server acknowledgment with timeout
+    Timer? acknowledgmentTimer;
 
-    socketIoHelper.socketApp!.once("error", (error) {
+    void handleMessageSent(data) {
+      acknowledgmentTimer?.cancel();
+      debugPrint("✅ Server acknowledged message: $data");
+
+      // Update message with server-provided ID if different
+      final serverMessageId = data["messageId"] ?? data["_id"];
+      if (serverMessageId != null && serverMessageId != newMessage.id) {
+        final index = _messages.indexWhere((m) => m.id == newMessage.id);
+        if (index != -1) {
+          _messages[index] = Message(
+            id: serverMessageId,
+            text: _messages[index].text,
+            timestamp: _messages[index].timestamp,
+            isFromMe: _messages[index].isFromMe,
+            status: MessageStatus.sent,
+          );
+        }
+      } else {
+        _updateMessageStatus(newMessage.id, MessageStatus.sent);
+      }
+    }
+
+    void handleMessageError(error) {
+      acknowledgmentTimer?.cancel();
       debugPrint("❌ Server error on sendMessage: $error");
       _updateMessageStatus(newMessage.id, MessageStatus.failed);
-      ScaffoldMessenger.of(
-        navigatorKey.currentContext!,
-      ).showSnackBar(SnackBar(content: Text("Failed to send message: $error")));
+      ScaffoldMessenger.of(navigatorKey.currentContext!).showSnackBar(
+        SnackBar(content: Text("Failed to send message: $error")),
+      );
+    }
+
+    socketIoHelper.socketApp!.once("messageSent", handleMessageSent);
+    socketIoHelper.socketApp!.once("messageError", handleMessageError);
+
+    // Set timeout for message acknowledgment
+    acknowledgmentTimer = Timer(const Duration(seconds: 10), () {
+      debugPrint("⏰ Message acknowledgment timeout");
+      _updateMessageStatus(newMessage.id, MessageStatus.failed);
+      socketIoHelper.socketApp!.off("messageSent", handleMessageSent);
+      socketIoHelper.socketApp!.off("messageError", handleMessageError);
     });
 
     _messageText = '';
     notifyListeners();
   }
-
 
   void _updateMessageStatus(String messageId, MessageStatus status) {
     final index = _messages.indexWhere((m) => m.id == messageId);
@@ -372,22 +399,119 @@ class MessageProvider extends ChangeNotifier {
     }
   }
 
+  /// Updated markAllAsRead method
   void markAllAsRead() {
     if (_chatRoomId == null || userData?.id == null) return;
 
     bool hasChanges = false;
+    List<String> messageIdsToMarkAsRead = [];
+
     for (int i = 0; i < _messages.length; i++) {
       if (!_messages[i].isFromMe && _messages[i].status != MessageStatus.read) {
         _messages[i] = _messages[i].copyWith(status: MessageStatus.read);
+        messageIdsToMarkAsRead.add(_messages[i].id);
         hasChanges = true;
       }
     }
-    if (hasChanges) {
+
+    if (hasChanges && messageIdsToMarkAsRead.isNotEmpty) {
+      // Send socket event to mark messages as read
       socketIoHelper.markMessagesAsRead(
         roomId: _chatRoomId!,
         readerId: userData!.id!,
+        messageIds: messageIdsToMarkAsRead, // Pass specific message IDs
       );
+
+      debugPrint("✅ Marked ${messageIdsToMarkAsRead.length} messages as read");
       notifyListeners();
+    }
+  }
+
+  // Add these methods to your MessageProvider class
+
+  // New method to handle incoming read receipts from socket
+  void handleMessageRead(dynamic data) {
+    debugPrint("📖 Handling message read receipt: $data");
+
+    try {
+      final messageId = data["messageId"] as String?;
+      final readerId = data["readerId"] as String?;
+      final messageIds = data["messageIds"] as List<dynamic>?;
+
+      if (readerId == userData?.id) {
+        // Don't update read status for our own messages
+        return;
+      }
+
+      bool hasChanges = false;
+
+      if (messageId != null) {
+        // Single message read
+        final index = _messages.indexWhere((m) => m.id == messageId);
+        if (index != -1 && _messages[index].isFromMe) {
+          _messages[index] = _messages[index].copyWith(
+            status: MessageStatus.read,
+          );
+          hasChanges = true;
+          debugPrint("✅ Message $messageId marked as read by $readerId");
+        }
+      } else if (messageIds != null) {
+        // Multiple messages read
+        for (final id in messageIds) {
+          final messageIdStr = id.toString();
+          final index = _messages.indexWhere((m) => m.id == messageIdStr);
+          if (index != -1 && _messages[index].isFromMe) {
+            _messages[index] = _messages[index].copyWith(
+              status: MessageStatus.read,
+            );
+            hasChanges = true;
+          }
+        }
+        debugPrint(
+          "✅ ${messageIds.length} messages marked as read by $readerId",
+        );
+      }
+
+      if (hasChanges) {
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint("❌ Error handling message read receipt: $e");
+    }
+  }
+
+  // New method to handle when messages are delivered
+  void handleMessageDelivered(dynamic data) {
+    debugPrint("📨 Handling message delivered: $data");
+
+    try {
+      final messageId = data["messageId"] as String?;
+      final messageIds = data["messageIds"] as List<dynamic>?;
+
+      bool hasChanges = false;
+
+      if (messageId != null) {
+        final index = _messages.indexWhere((m) => m.id == messageId);
+        if (index != -1 && _messages[index].isFromMe && _messages[index].status == MessageStatus.sent) {
+          _messages[index] = _messages[index].copyWith(status: MessageStatus.delivered);
+          hasChanges = true;
+        }
+      } else if (messageIds != null) {
+        for (final id in messageIds) {
+          final messageIdStr = id.toString();
+          final index = _messages.indexWhere((m) => m.id == messageIdStr);
+          if (index != -1 && _messages[index].isFromMe && _messages[index].status == MessageStatus.sent) {
+            _messages[index] = _messages[index].copyWith(status: MessageStatus.delivered);
+            hasChanges = true;
+          }
+        }
+      }
+
+      if (hasChanges) {
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint("❌ Error handling message delivered: $e");
     }
   }
 
@@ -402,41 +526,89 @@ class MessageProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Update this method in your MessageProvider class
+
   String formatMessageTime(DateTime timestamp) {
-    final now = DateTime.now();
+    // Convert UTC timestamp to Indian Standard Time
+    final istTime = convertToIndianTime(timestamp);
+    final now = getCurrentIndianTime();
+
     final today = DateTime(now.year, now.month, now.day);
     final yesterday = today.subtract(const Duration(days: 1));
-    final messageDate = DateTime(
-      timestamp.year,
-      timestamp.month,
-      timestamp.day,
-    );
+    final messageDate = DateTime(istTime.year, istTime.month, istTime.day);
 
     if (messageDate == today) {
-      // Use 24-hour format to avoid AM/PM confusion
-      final hour = timestamp.hour;
-      final minute = timestamp.minute.toString().padLeft(2, '0');
+      // Today - show time in 12-hour format
+      int hour = istTime.hour;
+      String period = 'AM';
 
-      // Convert to 12-hour format properly
       if (hour == 0) {
-        return "12:$minute AM";
-      } else if (hour < 12) {
-        return "$hour:$minute AM";
+        hour = 12; // Midnight
       } else if (hour == 12) {
-        return "12:$minute PM";
-      } else {
-        return "${hour - 12}:$minute PM";
+        period = 'PM'; // Noon
+      } else if (hour > 12) {
+        hour = hour - 12; // Afternoon/Evening
+        period = 'PM';
       }
+
+      final minute = istTime.minute.toString().padLeft(2, '0');
+      return "$hour:$minute $period";
     }
 
     if (messageDate == yesterday) {
       return "Yesterday";
     }
 
-    return "${timestamp.day.toString().padLeft(2, '0')}/"
-        "${timestamp.month.toString().padLeft(2, '0')}/"
-        "${timestamp.year}";
+    // For older messages, show date
+    return "${istTime.day.toString().padLeft(2, '0')}/"
+        "${istTime.month.toString().padLeft(2, '0')}/"
+        "${istTime.year}";
   }
+
+// Add these helper methods to your MessageProvider class
+  DateTime convertToIndianTime(DateTime utcTime) {
+    // Indian Standard Time is UTC + 5:30
+    return utcTime.add(const Duration(hours: 5, minutes: 30));
+  }
+
+  DateTime getCurrentIndianTime() {
+    return convertToIndianTime(DateTime.now().toUtc());
+  }
+  // String formatMessageTime(DateTime timestamp) {
+  //   final now = DateTime.now();
+  //   final today = DateTime(now.year, now.month, now.day);
+  //   final yesterday = today.subtract(const Duration(days: 1));
+  //   final messageDate = DateTime(
+  //     timestamp.year,
+  //     timestamp.month,
+  //     timestamp.day,
+  //   );
+  //
+  //   if (messageDate == today) {
+  //     // Use 24-hour format to avoid AM/PM confusion
+  //     final hour = timestamp.hour;
+  //     final minute = timestamp.minute.toString().padLeft(2, '0');
+  //
+  //     // Convert to 12-hour format properly
+  //     if (hour == 0) {
+  //       return "12:$minute AM";
+  //     } else if (hour < 12) {
+  //       return "$hour:$minute AM";
+  //     } else if (hour == 12) {
+  //       return "12:$minute PM";
+  //     } else {
+  //       return "${hour - 12}:$minute PM";
+  //     }
+  //   }
+  //
+  //   if (messageDate == yesterday) {
+  //     return "Yesterday";
+  //   }
+  //
+  //   return "${timestamp.day.toString().padLeft(2, '0')}/"
+  //       "${timestamp.month.toString().padLeft(2, '0')}/"
+  //       "${timestamp.year}";
+  // }
 
   IconData getStatusIcon(MessageStatus status) {
     switch (status) {

@@ -137,21 +137,22 @@ class _SearchScreenState extends State<SearchScreen> {
                             );
                           },
                           onRatingSubmitted: (rate) {
-                            var rating = DoubleRatingExtension(rate).toStars();
-                            final post = provider.postListResponse[index];
-                            if (post.postRating?.toStarCount() == 0) {
-                              provider.newRatePostAPI(
-                                context,
-                                postId: post.id,
-                                rating: rating.toString(),
-                              );
-                            } else {
-                              provider.updateRatePostAPI(
-                                context,
-                                postId: post.id,
-                                rating: rating.toString(),
-                              );
-                            }
+                            //
+                            // var rating = PostRatingToStars(rate).toStarRating();
+                            // final post = provider.postListResponse[index];
+                            // if (post.postRating?.toStarCount() == 0) {
+                            //   provider.newRatePostAPI(
+                            //     context,
+                            //     postId: post.id,
+                            //     rating: rating.toString(),
+                            //   );
+                            // } else {
+                            //   provider.updateRatePostAPI(
+                            //     context,
+                            //     postId: post.id,
+                            //     rating: rating.toString(),
+                            //   );
+                            // }
                           },
                           onCommentSubmitted: (val) {
                             debugPrint("Comment ===== $val");

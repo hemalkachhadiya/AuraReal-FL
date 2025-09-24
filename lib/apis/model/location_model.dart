@@ -1,4 +1,3 @@
-import 'package:aura_real/aura_real.dart';
 class LocationModel {
   final String? userId;
   final double? latitude;
@@ -100,7 +99,7 @@ class LocationModel {
   bool get hasCoordinates => latitude != null && longitude != null;
 
   String get formattedAddress {
-    final parts = [address, city, state, country].where((part) => part != null && part!.isNotEmpty).toList();
+    final parts = [address, city, state, country].where((part) => part != null && part.isNotEmpty).toList();
     return parts.join(', ');
   }
 

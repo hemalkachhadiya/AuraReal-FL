@@ -624,7 +624,7 @@ class _RatingScreenContent extends StatelessWidget {
                 ///Profile Rating
                 if (provider.selectedUser != null)
                   Positioned(
-                    bottom:80,
+                    bottom: 80,
                     left: 0,
                     right: 0,
                     child: UserProfileRatingWidget(
@@ -669,30 +669,35 @@ class _RatingScreenContent extends StatelessWidget {
                                 loading: provider.rateLoader,
                                 title: context.l10n?.send ?? "Send",
                                 onTap: () {
-                                  print(
-                                    "Default Rate value ---- ${(provider.selectedUser?.profile?.ratingsAvg?.toStarCount())}",
-                                  );
+                                  // print(
+                                  //   "Default Rate value ---- ${(provider.selectedUser?.profile?.ratingsAvg?.toStarCount())}",
+                                  // );
 
-                                  var rating = DoubleRatingExtension(
-                                    newRateVal,
-                                  ).toStars().toRawRating().toStringAsFixed(0);
-                                  print("New Rate value ------- ${rating}");
+                                  // var rating = DoubleRatingExtension(
+                                  //   newRateVal,
+                                  // ).toStars().toRawRating().toStringAsFixed(0);
+                                  // var rating =
+                                  //     PostRatingToStars(
+                                  //       newRateVal,
+                                  //     ).toStarRating();
 
-                                  if (provider.selectedUser?.profile?.ratingsAvg
-                                          ?.toStarCount() ==
-                                      0) {
-                                    provider.newRatePostAPI(
-                                      context,
-                                      postId: provider.selectedUser?.id,
-                                      rating: rating.toString(),
-                                    );
-                                  } else {
-                                    provider.updateRatePostAPI(
-                                      context,
-                                      postId: provider.selectedUser?.id,
-                                      rating: rating.toString(),
-                                    );
-                                  }
+                                  // print("New Rate value ------- ${rating}");
+                                  //
+                                  // if (provider.selectedUser?.profile?.ratingsAvg
+                                  //         ?.toStarCount() ==
+                                  //     0) {
+                                  //   provider.newRatePostAPI(
+                                  //     context,
+                                  //     postId: provider.selectedUser?.id,
+                                  //     rating: rating.toString(),
+                                  //   );
+                                  // } else {
+                                  //   provider.updateRatePostAPI(
+                                  //     context,
+                                  //     postId: provider.selectedUser?.id,
+                                  //     rating: rating.toString(),
+                                  //   );
+                                  // }
                                   context.navigator.pop();
                                 },
                               ),

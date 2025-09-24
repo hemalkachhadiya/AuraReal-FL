@@ -102,7 +102,6 @@ class AuthApis {
 
           print("verifyOTPAPI Response -------- ${responseBody['data']}");
 
-          String fcmToken = PrefService.getString(PrefKeys.fcmToken);
           // 🔹 Call update API
 
           await PrefService.set(
@@ -277,8 +276,12 @@ class AuthApis {
         print("Res Body Data ${responseBody['profile']}");
         print("Full Response Body: ${response.body}"); // Add this line
         print("Profile Data: ${responseBody['profile']}"); // Add this line
-        print("isOnline value: ${responseBody['profile']?['isOnline']}"); // Add this line
-        print("isOnline type: ${responseBody['profile']?['isOnline'].runtimeType}"); // Add this line
+        print(
+          "isOnline value: ${responseBody['profile']?['isOnline']}",
+        ); // Add this line
+        print(
+          "isOnline type: ${responseBody['profile']?['isOnline'].runtimeType}",
+        ); // Add this line
 
         if (responseBody['profile'] != null && responseBody != null) {
           return Profile.fromJson(responseBody['profile']);
@@ -296,6 +299,7 @@ class AuthApis {
     String? fullName,
     String? email,
     String? phoneNumber,
+    String? profileImage,
     required String fcmToken,
   }) async {
     try {
@@ -307,6 +311,7 @@ class AuthApis {
           "email": email,
           "phoneNumber": phoneNumber,
           "device_token": fcmToken,
+          "profile_image": profileImage,
         },
       );
 
@@ -465,7 +470,7 @@ class AuthApis {
     }
   }
 
-  ///FollowUserProfile API
+  ///Follow User Profile API
   static Future<bool> followUserProfile({
     required String followUserId,
     required String userId,
@@ -484,7 +489,6 @@ class AuthApis {
       final responseBody = jsonDecode(response.body);
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        // showSuccessToast(responseBody['message'] ?? 'Follow successful');
         return true;
       } else {
         showCatchToast(responseBody['message'] ?? 'Failed', null);
@@ -496,30 +500,7 @@ class AuthApis {
     }
   }
 
-  //   ///UnFollowUserProfile API
-  // static Future unfollowUserProfile({
-  //   required String followUserId,
-  //   required String userId,
-  // }) async {
-  //   try {
-  //     final response = await ApiService.postApi(
-  //       url: EndPoints.unfollow,
-  //       body: {"userId": userId, "followUserId": followUserId},
-  //     );
-  //     if (response == null) {
-  //       showCatchToast('No response from server', null);
-  //       return false;
-  //     }
-  //     final responseBody = jsonDecode(response.body);
-  //     if (response.statusCode == 200 || response.statusCode == 201) {
-  //       showSuccessToast(responseBody['message'] ?? 'Follow successful');
-  //       return true;
-  //     }
-  //   } catch (exception, stack) {
-  //     showCatchToast(exception, stack);
-  //     return false;
-  //   }
-  // }
+  ///UnFollow User Profile
   static Future<bool> unfollowUserProfile({
     required String followUserId,
     required String userId,
@@ -538,7 +519,6 @@ class AuthApis {
       final responseBody = jsonDecode(response.body);
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        // showSuccessToast(responseBody['message'] ?? 'Follow successful');
         return true;
       } else {
         showCatchToast(responseBody['message'] ?? 'Failed', null);

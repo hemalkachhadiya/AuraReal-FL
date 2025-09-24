@@ -44,30 +44,25 @@ class _ChatScreenState extends State<ChatScreen> {
               ),
               _buildSearchBar(context),
               Expanded(
-                child: RefreshIndicator(
-                  onRefresh: () async {
-                    await chatProvider.fetchUserChatRooms();
+                child:
+                chatProvider.isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : chatProvider.visibleChatList.isEmpty
+                    ? _buildEmptyState(context)
+                    : CustomListView(
+                  itemCount: chatProvider.visibleChatList.length,
+                  onRefresh: () => chatProvider.fetchUserChatRooms(),
+                  itemBuilder: (context, index) {
+                    final chat = chatProvider.visibleChatList[index];
+                    return Padding(
+                      padding: EdgeInsets.only(
+                        left: 24,
+                        right: 24,
+                        top: index == 0 ? 0 : 30,
+                      ),
+                      child: _buildChatTile(context, chat),
+                    );
                   },
-                  child:
-                      chatProvider.isLoading
-                          ? const Center(child: CircularProgressIndicator())
-                          : chatProvider.visibleChatList.isEmpty
-                          ? _buildEmptyState(context)
-                          : ListView.builder(
-                            physics: const AlwaysScrollableScrollPhysics(),
-                            itemCount: chatProvider.visibleChatList.length,
-                            itemBuilder: (context, index) {
-                              final chat = chatProvider.visibleChatList[index];
-                              return Padding(
-                                padding: EdgeInsets.only(
-                                  left: 24,
-                                  right: 24,
-                                  top: index == 0 ? 0 : 30,
-                                ),
-                                child: _buildChatTile(context, chat),
-                              );
-                            },
-                          ),
                 ),
               ),
             ],
@@ -124,22 +119,27 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Widget _buildChatTile(BuildContext context, GetUserChatRoomModel chatRoom) {
+    final chatProvider = Provider.of<ChatProvider>(context, listen: false);
+
     final otherParticipant = chatRoom.participants?.firstWhere(
-      (p) => p.id != userData!.id!,
+          (p) => p.id != userData!.id!,
       orElse: () => chatRoom.participants!.first,
     );
 
     final avatarUrl =
-        (otherParticipant?.profile?.profileImage != null &&
-                otherParticipant!.profile!.profileImage!.isNotEmpty)
-            ? "${EndPoints.domain}${otherParticipant.profile!.profileImage}"
-            : "https://via.placeholder.com/150";
+    (otherParticipant?.profile?.profileImage != null &&
+        otherParticipant!.profile!.profileImage!.isNotEmpty)
+        ? "${EndPoints.domain}${otherParticipant.profile!.profileImage}"
+        : "https://via.placeholder.com/150";
 
-    // ✅ Fix unread count for current user
+    // Fix unread count for current user
     final unreadCount = chatRoom.unreadCount?[userData!.id!] ?? 0;
 
-    final formattedTime =
-        chatRoom.updatedAt != null ? formatTime(chatRoom.updatedAt!) : "--:--";
+    // Use ChatProvider's time formatting method
+    final formattedTime = chatProvider.getChatTimeFormatted(chatRoom);
+
+    // Check if other participant is online
+    final isOtherUserOnline = otherParticipant?.isOnline ?? false;
 
     return GestureDetector(
       onTap: () {
@@ -148,29 +148,26 @@ class _ChatScreenState extends State<ChatScreen> {
             id: otherParticipant?.id ?? "",
             name: otherParticipant?.fullName ?? "Unknown",
             avatarUrl: avatarUrl,
-            isOnline: false,
+            isOnline: isOtherUserOnline,
           );
 
-          Provider.of<ChatProvider>(
-            context,
-            listen: false,
-          ).markAsRead(chatRoom.id ?? "");
+          chatProvider.markAsRead(chatRoom.id ?? "");
 
           Navigator.push(
             context,
             MaterialPageRoute(
               builder:
                   (_) => ChangeNotifierProvider(
-                    create: (_) {
-                      final provider = MessageProvider();
-                      provider.initializeChat(
-                        user: chatUser,
-                        roomId: chatRoom.id ?? "",
-                      );
-                      return provider;
-                    },
-                    child: MessageScreen(chatUser: chatUser),
-                  ),
+                create: (_) {
+                  final provider = MessageProvider();
+                  provider.initializeChat(
+                    user: chatUser,
+                    roomId: chatRoom.id ?? "",
+                  );
+                  return provider;
+                },
+                child: MessageScreen(chatUser: chatUser),
+              ),
             ),
           );
         }
@@ -188,9 +185,9 @@ class _ChatScreenState extends State<ChatScreen> {
                     borderRadius: BorderRadius.circular(24),
                     border: Border.all(
                       color:
-                          avatarUrl.isEmpty
-                              ? ColorRes.white
-                              : ColorRes.primaryColor,
+                      avatarUrl.isEmpty
+                          ? ColorRes.white
+                          : ColorRes.primaryColor,
                       width: 2,
                     ),
                   ),
@@ -199,10 +196,13 @@ class _ChatScreenState extends State<ChatScreen> {
                     child: CachedImage(avatarUrl),
                   ),
                 ),
+                // Show green circle only if other user is online
                 Positioned(
                   right: 0,
                   bottom: 0,
-                  child: Container(
+                  child:
+                  isOtherUserOnline
+                      ? Container(
                     width: 14.pw,
                     height: 14.ph,
                     decoration: BoxDecoration(
@@ -210,7 +210,8 @@ class _ChatScreenState extends State<ChatScreen> {
                       shape: BoxShape.circle,
                       border: Border.all(color: Colors.white, width: 2),
                     ),
-                  ),
+                  )
+                      : const SizedBox.shrink(),
                 ),
               ],
             ),
@@ -228,12 +229,15 @@ class _ChatScreenState extends State<ChatScreen> {
                   ),
                   4.ph.spaceVertical,
                   Text(
-                    "Tap to view messages",
+                    // Show latest message or fallback text
+                    chatRoom.latestMessage?.isNotEmpty == true
+                        ? chatRoom.latestMessage!
+                        : "Tap to view messages",
                     style: styleW400S12.copyWith(
                       color:
-                          unreadCount > 0
-                              ? ColorRes.primaryColor
-                              : ColorRes.black,
+                      unreadCount > 0
+                          ? ColorRes.primaryColor
+                          : ColorRes.black,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -245,7 +249,7 @@ class _ChatScreenState extends State<ChatScreen> {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  formattedTime,
+                  formattedTime, // Now shows Indian time via ChatProvider
                   style: styleW400S12.copyWith(color: ColorRes.darkJungleGreen),
                 ),
                 5.ph.spaceVertical,

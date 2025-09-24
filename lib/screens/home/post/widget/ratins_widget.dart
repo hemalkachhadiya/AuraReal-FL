@@ -8,11 +8,12 @@ Future<double?> showRatingDialog(
   bool? loading,
 }) async {
   double selectedRating =
-      (post.postRating ?? 0.0).toStarRating(); // Scale raw to 0-5 for display
+      post.postRating?.toStarRating() ??
+      0.0; // Initialize with star rating (0–5)
 
   final result = await showDialog<double?>(
     context: context,
-    barrierDismissible: false, // Prevent accidental dismissal
+    barrierDismissible: false,
     builder:
         (context) => StatefulBuilder(
           builder:
@@ -26,7 +27,6 @@ Future<double?> showRatingDialog(
                       children: [
                         InkWell(
                           onTap: () => Navigator.of(context).pop(null),
-                          // Cancel
                           borderRadius: BorderRadius.circular(50),
                           child: Container(
                             width: 24,
@@ -55,32 +55,47 @@ Future<double?> showRatingDialog(
                     ),
                   ],
                 ),
-                
                 content: SingleChildScrollView(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                      if ((post.postRating ?? 0.0) > 0) ...[
+                        Text(
+                          "Current Rating: ${post.postRating?.toStringAsFixed(2)}", // Display raw rating
+                          style: styleW400S14.copyWith(color: ColorRes.grey),
+                        ),
+                        const SizedBox(height: 15),
+                      ],
                       const SizedBox(height: 20),
                       StarRatingWidget(
                         rating: selectedRating,
+                        // Use star rating (0–5)
                         size: 30.0,
                         activeColor: ColorRes.primaryColor,
-                        inactiveColor: ColorRes.primaryColor,
+                        inactiveColor: ColorRes.primaryColor.withOpacity(0.3),
                         onRatingChanged: (rating) {
                           setDialogState(() {
-                            selectedRating =
-                                rating; // Update dialog state (now on 0-5 scale)
+                            selectedRating = rating; // Update star rating
                           });
                           if (kDebugMode) {
-                            print('Rating changed to: $rating');
+                            print(
+                              'Rating changed to: $rating (stars), ${rating.toRawRating()} (raw)',
+                            );
                           }
                         },
                       ),
-                      if (selectedRating == 0) ...[
-                        const SizedBox(height: 10),
+                      const SizedBox(height: 15),
+                      if (selectedRating > 0) ...[
                         Text(
-                          'Please select a rating',
-                          style: styleW400S13.copyWith(color: ColorRes.red),
+                          'Selected: ${selectedRating.toRawRating().toStringAsFixed(2)}', // Display raw rating
+                          style: styleW500S14.copyWith(
+                            color: ColorRes.primaryColor,
+                          ),
+                        ),
+                      ] else ...[
+                        Text(
+                          'Tap stars to rate',
+                          style: styleW400S13.copyWith(color: ColorRes.grey),
                         ),
                       ],
                     ],
@@ -97,30 +112,25 @@ Future<double?> showRatingDialog(
                         raduis: 15,
                         onTap:
                             loading == true || selectedRating == 0
-                                ? null // Disable if loading or no rating
+                                ? null
                                 : () {
                                   if (kDebugMode) {
                                     print(
-                                      'Submit button tapped! Display rating: $selectedRating',
+                                      'Submit tapped! Rating: $selectedRating (stars), ${selectedRating.toRawRating()} (raw)',
                                     );
                                   }
-                                  // Convert back to raw format before returning (e.g., 3.0 → 0.06)
-                                  final rawRating =
-                                      DoubleRatingExtension(
-                                        selectedRating,
-                                      ).toRawRating(); // e.g., 3.0 → 60.0
-                                  if (kDebugMode) {
-                                    print('Returning raw rating: $rawRating');
-                                  }
-                                  Navigator.of(context).pop(rawRating);
+                                  Navigator.of(
+                                    context,
+                                  ).pop(selectedRating); // Return star rating
                                   if (onSubmit != null) {
-                                    if (kDebugMode) {
-                                      print('On Submit executed');
-                                    }
+                                    if (kDebugMode) print('OnSubmit executed');
                                     onSubmit();
                                   }
                                 },
-                        title: context.l10n?.submit ?? "Submit",
+                        title:
+                            (post.postRating ?? 0.0) > 0
+                                ? (context.l10n?.update ?? "Update")
+                                : (context.l10n?.submit ?? "Submit"),
                         style: styleW600S12.copyWith(color: ColorRes.white),
                       ),
                     ),
@@ -130,8 +140,9 @@ Future<double?> showRatingDialog(
         ),
   );
 
-  if (kDebugMode) {
-    print('Dialog closed with raw rating: $result');
-  }
-  return result;
+  if (kDebugMode)
+    print(
+      'Dialog closed with rating: $result (stars), ${result?.toRawRating()} (raw)',
+    );
+  return result; // Return star rating (0–5)
 }

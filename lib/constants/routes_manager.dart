@@ -1,5 +1,4 @@
 import 'package:aura_real/aura_real.dart';
-import 'package:aura_real/screens/home/post/posts/video_player_screen.dart';
 import 'package:aura_real/screens/home/search/search_screen.dart';
 
 class RouteManager {

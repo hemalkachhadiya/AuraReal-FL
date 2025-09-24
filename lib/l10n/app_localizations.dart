@@ -49,7 +49,7 @@ import 'app_localizations_en.dart';
 /// To configure the locales supported by your app, you’ll need to edit this
 /// file.
 ///
-/// First, open your project’s ios-/Runner.xcworkspace Xcode workspace file.
+/// First, open your project’s ios/Runner.xcworkspace Xcode workspace file.
 /// Then, in the Project Navigator, open the Info.plist file under the Runner
 /// project’s Runner folder.
 ///
@@ -736,6 +736,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Open Settings'**
   String get galleryPermissionBtn;
+
+  /// No description provided for @whatDoYouThink.
+  ///
+  /// In en, this message translates to:
+  /// **'What do you think of this?'**
+  String get whatDoYouThink;
+
+  /// No description provided for @reply.
+  ///
+  /// In en, this message translates to:
+  /// **'Reply'**
+  String get reply;
+
+  /// No description provided for @writeCaption.
+  ///
+  /// In en, this message translates to:
+  /// **'Write a Caption'**
+  String get writeCaption;
 
   /// No description provided for @rateThisPost.
   ///

@@ -223,6 +223,8 @@ class UploadProvider extends ChangeNotifier {
     }
   }
 
+  ///userid ===> je person ni profile hoy te id
+  /// followUserId ===> login person ni userid
   Future<bool> followUserProfile(BuildContext context) async {
     if (userData == null || userData?.id == null) return false;
 
@@ -251,6 +253,8 @@ class UploadProvider extends ChangeNotifier {
     return false;
   }
 
+  /// ===> je person ni profile hoy te id
+  /// followUserId ===> login person ni userid
   Future<bool> unfollowUserProfile(BuildContext context) async {
     if (userData == null || userData?.id == null) return false;
 
@@ -258,8 +262,8 @@ class UploadProvider extends ChangeNotifier {
     notifyListeners();
 
     final result = await AuthApis.unfollowUserProfile(
-      followUserId: postUserId,
-      userId: userData!.id!,
+      followUserId: userData!.id!,
+      userId: postUserId,
     );
 
     followLoader = false;

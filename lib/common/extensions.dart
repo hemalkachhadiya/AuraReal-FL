@@ -4,49 +4,62 @@ import 'package:intl/intl.dart';
 import 'package:aura_real/aura_real.dart';
 import 'package:path/path.dart' as path;
 
-extension PostRatingToStars on double {
-  int toStarCount() {
-    switch (this) {
-      case 0.02:
-        return 1;
-      case 0.04:
-        return 2;
-      case 0.06:
-        return 3;
-      case 0.08:
-        return 4;
-      case 0.10:
-        return 5;
-      default:
-        return 0; // Handle unexpected values
-    }
-  }
+// extension PostRatingToStars on double {
+//   int toStarCount() {
+//     switch (this) {
+//       case 0.02:
+//         return 1;
+//       case 0.04:
+//         return 2;
+//       case 0.06:
+//         return 3;
+//       case 0.08:
+//         return 4;
+//       case 0.10:
+//         return 5;
+//       default:
+//         return 0; // Handle unexpected values
+//     }
+//   }
+//
+//   double toStarRating() {
+//     switch (this) {
+//       case 0.02:
+//         return 1.0;
+//       case 0.04:
+//         return 2.0;
+//       case 0.06:
+//         return 3.0;
+//       case 0.08:
+//         return 4.0;
+//       case 0.10:
+//         return 5.0;
+//       default:
+//         return 0.0; // Handle unexpected values
+//     }
+//   }
+// }
 
+// extension DoubleRatingExtension on double {
+//   // Existing: raw (0-100) → stars (0-5)
+//   double toStars() => this / 20.0; // Rename this from toStarRating()
+//
+//   // New: stars (0-5) → raw (0-100)
+//   double toRawRating() => this * 20.0;
+// }
+
+extension RatingExtension on double {
   double toStarRating() {
-    switch (this) {
-      case 0.02:
-        return 1.0;
-      case 0.04:
-        return 2.0;
-      case 0.06:
-        return 3.0;
-      case 0.08:
-        return 4.0;
-      case 0.10:
-        return 5.0;
-      default:
-        return 0.0; // Handle unexpected values
-    }
+    // Example: Convert raw rating (0.0–0.1) to star rating (0–5)
+    return this * 50.0; // Adjust based on your rating scale
+  }
+
+  double toRawRating() {
+    // Example: Convert star rating (0–5) to raw rating (0.0–0.1)
+    return this / 50.0; // Adjust based on your rating scale
   }
 }
 
-extension DoubleRatingExtension on double {
-  // Existing: raw (0-100) → stars (0-5)
-  double toStars() => this / 20.0; // Rename this from toStarRating()
-
-  // New: stars (0-5) → raw (0-100)
-  double toRawRating() => this * 20.0;
-}
 
 extension StringPathExtension on String {
   /// Converts forward slashes (/) to backslashes (\) in a string.

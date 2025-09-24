@@ -1,8 +1,7 @@
 import 'package:aura_real/aura_real.dart';
-import 'package:http/http.dart'
-    as http; // Ensure http is imported for MediaType
-import 'package:mime/mime.dart';
-import 'package:video_compress/video_compress.dart'; // Ensure mime is imported for lookupMimeType
+import 'package:video_compress/video_compress.dart';
+import 'package:flutter/material.dart';
+import 'package:mime/mime.dart'; // Assuming you import this for lookupMimeType
 
 class AddPostProvider extends ChangeNotifier {
   final TextEditingController textController = TextEditingController();
@@ -10,8 +9,6 @@ class AddPostProvider extends ChangeNotifier {
   VideoPlayerController? videoController; // For video playback
   bool loader = false;
   final ImagePicker _picker = ImagePicker();
-
-  // 👉 Track selected hashtags
   final List<String> selectedHashtags = [];
 
   AddPostProvider() {
@@ -36,19 +33,18 @@ class AddPostProvider extends ChangeNotifier {
         navigatorKey.currentContext!,
       );
       if (mediaFile != null) {
-        // Determine if it's a video or image based on file extension or mime type
         final mimeType = lookupMimeType(mediaFile.path);
         if (mimeType != null && mimeType.startsWith('video/')) {
           selectedMedia = mediaFile;
           videoController?.dispose();
           videoController = VideoPlayerController.file(selectedMedia!)
             ..initialize().then((_) {
-              notifyListeners(); // Notify after video is initialized
+              notifyListeners();
             });
         } else {
           selectedMedia = mediaFile;
           videoController?.dispose();
-          videoController = null; // Clear video controller for images
+          videoController = null;
         }
         notifyListeners();
       }
@@ -68,16 +64,27 @@ class AddPostProvider extends ChangeNotifier {
     return isTextValid && hasMedia;
   }
 
+  /// Reset form fields
+  void _resetForm() {
+    textController.clear();
+    selectedMedia = null;
+    videoController?.dispose();
+    videoController = null;
+    selectedHashtags.clear();
+    notifyListeners();
+  }
 
   /// Create Post API
-  Future<void> createPostAPI() async {
+  Future<bool> createPostAPI(BuildContext context) async {
     if (!canPublish()) {
       print("Cannot publish: Validation failed");
-      return;
+      showErrorMsg("Please add text and media to publish.");
+      return false;
     }
     if (userData == null || userData?.id == null) {
       print("Cannot publish: User data or ID is null");
-      return;
+      showErrorMsg("User data is missing. Please log in again.");
+      return false;
     }
 
     loader = true;
@@ -93,35 +100,36 @@ class AddPostProvider extends ChangeNotifier {
     final mimeType = lookupMimeType(selectedMedia!.path);
 
     if (mimeType != null && mimeType.startsWith('video/')) {
-      // 👉 Compress the video
       final compressed = await VideoCompress.compressVideo(
         selectedMedia!.path,
-        quality: VideoQuality.MediumQuality, // you can tweak
+        quality: VideoQuality.MediumQuality,
         deleteOrigin: false,
       );
 
       if (compressed != null && compressed.file != null) {
         final file = compressed.file!;
-
-        // 👉 Check size
         final sizeInBytes = await file.length();
         final sizeInMB = sizeInBytes / (1024 * 1024);
 
         if (sizeInMB <= 2) {
           postVideo = file.path;
         } else {
-          print("Video still larger than 2 MB (${sizeInMB.toStringAsFixed(2)} MB)");
-          showErrorMsg("Video still larger than 1 MB (${sizeInMB.toStringAsFixed(2)} MB)");
-          // You can show a toast/snackbar to user here
+          print(
+            "Video still larger than 2 MB (${sizeInMB.toStringAsFixed(2)} MB)",
+          );
+          showErrorMsg(
+            "Video is too large (${sizeInMB.toStringAsFixed(2)} MB). Max size is 2 MB.",
+          );
           loader = false;
           notifyListeners();
-          return;
+          return false;
         }
       } else {
         print("Video compression failed");
+        showErrorMsg("Video compression failed. Please try again.");
         loader = false;
         notifyListeners();
-        return;
+        return false;
       }
     } else {
       postImg = selectedMedia!.path;
@@ -137,46 +145,21 @@ class AddPostProvider extends ChangeNotifier {
       postVideo: postVideo ?? "",
     );
 
+    loader = false;
+
     if (result != null) {
       print("Post created successfully");
-      navigatorKey.currentState?.context.navigator.pop();
+      if (context.mounted) {
+        Navigator.pop(context, true); // Signal success
+      }
+      _resetForm();
+      return true;
     } else {
       print("Failed to create post. Keeping selectedMedia for retry.");
+      showErrorMsg("Failed to create post. Please try again.");
+      notifyListeners();
+      return false;
     }
-
-    loader = false;
-    if (result != null) {
-      textController.clear();
-      selectedMedia = null;
-      videoController?.dispose();
-      videoController = null;
-      selectedHashtags.clear();
-    }
-    notifyListeners();
-  }
-
-
-  void publishPost(BuildContext context) {
-    if (!canPublish()) {
-      print("Cannot publish: Validation failed");
-      return;
-    }
-
-    if (selectedMedia != null) {
-      print('With media: ${selectedMedia!.path}');
-    }
-    if (context.mounted) {
-      context.navigator.pop();
-      final postsProvider = Provider.of<PostsProvider>(context, listen: false);
-      postsProvider.getAllPostListAPI(showLoader: true, resetData: true);
-    }
-    // Reset
-    textController.clear();
-    selectedMedia = null;
-    videoController?.dispose();
-    videoController = null;
-    selectedHashtags.clear();
-    notifyListeners();
   }
 
   @override
@@ -184,5 +167,14 @@ class AddPostProvider extends ChangeNotifier {
     textController.dispose();
     videoController?.dispose();
     super.dispose();
+  }
+
+  /// Helper to show error messages
+  void showErrorMsg(String message) {
+    if (navigatorKey.currentContext != null) {
+      ScaffoldMessenger.of(
+        navigatorKey.currentContext!,
+      ).showSnackBar(SnackBar(content: Text(message)));
+    }
   }
 }

@@ -116,7 +116,7 @@ class GetLocationService {
     // Get current position
     try {
       Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
+        locationSettings: LocationSettings(accuracy: LocationAccuracy.high),
       );
       print("Latitude: ${position.latitude}, Longitude: ${position.longitude}");
       return (

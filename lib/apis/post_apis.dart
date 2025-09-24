@@ -1,15 +1,7 @@
-import 'package:aura_real/apis/app_response.dart';
-import 'package:aura_real/apis/app_response_2.dart';
-import 'package:aura_real/apis/model/file_data_model.dart';
-import 'package:aura_real/apis/model/multipart_list_model.dart';
 import 'package:aura_real/aura_real.dart';
 import 'package:aura_real/apis/model/post_model.dart';
 import 'package:http/http.dart' as http;
-import 'package:http/http.dart' show Response;
 import 'package:http_parser/http_parser.dart';
-import 'package:http_parser/http_parser.dart' as http;
-import 'package:mime/mime.dart';
-import 'package:mime/mime.dart' as mime;
 
 class PostAPI {
   /// Create Post
@@ -269,12 +261,25 @@ class PostAPI {
   static Future<Map<String, dynamic>?> commentOnPostAPI({
     required String postId,
     required String content,
+    String? parentCommentId, // <-- for reply
   }) async {
     try {
+      final body = {
+        "post_id": postId,
+        "content": content,
+        "user_id": userData?.id,
+      };
+
+      // Add only if it's a reply
+      if (parentCommentId != null && parentCommentId.isNotEmpty) {
+        body["parent_comment_id"] = parentCommentId;
+      }
+
       final response = await ApiService.postApi(
         url: EndPoints.createcomment,
-        body: {"post_id": postId, "content": content, "user_id": userData?.id},
+        body: body,
       );
+
       if (response == null) {
         showCatchToast('No response from server', null);
         return {'success': false, 'response': null};

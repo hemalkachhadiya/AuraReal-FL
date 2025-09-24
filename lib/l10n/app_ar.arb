@@ -107,6 +107,9 @@
   "galleryPermission": "نحتاج إلى الوصول إلى معرض الصور للمتابعة",
   "galleryPermissionContent": "يرجى السماح بالوصول إلى المعرض من الإعدادات.",
   "galleryPermissionBtn": "فتح الإعدادات",
+  "whatDoYouThink": "ما رأيك في هذا؟",
+  "reply": "رد",
+  "writeCaption": "اكتب تعليقًا",
   "@cameraPermissionContent": {
     "description": "رسالة طلب إذن الكاميرا"
   }

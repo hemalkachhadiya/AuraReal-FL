@@ -40,8 +40,6 @@ class PostsProvider extends ChangeNotifier {
   bool hasMoreData = false;
 
   ///=============Comments Variable
-
-  /// Get All Comment List API for a specific post
   late final Map<String, List<CommentModel>> _commentLists =
       {}; // Map to store comments by postId
   bool _isLoadingComments = false;
@@ -236,7 +234,6 @@ class PostsProvider extends ChangeNotifier {
   }
 
   /// Updated Rating APIs with local updates
-  ///RateAPI - Update existing rating
   Future<void> updateRatePostAPI(
     BuildContext context, {
     String? postId,
@@ -262,7 +259,7 @@ class PostsProvider extends ChangeNotifier {
         postId: postId.toString(),
         rating: rating.toString(),
       );
-
+      print("Res === ${result}");
       if (!result) {
         // Revert changes if API failed
         if (originalRating != null) {
@@ -287,6 +284,7 @@ class PostsProvider extends ChangeNotifier {
     String? postId,
     String? rating,
   }) async {
+    print("api rating ========== ${rating}");
     if (userData == null || userData?.id == null) return;
 
     // Store original rating for rollback if needed
@@ -309,6 +307,7 @@ class PostsProvider extends ChangeNotifier {
         newRating: rating.toString(),
       );
 
+      print("Result == ${result}");
       if (!result) {
         // Revert changes if API failed - use original rating instead of 0.0
         _updatePostRatingLocally(postId, originalRating.toString());
@@ -324,49 +323,13 @@ class PostsProvider extends ChangeNotifier {
     }
   }
 
-  // ///RateAPI
-  // Future<void> updateRatePostAPI(
-  //   BuildContext context, {
-  //   String? postId,
-  //   String? rating,
-  // }) async {
-  //   if (userData == null || userData?.id == null) return;
-  //   loader = true;
-  //   notifyListeners();
-  //   final result = await PostAPI.updateRatePostAPI(
-  //     postId: postId.toString(),
-  //     rating: rating.toString(),
-  //   );
-  //   await getAllPostListAPI(resetData: true, showLoader: true);
-  //   if (result) {}
-  //   loader = false;
-  //   notifyListeners();
-  // }
-  //
-  // ///New Rate API
-  // Future<void> newRatePostAPI(
-  //   BuildContext context, {
-  //   String? postId,
-  //   String? rating,
-  // }) async {
-  //   if (userData == null || userData?.id == null) return;
-  //   loader = true;
-  //   notifyListeners();
-  //   final result = await PostAPI.newRatePostAPI(
-  //     postId: postId.toString(),
-  //     newRating: rating.toString(),
-  //   );
-  //   await getAllPostListAPI(resetData: true, showLoader: true);
-  //   if (result) {}
-  //   loader = false;
-  //   notifyListeners();
-  // }
-
   ///Comment Post API
+  /// Comment or Reply on Post
   Future<void> commentPostAPI(
     BuildContext context, {
     String? postId,
     String? content,
+    String? parentCommentId, // <-- added
   }) async {
     if (userData == null || userData?.id == null) return;
     loaderComments = true;
@@ -376,8 +339,8 @@ class PostsProvider extends ChangeNotifier {
       final result = await PostAPI.commentOnPostAPI(
         postId: postId.toString(),
         content: content.toString(),
+        parentCommentId: parentCommentId, // <-- pass here
       );
-      print("RESULT ===== ${result}");
 
       if (result != null) {
         final response = result['response'] as http.Response?;
@@ -386,11 +349,10 @@ class PostsProvider extends ChangeNotifier {
             postId!,
             showLoader: true,
             resetData: true,
-          ); // Refresh comments only if successful
+          );
         } else if (response != null &&
             response.statusCode == 400 &&
             result['isDuplicate'] == true) {
-          // Skip further actions for duplicate comment
           print("Comment already exists, skipping refreshPostListPage");
         } else {
           _errorComments = "Failed to comment";
@@ -415,95 +377,16 @@ class PostsProvider extends ChangeNotifier {
     scrollPosition = position;
   }
 
-  Future<void> refreshPostListPage({
-    required int page,
-    bool showLoader = false,
-    bool replacePage = false, // Whether to replace or append the page data
-  }) async {
-    print("currernt page ======== ${currentPage}");
-    print("refresh==================1");
-    if (isApiCalling) return;
-    isApiCalling = true;
-
-    if (showLoader) {
-      print("refresh==================2");
-
-      refreshLoader = true;
-      _safeNotifyListeners();
-    }
-
-    try {
-      print("refresh==================3");
-      // Fetch the page data
-      final model = await PostAPI.getAllPostListAPI(
-        page: page,
-        pageSize: pageSize,
-      );
-
-      if (model != null) {
-        print("refresh==================4");
-        if (replacePage || paginationModel == null) {
-          // Replace the data for the specific page
-          final startIndex = (page - 1) * pageSize;
-          final endIndex = startIndex + (model.list?.length ?? 0);
-
-          if (paginationModel?.list != null &&
-              startIndex < paginationModel!.list!.length) {
-            paginationModel?.list?.replaceRange(
-              startIndex,
-              endIndex,
-              model.list ?? [],
-            );
-            posts = paginationModel?.list ?? [];
-          } else {
-            // If out of range, append or set as new data
-            paginationModel = model.copyWith();
-            posts = paginationModel?.list ?? [];
-          }
-        } else {
-          print("refresh==================5");
-          // Append new items, avoiding duplicates
-          final existingIds =
-              paginationModel?.list?.map((e) => e.id).toSet() ?? {};
-          final newItems =
-              (model.list ?? [])
-                  .where((e) => !existingIds.contains(e.id))
-                  .toList();
-
-          paginationModel = paginationModel?.copyWith(
-            list: [...(paginationModel?.list ?? []), ...newItems],
-          );
-          posts = paginationModel?.list ?? [];
-        }
-        print(
-          "Refreshed paginationModel-------- ${paginationModel?.list?.length}",
-        );
-      } else {
-        _error = "Failed to refresh page $page";
-      }
-    } catch (e) {
-      _error = e.toString();
-      if (showLoader) showCatchToast(_error, null);
-    } finally {
-      refreshLoader = false;
-      isApiCalling = false;
-      _safeNotifyListeners();
-    }
-  }
-
   /// Get All Comment List
   Future<void> getAllCommentListAPI(
     String postId, {
     bool showLoader = false,
     bool resetData = false,
   }) async {
-    // if (isApiCallingComments || _commentLists.containsKey(postId))
-    //   return _commentLists[postId] ?? [];
     if (comments.isEmpty && !resetData) return;
-
     if (isApiCallingComments) return;
-    isApiCallingComments = true;
 
+    isApiCallingComments = true;
     if (showLoader) {
       loaderComments = true;
       _safeNotifyListeners();
@@ -521,8 +404,11 @@ class PostsProvider extends ChangeNotifier {
         pageSize: pageSizeComments,
       );
 
+      List<CommentModel> flatList = [];
+
       if (resetData || paginationCommentModel == null) {
         paginationCommentModel = model?.copyWith();
+        flatList = model?.list ?? [];
       } else {
         final existingIds =
             paginationCommentModel?.list?.map((e) => e.id).toSet() ?? {};
@@ -534,12 +420,17 @@ class PostsProvider extends ChangeNotifier {
         paginationCommentModel = paginationCommentModel?.copyWith(
           list: [...(paginationCommentModel?.list ?? []), ...newItems],
         );
+
+        flatList = paginationCommentModel?.list ?? [];
       }
+
+      // Build tree structure
+      _commentLists[postId] = buildCommentTree(flatList);
     } catch (e) {
       _errorComments = e.toString();
       if (loaderComments) showCatchToast(_errorComments, null);
       print('Exception in getAllCommentListAPI: $e');
-      if (showLoader) showCatchToast(_error, null);
+      if (showLoader) showCatchToast(_errorComments, null);
     } finally {
       loaderComments = false;
       isApiCallingComments = false;
@@ -547,70 +438,25 @@ class PostsProvider extends ChangeNotifier {
     }
   }
 
-  ///Refresh All Comment List For Particular post
-  Future<void> refreshCommentListForPost(
-    String postId, {
-    int page = 1,
-    int index = 0,
-    bool showLoader = false,
-  }) async {
-    print("refresh---------------------1");
-    // Check if API is already calling to avoid duplicate calls
-    if (isApiCallingComments) return;
+  List<CommentModel> buildCommentTree(List<CommentModel> flatComments) {
+    final Map<String, CommentModel> lookup = {
+      for (var c in flatComments) c.id!: c.copyWith(replies: []),
+    };
 
-    isApiCallingComments = true;
+    List<CommentModel> roots = [];
 
-    if (showLoader) {
-      print("refresh---------------------2");
-
-      loaderComments = true;
-      _safeNotifyListeners();
-    }
-
-    try {
-      print("refresh---------------------3");
-
-      // Reset data for the specific post
-      currentPageComments = page - 1; // Adjust to 0-based index if needed
-      paginationCommentModel = null; // Reset pagination model for this post
-      // Clear only the comments for this postId if using a map
-      if (_commentLists.containsKey(postId)) {
-        _commentLists[postId]?.clear();
+    for (var comment in lookup.values) {
+      if (comment.parentCommentId != null &&
+          lookup.containsKey(comment.parentCommentId)) {
+        // Add as reply to parent
+        lookup[comment.parentCommentId]!.replies!.add(comment);
       } else {
-        _commentLists[postId] = [];
+        // Root comment
+        roots.add(comment);
       }
-      print("refresh---------------------4");
-
-      // Fetch updated comments for the specific post
-      final model = await PostAPI.getAllCommentListAPI(
-        postId: postId,
-        page: page,
-        pageSize: pageSizeComments,
-      );
-
-      print("refresh---------------------5");
-
-      if (model != null) {
-        paginationCommentModel = model.copyWith();
-        _commentLists[postId] = model.list ?? [];
-      }
-
-      print("refresh---------------------6");
-
-      // Update the specific index if provided (optional, depending on your UI)
-      if (index >= 0 && index < (_commentLists[postId]?.length ?? 0)) {
-        // Notify listeners or update UI for the specific index
-        _safeNotifyListeners();
-      }
-    } catch (e) {
-      _errorComments = e.toString();
-      if (showLoader) showCatchToast(_errorComments, null);
-      print('Exception in refreshCommentListForPost: $e');
-    } finally {
-      loaderComments = false;
-      isApiCallingComments = false;
-      _safeNotifyListeners();
     }
+
+    return roots;
   }
 
   /// Clear all posts

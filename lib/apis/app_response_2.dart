@@ -1,7 +1,5 @@
 import 'package:aura_real/aura_real.dart';
 
-import 'package:aura_real/aura_real.dart';
-
 /// ---------- Helpers to encode / decode AppResponse2 ----------
 AppResponse2<T> appResponseFromJson2<T>(
     String str, {
@@ -158,7 +156,7 @@ class AppResponse2<T> {
 
     if (list != null) {
       if (converter != null) {
-        serializedList = list!.map((item) => converter!(item)).toList();
+        serializedList = list!.map((item) => converter(item)).toList();
       } else {
         serializedList = list as List<dynamic>?;
       }

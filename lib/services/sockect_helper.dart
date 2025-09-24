@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:aura_real/aura_real.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
@@ -8,64 +10,150 @@ class SocketIoHelper {
   MessageProvider? _messageProvider; // Reference to provider
 
   /// ✅ Connect and authenticate socket
-  void connectSocket(String userId, {String? roomId, MessageProvider? provider}) {
-    _messageProvider = provider; // Store provider reference
-
-    socketApp = IO.io(
-      EndPoints.domain,
-      <String, dynamic>{
-        'autoConnect': true,
-        'transports': ['websocket'],
-        'forceNew': true,
-        'reconnect': true,
-      },
-    );
-
-    socketApp!.onConnect((_) {
-      debugPrint("✅ Connected to socket: ${socketApp!.id}");
-
-      // Register user as online
-      socketApp!.emit("registerUser", userId);
-
-      // Join specific room if provided
-      if (roomId != null) {
-        final roomData = {"roomId": roomId, "userId": userId};
-        socketApp!.emit("joinRoom", roomData);
-        debugPrint("📌 Joined room: $roomData");
+  void connectSocket(
+      String userId, {
+        required String roomId,
+        MessageProvider? provider,
+      }) {
+    try {
+      if (socketApp?.connected == true) {
+        debugPrint("🔌 Socket already connected");
+        return;
       }
 
-      _listenEvents();
-    });
+      socketApp = IO.io(
+        EndPoints.socketUrl,
+        IO.OptionBuilder()
+            .setTransports(['websocket'])
+            .disableAutoConnect()
+            .enableForceNew()
+            .setTimeout(5000)
+            .build(),
+      );
 
-    socketApp!.onConnectError((err) {
-      debugPrint("❌ Socket connection error: $err");
-    });
+      socketApp!.connect();
 
-    socketApp!.onDisconnect((_) {
-      debugPrint("⚠️ Disconnected from socket");
-    });
+      // Connection events
+      socketApp!.onConnect((_) {
+        debugPrint("✅ Socket connected successfully");
+        socketApp!.emit("joinRoom", {
+          "userId": userId,
+          "roomId": roomId,
+        });
+      });
+
+      socketApp!.onDisconnect((_) {
+        debugPrint("❌ Socket disconnected");
+      });
+
+      socketApp!.onConnectError((error) {
+        debugPrint("❌ Socket connection error: $error");
+      });
+
+      // Message events
+      socketApp!.on("newMessage", (data) {
+        debugPrint("📥 New message received: $data");
+        provider?.handleNewMessage(data);
+      });
+
+      socketApp!.on("messageSent", (data) {
+        debugPrint("✅ Message sent acknowledgment: $data");
+        // This will be handled by the sendMessage method
+      });
+
+      socketApp!.on("messageError", (error) {
+        debugPrint("❌ Message error: $error");
+        // This will be handled by the sendMessage method
+      });
+
+      // ✅ New event listeners for read receipts
+      socketApp!.on("messageRead", (data) {
+        debugPrint("📖 Message read event: $data");
+        provider?.handleMessageRead(data);
+      });
+
+      socketApp!.on("messagesRead", (data) {
+        debugPrint("📖 Multiple messages read event: $data");
+        provider?.handleMessageRead(data);
+      });
+
+      socketApp!.on("messageDelivered", (data) {
+        debugPrint("📨 Message delivered event: $data");
+        provider?.handleMessageDelivered(data);
+      });
+
+      // Typing events
+      socketApp!.on("userTyping", (data) {
+        debugPrint("⌨️ User typing: $data");
+        final senderId = data["senderId"];
+        if (senderId != userId) { // Don't show typing indicator for self
+          provider?.setTypingStatus(true);
+
+          // Auto-hide typing after 3 seconds
+          Timer(const Duration(seconds: 3), () {
+            provider?.setTypingStatus(false);
+          });
+        }
+      });
+
+      socketApp!.on("userStoppedTyping", (data) {
+        debugPrint("⌨️ User stopped typing: $data");
+        final senderId = data["senderId"];
+        if (senderId != userId) {
+          provider?.setTypingStatus(false);
+        }
+      });
+
+      // Online status events
+      socketApp!.on("userOnline", (data) {
+        debugPrint("🟢 User online: $data");
+        final userId = data["userId"];
+        provider?.updateUserOnlineStatus(userId, true);
+      });
+
+      socketApp!.on("userOffline", (data) {
+        debugPrint("🔴 User offline: $data");
+        final userId = data["userId"];
+        provider?.updateUserOnlineStatus(userId, false);
+      });
+
+      // Error handling
+      socketApp!.on("error", (error) {
+        debugPrint("❌ Socket error: $error");
+      });
+
+    } catch (e) {
+      debugPrint("❌ Socket connection failed: $e");
+    }
   }
 
   /// ✅ Send message
   void sendMessage({
-    required String roomId,
-    required String senderId,
-    required String receiverId,
     required String text,
-    String messageType = "text",
-    String? mediaUrl,
+    required String roomId,
+    required String messageType,
+    required String receiverId,
+    required String senderId,
+    String? messageId, // Add messageId parameter
+    File? attachment,
   }) {
-    final payload = {
-      "roomId": roomId,
-      "senderId": senderId,
-      "receiverId": receiverId,
+    if (socketApp == null || !socketApp!.connected) {
+      debugPrint("❌ Cannot send message: Socket not connected");
+      return;
+    }
+
+    final messageData = {
       "message": text,
+      "roomId": roomId,
       "messageType": messageType,
-      "mediaUrl": mediaUrl ?? "",
+      "receiverId": receiverId,
+      "senderId": senderId,
+      if (messageId != null) "messageId": messageId, // Include messageId if provided
+      "timestamp": DateTime.now().toIso8601String(),
     };
 
-    debugPrint("📤 Sending message: $payload");
-    socketApp?.emit("sendMessage", payload);
+    socketApp!.emit("sendMessage", messageData);
+    debugPrint("📤 Message sent via socket: $messageData");
   }
 
   /// ✅ Typing event
@@ -78,11 +166,25 @@ class SocketIoHelper {
   }
 
   /// ✅ Mark all messages as read
-  void markMessagesAsRead({required String roomId, required String readerId}) {
-    socketApp?.emit("markMessagesAsRead", {
+  void markMessagesAsRead({
+    required String roomId,
+    required String readerId,
+    List<String>? messageIds,
+  }) {
+    if (socketApp == null || !socketApp!.connected) {
+      debugPrint("❌ Cannot mark messages as read: Socket not connected");
+      return;
+    }
+
+    final data = {
       "roomId": roomId,
       "readerId": readerId,
-    });
+      if (messageIds != null && messageIds.isNotEmpty) "messageIds": messageIds,
+      "timestamp": DateTime.now().toIso8601String(),
+    };
+
+    socketApp!.emit("markAsRead", data);
+    debugPrint("📖 Emitted markAsRead: $data");
   }
 
   /// ✅ Listen for all events

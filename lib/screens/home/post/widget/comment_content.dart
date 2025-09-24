@@ -20,6 +20,7 @@ class CommentsWidget extends StatefulWidget {
 
 class _CommentsWidgetState extends State<CommentsWidget> {
   final TextEditingController _commentController = TextEditingController();
+  CommentModel? _replyToComment;
 
   @override
   Widget build(BuildContext context) {
@@ -109,14 +110,20 @@ class _CommentsWidgetState extends State<CommentsWidget> {
           Expanded(
             child: SingleChildScrollView(
               child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children:
-                    (widget.comments ?? []).map((comment) {
-                      return CommentTile(comment: comment);
-                    }).toList(),
+                children: (widget.comments ?? []).map((comment) {
+                  return CommentTile(
+                    comment: comment,
+                    onReply: (c) {
+                      setState(() {
+                        _replyToComment = c;
+                      });
+                    },
+                  );
+                }).toList(),
               ),
             ),
           ),
+
 
           // Persistent input field with keyboard padding
           Padding(
@@ -143,7 +150,10 @@ class _CommentsWidgetState extends State<CommentsWidget> {
                       controller: _commentController,
                       style: styleW400S12,
                       decoration: InputDecoration(
-                        hintText: 'What do you think of this?',
+                        hintText:
+                            _replyToComment != null
+                                ? "Replying to ${_replyToComment!.userId?.fullName ?? "user"}"
+                                : context.l10n?.whatDoYouThink ?? "",
                         hintStyle: TextStyle(color: Colors.grey.shade500),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(20),
@@ -153,6 +163,7 @@ class _CommentsWidgetState extends State<CommentsWidget> {
                           borderRadius: BorderRadius.circular(20),
                           borderSide: BorderSide(color: Colors.grey.shade700),
                         ),
+
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(20),
                           borderSide: BorderSide(color: ColorRes.primaryColor),
@@ -170,14 +181,22 @@ class _CommentsWidgetState extends State<CommentsWidget> {
                   IconButton(
                     onPressed: () async {
                       if (_commentController.text.trim().isEmpty) return;
-                      if (widget.onCommentSubmitted != null) {
-                        widget.onCommentSubmitted!(
-                          _commentController.text.trim(),
-                        );
-                        _commentController.clear();
-                        // No pop, just refresh
-                        setState(() {}); // Trigger UI update
-                      }
+                      final text = _commentController.text.trim();
+
+                      final provider = context.read<PostsProvider>();
+
+                      // ✅ only call API, provider will refresh comments list
+                      await provider.commentPostAPI(
+                        context,
+                        postId: widget.post.id,
+                        content: text,
+                        parentCommentId: _replyToComment?.id,
+                      );
+
+                      _commentController.clear();
+                      setState(() {
+                        _replyToComment = null;
+                      });
                     },
                     icon: const Icon(Icons.send, color: ColorRes.primaryColor),
                   ),
@@ -200,27 +219,43 @@ class _CommentsWidgetState extends State<CommentsWidget> {
 // Individual comment tile widget (unchanged)
 class CommentTile extends StatelessWidget {
   final CommentModel comment;
+  final Function(CommentModel) onReply;
+  final int depth; // 👈 nesting level
 
-  const CommentTile({super.key, required this.comment});
+  const CommentTile({
+    super.key,
+    required this.comment,
+    required this.onReply,
+    this.depth = 0,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: EdgeInsets.only(
+        left: 16.0 + (depth * 24), // 👈 indent replies
+        right: 16,
+        top: 8,
+        bottom: 8,
+      ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Avatar
           CircleAvatar(
             radius: 16,
             backgroundColor:
-                comment.userId != null ? ColorRes.primaryColor : Colors.grey,
-            child: Icon(Icons.person, color: Colors.white, size: 16),
+            comment.userId != null ? ColorRes.primaryColor : Colors.grey,
+            child: const Icon(Icons.person, color: Colors.white, size: 16),
           ),
           const SizedBox(width: 12),
+
+          // Comment body
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // User + Time
                 Row(
                   children: [
                     Flexible(
@@ -235,22 +270,46 @@ class CommentTile extends StatelessWidget {
                       comment.createdAt != null
                           ? _formatTimeAgo(comment.createdAt!)
                           : "now",
-                      style: styleW500S12,
+                      style: styleW400S12.copyWith(color: Colors.grey),
                     ),
                   ],
                 ),
                 const SizedBox(height: 4),
-                Text(comment.content ?? "", style: styleW500S14),
-                const SizedBox(height: 8),
+
+                // Comment text
+                Text(
+                  comment.content ?? "",
+                  style: styleW500S14,
+                ),
+                const SizedBox(height: 6),
+
+                // Actions: Like + Reply
                 Row(
                   children: [
                     GestureDetector(
-                      onTap: () {},
-                      child: Text('Reply', style: styleW400S12),
+                      onTap: () => onReply(comment),
+                      child: Text(
+                        context.l10n?.reply ?? "Reply",
+                        style: styleW400S12.copyWith(
+                          color: ColorRes.primaryColor,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                     ),
-                    const SizedBox(width: 16),
                   ],
                 ),
+
+                // 👇 Nested replies
+                if (comment.replies != null && comment.replies!.isNotEmpty)
+                  Column(
+                    children: comment.replies!
+                        .map((reply) => CommentTile(
+                      comment: reply,
+                      onReply: onReply,
+                      depth: depth + 1,
+                    ))
+                        .toList(),
+                  ),
               ],
             ),
           ),
@@ -269,3 +328,4 @@ class CommentTile extends StatelessWidget {
     return "now";
   }
 }
+

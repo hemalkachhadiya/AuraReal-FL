@@ -4,7 +4,6 @@ import 'package:aura_real/screens/home/post/posts/image_preview_screen.dart';
 import 'package:aura_real/screens/home/post/posts/video_player_screen.dart';
 
 class PostCard extends StatefulWidget {
-  // Changed to Stateful for local updates
   final PostModel post;
   final VoidCallback onTap;
   final VoidCallback onTapPost;
@@ -27,33 +26,61 @@ class PostCard extends StatefulWidget {
 }
 
 class _PostCardState extends State<PostCard> {
-  late double _localRating;
-  late String _commentString;
+  late double _localRawRating; // Store rating in raw format (0.0–0.1)
+  int _localCommentCount = 0;
+  String? _commentString;
 
   @override
   void initState() {
     super.initState();
-    _localRating = widget.post.postRating ?? 0.0;
+    _localRawRating =
+        widget.post.postRating?.toRawRating() ?? 0.0; // Use raw rating
+    _localCommentCount = widget.post.commentsCount ?? 0;
     _commentString = widget.post.content ?? "";
+    print("widget.post.postRating (raw) === $_localRawRating");
   }
 
   @override
   void didUpdateWidget(PostCard oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.post.postRating != widget.post.postRating) {
-      _localRating = widget.post.postRating ?? 0.0;
+      setState(() {
+        _localRawRating = widget.post.postRating?.toRawRating() ?? 0.0;
+      });
+    }
+    if (oldWidget.post.commentsCount != widget.post.commentsCount) {
+      _localCommentCount = widget.post.commentsCount ?? 0;
     }
     if (oldWidget.post.content != widget.post.content) {
       _commentString = widget.post.content ?? "";
     }
   }
 
+  void _handleCommentSubmitted(String comment) async {
+    if (comment.trim().isEmpty) return;
+    widget.onCommentSubmitted?.call(comment);
+    setState(() {
+      _localCommentCount += 1; // Update comment count locally
+    });
+  }
+
+  void _handleRatingSubmitted(double starRating) {
+    setState(() {
+      _localRawRating =
+          starRating.toRawRating(); // Convert stars (0–5) to raw (0.0–0.1)
+    });
+    print("Star Rating -- ${_localRawRating}");
+
+    widget.onRatingSubmitted?.call(_localRawRating); // Pass raw rating
+  }
+
   @override
   Widget build(BuildContext context) {
     final postsProvider = Provider.of<PostsProvider>(context, listen: false);
+
     return Column(
       children: [
-        ///Profile
+        /// Profile Section
         InkWell(
           onTap: widget.onTap,
           child: Padding(
@@ -76,8 +103,6 @@ class _PostCardState extends State<PostCard> {
                     child: CachedImage(
                       _getProfileImageUrl(),
                       fit: BoxFit.cover,
-
-                      // Add error placeholder if needed
                     ),
                   ),
                 ),
@@ -91,26 +116,32 @@ class _PostCardState extends State<PostCard> {
                       style: styleW600S12,
                     ),
                     const SizedBox(height: 4),
-                    if (_localRating > 0) ...[
-                      // Only show if rated
+                    if (_localRawRating > 0)
                       Row(
                         children: [
                           SvgAsset(
                             imagePath: AssetRes.starFillIcon,
-                            height: 16,
-                            width: 16,
                             color: ColorRes.yellowColor,
+                            height: 16.ph,
+                            width: 16.pw,
                           ),
-                          const SizedBox(width: 2),
+                          // StarRatingWidget(
+                          //   rating: _localRawRating.toStarRating(),
+                          //   Convert to star rating (0–5)
+                          // size: 16,
+                          // activeColor: ColorRes.primaryColor,
+                          // inactiveColor: ColorRes.primaryColor.withOpacity(
+                          //   0.3,
+                          // ),
+                          // ),
+                          const SizedBox(width: 4),
                           Text(
-                            widget.post.userId?.profile?.ratingsAvg
-                                    .toString() ??
-                                "0",
+                            _localRawRating.toStringAsFixed(2),
+                            // Display raw rating (e.g., 0.06)
                             style: styleW600S12,
-                          ), // Fixed to 1 decimal
+                          ),
                         ],
                       ),
-                    ],
                   ],
                 ),
               ],
@@ -118,219 +149,123 @@ class _PostCardState extends State<PostCard> {
           ),
         ),
 
-        ///Post Image / Video
+        /// Post Media
         buildMedia(context, widget.post, widget.onTapPost),
-        // InkWell(
-        //   onTap: widget.onTapPost,
-        //   child: CachedImage(
-        //     EndPoints.domain + (widget.post.postImage?.toBackslashPath() ?? ''),
-        //     height: 390.0,
-        //     fit: BoxFit.cover,
-        //   ),
-        // ),
 
-        ///Space
+        /// Space
         10.ph.spaceVertical,
 
-        /// Rating and Message
+        /// Rating & Comment Row
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12),
-
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              ///Rate Section
-              // InkWell(
-              //   onTap: () async {
-              //     if (widget.loading == true) return; // Prevent if loading
-              //     print('Rating InkWell tapped - opening dialog');
-              //     final selectedRating = await showRatingDialog(
-              //       context,
-              //       widget.post,
-              //       loading: widget.loading,
-              //
-              //       onSubmit: () {
-              //         print('Submit callback executed from PostCard');
-              //         // Add API call here if needed
-              //       },
-              //     );
-              //     print('Dialog closed with rating: $selectedRating');
-              //     if (selectedRating != null) {
-              //       setState(() {
-              //         _localRating = selectedRating; // Optimistic local update
-              //       });
-              //       if (widget.onRatingSubmitted != null) {
-              //         widget.onRatingSubmitted!(selectedRating);
-              //       }
-              //     }
-              //   },
-              //   child: Column(
-              //     mainAxisAlignment: MainAxisAlignment.start,
-              //     crossAxisAlignment: CrossAxisAlignment.start,
-              //     children: [
-              //       Row(
-              //         children: [
-              //           StarRatingWidget(
-              //             rating: _localRating.toStarRating(),
-              //             // Use local for immediate feedback
-              //             size: 20,
-              //             activeColor: ColorRes.primaryColor,
-              //             inactiveColor:
-              //                 ColorRes.primaryColor, // Faded inactive
-              //           ),
-              //           10.pw.spaceHorizontal,
-              //           Text(
-              //             widget.post.postRating.toString(),
-              //             style: styleW700S16,
-              //           ),
-              //         ],
-              //       ),
-              //
-              //       10.ph.spaceVertical,
-              //       if (_localRating == 0)
-              //         Align(
-              //           alignment: Alignment.topLeft,
-              //           child: Text(
-              //             context.l10n?.rateThisPost ?? "Rate this post",
-              //             style: styleW400S13.copyWith(
-              //               color: ColorRes.primaryColor,
-              //             ),
-              //             textAlign: TextAlign.start,
-              //           ),
-              //         ),
-              //     ],
-              //   ),
-              // ),
+              /// Rate Section
               InkWell(
                 onTap: () async {
-                  if (widget.loading == true) return; // Prevent if loading
-                  print('Rating InkWell tapped - opening dialog');
+                  if (widget.loading == true) return;
                   final selectedRating = await showRatingDialog(
                     context,
                     widget.post,
                     loading: widget.loading,
                     onSubmit: () {
-                      print('Submit callback executed from PostCard');
-                      // Add API call here if needed
+                      print("Rating submitted for post ${widget.post.id}");
                     },
                   );
-                  print('Dialog closed with rating: $selectedRating');
                   if (selectedRating != null) {
-                    setState(() {
-                      _localRating = selectedRating; // Optimistic local update
-                    });
-                    if (widget.onRatingSubmitted != null) {
-                      widget.onRatingSubmitted!(selectedRating);
-                    }
+                    _handleRatingSubmitted(
+                      selectedRating,
+                    ); // Handle star rating (0–5)
                   }
                 },
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       children: [
                         StarRatingWidget(
-                          rating: _localRating, // Use _localRating directly, not toStarRating()
+                          rating: _localRawRating.toStarRating(),
+                          // Convert to star rating (0–5)
                           size: 20,
                           activeColor: ColorRes.primaryColor,
-                          inactiveColor: ColorRes.primaryColor, // Faded inactive
+                          inactiveColor: ColorRes.primaryColor.withOpacity(0.3),
                         ),
                         10.pw.spaceHorizontal,
                         Text(
-                          _localRating.toStringAsFixed(1), // Show local rating value
+                          widget.post.postRating!.toStringAsFixed(2),
+                          // _localRawRating.toStringAsFixed(2),
+                          // Display raw rating (e.g., 0.06)
                           style: styleW700S16,
                         ),
                       ],
                     ),
-                    10.ph.spaceVertical,
-                    if (_localRating == 0)
-                      Align(
-                        alignment: Alignment.topLeft,
+                    if (_localRawRating == 0)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 5),
                         child: Text(
                           context.l10n?.rateThisPost ?? "Rate this post",
                           style: styleW400S13.copyWith(
                             color: ColorRes.primaryColor,
                           ),
-                          textAlign: TextAlign.start,
                         ),
                       ),
                   ],
                 ),
               ),
 
-              ///Comment Section
+              /// Comment Section
               InkWell(
                 onTap: () async {
-                  final postsProvider = Provider.of<PostsProvider>(
-                    context,
-                    listen: false,
-                  );
-
-                  final scrollProvider = Provider.of<PostsProvider>(
-                    context,
-                    listen: false,
-                  );
-                  scrollProvider.saveScrollPosition(
-                    context
-                            .findAncestorStateOfType<ScrollableState>()
-                            ?.position
-                            .pixels ??
-                        0.0,
-                  );
-
-                  await postsProvider.getAllCommentListAPI(
-                    widget.post.id!,
-                    showLoader: true,
-                    resetData: true,
-                  );
                   print(
-                    "Comment list ===== ${postsProvider.commentListResponse.length}",
+                    "Opening comment bottom sheet for post ${widget.post.id}",
                   );
-                  openCustomDraggableBottomSheet(
-                    context,
-                    title: context.l10n?.comments ?? "",
-                    customChild: CommentsWidget(
-                      post: widget.post,
-                      comments: postsProvider.commentListResponse,
-                      onCommentSubmitted: (val) async {
-                        print("val -------- ${val}");
-                        if (widget.onCommentSubmitted != null) {
-                          widget.onCommentSubmitted!(val);
-                        }
-                        await postsProvider.commentPostAPI(
-                          context,
-                          postId: widget.post.id,
-                          content: val,
-                        );
-
-                        navigatorKey.currentState?.context.navigator.pop(
-                          context,
-                        );
-
-                        // await postsProvider.getAllCommentListAPI(
-                        //   widget.post.id!,
-                        //   showLoader: true,
-                        //   resetData: true,
-                        // );
-                      },
-                    ),
-                    showButtons: false,
-                    borderRadius: 20,
-                    padding: const EdgeInsets.all(0),
-                  );
-
-                  /// Restore scroll position after operation
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    final scrollableState =
-                        context.findAncestorStateOfType<ScrollableState>();
-                    if (scrollableState != null) {
-                      scrollableState.position.jumpTo(
-                        scrollProvider.scrollPosition,
-                      );
-                    }
-                  });
+                  try {
+                    final postsProvider = Provider.of<PostsProvider>(
+                      context,
+                      listen: false,
+                    );
+                    await postsProvider.getAllCommentListAPI(
+                      widget.post.id!,
+                      showLoader: true,
+                      resetData: true,
+                    );
+                    print(
+                      "Comments fetched: ${postsProvider.commentListResponse.length}",
+                    );
+                    await openCustomDraggableBottomSheet(
+                      context,
+                      title: context.l10n?.comments ?? "Comments",
+                      customChild: ChangeNotifierProvider.value(
+                        value: postsProvider,
+                        child: Consumer<PostsProvider>(
+                          builder: (context, provider, _) {
+                            return CommentsWidget(
+                              post: widget.post,
+                              comments: provider.commentListResponse,
+                              onCommentSubmitted: (val) async {
+                                print("Submitting comment: $val");
+                                _handleCommentSubmitted(val);
+                                await provider.commentPostAPI(
+                                  context,
+                                  postId: widget.post.id,
+                                  content: val,
+                                );
+                                print("Comment submitted successfully");
+                              },
+                            );
+                          },
+                        ),
+                      ),
+                      showButtons: false,
+                      borderRadius: 20,
+                      padding: const EdgeInsets.all(0),
+                    );
+                    print("Bottom sheet opened successfully");
+                  } catch (e) {
+                    print("Error opening comment bottom sheet: $e");
+                  }
                 },
                 child: Row(
                   children: [
@@ -341,10 +276,7 @@ class _PostCardState extends State<PostCard> {
                       color: ColorRes.primaryColor,
                     ),
                     const SizedBox(width: 10),
-                    Text(
-                      (widget.post.commentsCount ?? 0).toString(),
-                      style: styleW700S16,
-                    ),
+                    Text(_localCommentCount.toString(), style: styleW700S16),
                   ],
                 ),
               ),
@@ -352,7 +284,7 @@ class _PostCardState extends State<PostCard> {
           ),
         ),
 
-        ///Space
+        /// Space
         10.ph.spaceVertical,
       ],
     );
@@ -364,7 +296,6 @@ class _PostCardState extends State<PostCard> {
     VoidCallback onTapPost,
   ) {
     if (post.media != null && post.media?.type == 1) {
-      // 🎬 Video post
       final videoUrl = EndPoints.domain + post.media!.url!.toBackslashPath();
       return GestureDetector(
         onTap: onTapPost,
@@ -372,10 +303,8 @@ class _PostCardState extends State<PostCard> {
           future: generateVideoThumbnail(videoUrl),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-
-              return CustomShimmer( height: 390,width: double.infinity,);
+              return CustomShimmer(height: 390, width: double.infinity);
             }
-
             if (!snapshot.hasData || snapshot.data == null) {
               return Container(
                 height: 390,
@@ -388,7 +317,6 @@ class _PostCardState extends State<PostCard> {
                 ),
               );
             }
-
             return Stack(
               alignment: Alignment.center,
               children: [
@@ -409,29 +337,15 @@ class _PostCardState extends State<PostCard> {
         ),
       );
     } else {
-      // 🖼 Image post
       final imageUrl =
           post.media?.url != null
-              ? (EndPoints.domain + post.media!.url!.toBackslashPath())
+              ? EndPoints.domain + post.media!.url!.toBackslashPath()
               : "";
-
       return GestureDetector(
         onTap: onTapPost,
         child: CachedImage(imageUrl, height: 390.0, fit: BoxFit.cover),
       );
     }
-  }
-
-  // Create a helper method to safely handle media navigation
-
-
-  void _showErrorMessage(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-      ),
-    );
   }
 
   String _getProfileImageUrl() {

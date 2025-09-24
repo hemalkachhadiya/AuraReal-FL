@@ -1,13 +1,5 @@
-import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:aura_real/aura_real.dart';
-import 'package:aura_real/common/methods.dart';
-import 'package:aura_real/screens/auth/your_location/map_screen.dart';
 import 'package:aura_real/screens/auth/your_location/your_location_provider.dart';
-import 'package:aura_real/screens/dahsboard/dashboard_screen.dart';
-import 'package:aura_real/services/location_services.dart';
-import 'package:map_location_picker/map_location_picker.dart';
-import 'package:provider/provider.dart';
 
 class YourLocationScreen extends StatefulWidget {
   final bool isComeFromSplash;

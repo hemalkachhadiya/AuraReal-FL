@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:aura_real/aura_real.dart';
 import 'package:aura_real/common/widgets/media_picker.dart';
 
@@ -28,8 +29,11 @@ class ProfileScreen extends StatelessWidget {
               bgColor:
                   provider.isFormValid ? ColorRes.primaryColor : ColorRes.grey3,
               title: context.l10n?.update ?? "",
+              loading: provider.loader, // Show loading state
               onTap: () {
-                provider.userUpdateAPI(context);
+                if (!provider.loader) {
+                  provider.userUpdateAPI(context);
+                }
               },
             ),
           ),
@@ -43,20 +47,31 @@ class ProfileScreen extends StatelessWidget {
                   20.ph.spaceVertical,
                   AppBackIcon(title: context.l10n?.profile ?? ""),
                   86.ph.spaceVertical,
+
+                  // Profile Image Section
                   InkWell(
                     onTap: () {
-                      openMediaPicker(context, useCameraForImage: true);
+                      provider.pickImage(context);
                     },
                     child: Stack(
                       children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(100),
-                          child: AssetsImg(
-                            imagePath: AssetRes.notificationUserImg,
-                            width: 164.pw,
-                            height: 164.ph,
+                        Container(
+                          width: 164.pw,
+                          height: 164.ph,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: ColorRes.primaryColor.withOpacity(0.3),
+                              width: 2,
+                            ),
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(100),
+                            child: _buildProfileImage(provider),
                           ),
                         ),
+
+                        // Edit Icon
                         Positioned(
                           right: 0,
                           bottom: 0,
@@ -76,17 +91,71 @@ class ProfileScreen extends StatelessWidget {
                                 imagePath: AssetRes.editIcon,
                                 width: 20.pw,
                                 height: 20.ph,
+                                color: ColorRes.white,
                               ),
                             ),
                           ),
                         ),
+
+                        // Loading overlay for image
+                        if (provider.loader)
+                          Positioned.fill(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.black.withOpacity(0.3),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Center(
+                                child: CircularProgressIndicator(
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    ColorRes.primaryColor,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
                       ],
                     ),
                   ),
+
+                  // Show selected image indicator
+                  if (provider.hasNewImage) ...[
+                    10.ph.spaceVertical,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.check_circle,
+                          color: Colors.green,
+                          size: 16,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          "New image selected",
+                          style: TextStyle(
+                            color: Colors.green,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        GestureDetector(
+                          onTap: provider.clearSelectedImage,
+                          child: const Icon(
+                            Icons.close,
+                            color: Colors.red,
+                            size: 16,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+
                   30.ph.spaceVertical,
+
+                  // Full Name Field
                   AppTextField(
                     controller: provider.fullNameController,
-
                     hintText: context.l10n?.fullName ?? "",
                     error: provider.fullNameError,
                     prefixIcon: Padding(
@@ -99,21 +168,19 @@ class ProfileScreen extends StatelessWidget {
                       ),
                     ),
                     isMandatory: true,
-
                     textInputType: TextInputType.name,
                     fillColor: ColorRes.lightGrey2,
                     borderRadius: 40.pw,
                     onChanged: (value) {
                       provider.onFullNameChanged(value);
-                      // provider.onFullNameChanged(value, context);
                     },
                   ),
                   20.ph.spaceVertical,
 
+                  // Email Field
                   AppTextField(
                     controller: provider.emailController,
                     error: provider.emailError,
-                    // error: provider.emailError,
                     hintText: context.l10n?.emailAddress ?? "",
                     prefixIcon: Padding(
                       padding: const EdgeInsets.all(18.0),
@@ -124,23 +191,19 @@ class ProfileScreen extends StatelessWidget {
                         color: ColorRes.primaryColor,
                       ),
                     ),
-
                     isMandatory: true,
-                    // readOnly: true,
                     textInputType: TextInputType.emailAddress,
                     fillColor: ColorRes.lightGrey2,
                     borderRadius: 40.pw,
                     onChanged: (value) {
-                      // provider.onEmailChanged(value, context);
                       provider.onEmailChanged(value);
-                      // Handle text change
                     },
                   ),
                   20.ph.spaceVertical,
 
+                  // Mobile Field
                   AppTextField(
                     controller: provider.mobileController,
-
                     error: provider.mobileError,
                     hintText: context.l10n?.mobileNumber ?? "",
                     prefixIcon: Padding(
@@ -152,17 +215,12 @@ class ProfileScreen extends StatelessWidget {
                         color: ColorRes.primaryColor,
                       ),
                     ),
-
                     isMandatory: true,
-                    // readOnly: true,
                     textInputType: TextInputType.phone,
                     fillColor: ColorRes.lightGrey2,
                     borderRadius: 40.pw,
                     onChanged: (value) {
                       provider.onMobileChanged(value);
-                      // provider.onEmailChanged(value, context);
-
-                      // Handle text change
                     },
                   ),
 
@@ -173,6 +231,45 @@ class ProfileScreen extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildProfileImage(ProfileProvider provider) {
+    if (provider.selectedImage != null) {
+      // Show selected local image
+      return Image.file(
+        provider.selectedImage!,
+        width: 164.pw,
+        height: 164.ph,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return _buildDefaultImage();
+        },
+      );
+    } else if (provider.profileData?.profileImage != null &&
+        provider.profileData!.profileImage!.isNotEmpty) {
+      // Show existing profile image from server
+      final imageUrl =
+          "${EndPoints.domain}${provider.profileData!.profileImage}";
+      return CachedImage(
+        imageUrl,
+        width: 164.pw,
+        height: 164.ph,
+        fit: BoxFit.cover,
+        errorWidget: _buildDefaultImage(),
+      );
+    } else {
+      // Show default image
+      return _buildDefaultImage();
+    }
+  }
+
+  Widget _buildDefaultImage() {
+    return AssetsImg(
+      imagePath: AssetRes.notificationUserImg,
+      width: 164.pw,
+      height: 164.ph,
+      fit: BoxFit.cover,
     );
   }
 }

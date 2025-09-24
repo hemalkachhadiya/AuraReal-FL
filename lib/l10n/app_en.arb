@@ -106,5 +106,8 @@
   "galleryPermission": "We need access to your gallery to continue",
   "galleryPermissionContent": "Please allow gallery access in settings.",
   "galleryPermissionBtn": "Open Settings",
+  "whatDoYouThink": "What do you think of this?",
+  "reply": "Reply",
+  "writeCaption": "Write a Caption",
   "rateThisPost": "Rate this Post"
 }
