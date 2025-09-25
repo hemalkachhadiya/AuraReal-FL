@@ -14,7 +14,11 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+<<<<<<< HEAD
         isCoreLibraryDesugaringEnabled = true 
+=======
+        isCoreLibraryDesugaringEnabled = true
+>>>>>>> 4282f2524770eaf9cba2f15c3c74cf2082beada3
     }
 
     kotlinOptions {
@@ -34,10 +38,12 @@ android {
    
 
 
+
+
     buildTypes {
         release {
             // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
+            // Signing with the debug keys for now, so flutter run --release works.
             signingConfig = signingConfigs.getByName("debug")
         }
     }
@@ -47,6 +53,12 @@ flutter {
     source = "../.."
 }
 dependencies {
+<<<<<<< HEAD
  
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
 }
+=======
+
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
+}
+>>>>>>> 4282f2524770eaf9cba2f15c3c74cf2082beada3

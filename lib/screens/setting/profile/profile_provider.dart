@@ -1,8 +1,8 @@
 import 'dart:io';
-import 'dart:math';
-
 import 'package:aura_real/apis/auth_apis.dart';
+import 'package:aura_real/apis/rating_profile_apis.dart';
 import 'package:aura_real/aura_real.dart';
+import 'package:flutter/material.dart';
 
 class ProfileProvider extends ChangeNotifier {
   TextEditingController fullNameController = TextEditingController();
@@ -10,6 +10,7 @@ class ProfileProvider extends ChangeNotifier {
   TextEditingController mobileController = TextEditingController();
 
   bool loader = false;
+  bool createUserLoader = false;
   Profile? profileData;
   File? selectedImage; // Added for image selection
 
@@ -39,16 +40,10 @@ class ProfileProvider extends ChangeNotifier {
     validate();
   }
 
-  void onPasswordChanged(String value) {
-    validate();
-  }
-
   /// Handle image selection
   Future<void> pickImage(BuildContext context) async {
     try {
-      final File? imageFile = await openMediaPicker(
-        context,
-      );
+      final File? imageFile = await openMediaPicker(context);
 
       if (imageFile != null) {
         selectedImage = imageFile;
@@ -153,6 +148,69 @@ class ProfileProvider extends ChangeNotifier {
     await getUserProfileAPI();
   }
 
+  /// Create User Profile API
+  Future<bool> createUserProfileAPI(BuildContext context) async {
+    if (userData == null || userData?.id == null) {
+      print("Cannot publish profile: User data or ID is null");
+      showErrorMsg("User data is missing. Please log in again.");
+      return false;
+    }
+
+    if (!validate() || selectedImage == null) {
+      print("Cannot publish profile: Validation failed or no image selected");
+      showErrorMsg(
+        "Please fill all required fields and select a profile image.",
+      );
+      return false;
+    }
+
+    createUserLoader = true;
+    notifyListeners();
+
+    String? profileImagePath = selectedImage?.path;
+
+    // Basic image validation
+    if (profileImagePath != null) {
+      final imageFile = File(profileImagePath);
+      if (!await imageFile.exists()) {
+        print("Profile image file does not exist: $profileImagePath");
+        showErrorMsg("Profile image file is invalid. Please select again.");
+        createUserLoader = false;
+        notifyListeners();
+        return false;
+      }
+    } else {
+      print("Profile image path is null");
+      showErrorMsg("Please select a profile image.");
+      createUserLoader = false;
+      notifyListeners();
+      return false;
+    }
+
+    final result = await RatingProfileAPIS.createUserProfileAPI(
+      userId: userData!.id!,
+      profileImagePath: profileImagePath,
+    );
+
+    createUserLoader = false;
+
+    if (result != null && result.statusCode == 200) {
+      // Assuming HTTP response
+      print("Profile created successfully");
+      if (context.mounted) {
+        // Navigator.pop(context, true); // Signal success
+      }
+      clearSelectedImage(); // Clear image after success
+      await getUserProfileAPI(); // Refresh profile data
+      return true;
+    } else {
+      print("Failed to create profile. Keeping selectedImage for retry.");
+      showErrorMsg("Failed to create profile. Please try again.");
+      notifyListeners();
+      return false;
+    }
+  }
+
   Future<void> getUserProfileAPI() async {
     if (userData == null || userData?.id == null) return;
     loader = true;
@@ -177,21 +235,22 @@ class ProfileProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> userUpdateAPI(BuildContext context) async {
+  /// Update User Profile API
+  Future<bool> userUpdateAPI(BuildContext context) async {
     if (!isFormValid) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text("Please fill all required fields correctly"),
         ),
       );
-      return;
+      return false;
     }
 
     if (userData == null || userData?.id == null) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text("User data not found")));
-      return;
+      return false;
     }
 
     loader = true;
@@ -199,30 +258,41 @@ class ProfileProvider extends ChangeNotifier {
 
     try {
       print("Updating Profile ---- ${userData?.id}");
-
       String fcmToken = PrefService.getString(PrefKeys.fcmToken);
       print("fcmToken: $fcmToken");
 
-      final result = await AuthApis.userUpdateProfile(
-        fullName: fullNameController.text.trim(),
-        email: emailController.text.trim(),
-        phoneNumber: mobileController.text.trim(),
-        userId: userData?.id ?? "",
-        profileImage: selectedImage?.path,
-        // Pass the file path as String
-        fcmToken: fcmToken,
-      );
+      bool updateSuccess = false;
 
-      if (result) {
+      // If a new image is selected, create a new profile
+      if (selectedImage != null) {
+        final createSuccess = await createUserProfileAPI(context);
+        if (!createSuccess) {
+          return false; // Exit if profile creation fails
+        }
+        updateSuccess = true; // Mark as successful if image upload worked
+      } else {
+        // Update existing profile without image
+        final updateResult = await AuthApis.userUpdateProfile(
+          fullName: fullNameController.text.trim(),
+          email: emailController.text.trim(),
+          phoneNumber: mobileController.text.trim(),
+          userId: userData!.id!,
+          profileImage: null,
+          // No new image
+          fcmToken: fcmToken,
+        );
+        updateSuccess = updateResult;
+      }
 
-
-        // Clear selected image after successful update
-        selectedImage = null;
-
-        Navigator.pop(context);
+      if (updateSuccess) {
+        await getUserProfileAPI(); // Refresh profile data
+        if (context.mounted) {
+          // Navigator.pop(context); // Close the screen
+        }
+        return true;
       } else {
         showErrorMsg("Failed to update profile. Please try again.");
-
+        return false;
       }
     } catch (e) {
       print("Error updating profile: $e");
@@ -232,10 +302,11 @@ class ProfileProvider extends ChangeNotifier {
           backgroundColor: Colors.red,
         ),
       );
+      return false;
+    } finally {
+      loader = false;
+      notifyListeners();
     }
-
-    loader = false;
-    notifyListeners();
   }
 
   @override
