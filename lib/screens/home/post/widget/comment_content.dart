@@ -45,7 +45,7 @@ class _CommentsWidgetState extends State<CommentsWidget> {
   // Recursive function to check if any reply exists in the subtree with null safety
   bool hasAnyReply(CommentModel? comment) {
     if (comment == null) return false;
-    if (comment.replies?.isNotEmpty ?? false) return true;
+    if (comment.replies.isNotEmpty ?? false) return true;
     for (var reply in comment.replies ?? <CommentModel>[]) {
       if (hasAnyReply(reply)) return true;
     }
@@ -355,7 +355,7 @@ class CommentTile extends StatelessWidget {
                 ),
 
                 // Nested replies with null safety
-                if (comment.replies?.isNotEmpty ?? false)
+                if (comment.replies.isNotEmpty ?? false)
                   Column(
                     children:
                         (comment.replies ?? <CommentModel>[])
