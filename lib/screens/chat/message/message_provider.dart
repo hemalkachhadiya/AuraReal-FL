@@ -229,6 +229,11 @@ class MessageProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void updateMessageText(String text) {
+    _messageText = text;
+    notifyListeners();
+  }
+
   void sendMessage({String? receiverId}) {
     if (_messageText.trim().isEmpty ||
         _chatRoomId == null ||
@@ -526,11 +531,11 @@ class MessageProvider extends ChangeNotifier {
     }
   }
 
-  void updateMessageText(String text) {
-    _messageText = text;
+  bool get canSendMessage {
+    final result = messageText.trim().isNotEmpty;
+    debugPrint("canSendMessage: $result, messageText: '$messageText'");
+    return result;
   }
-
-  bool get canSendMessage => messageText.trim().isNotEmpty;
 
   void clearMessages() {
     _messages.clear();

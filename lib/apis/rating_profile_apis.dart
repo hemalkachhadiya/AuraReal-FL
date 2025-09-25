@@ -18,8 +18,10 @@ class RatingProfileAPIS {
     try {
       var request = http.MultipartRequest(
         'POST',
-        Uri.parse('http://192.168.1.19:4000/api/v1/createuserprofile'),
+        Uri.parse(EndPoints.createuserprofile),
       );
+
+      print("API----> ${Uri.parse(EndPoints.createuserprofile)}");
 
       /// Helper to add valid fields
       void addFieldIfValid(

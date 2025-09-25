@@ -191,16 +191,16 @@ class UploadProvider extends ChangeNotifier {
           MaterialPageRoute(
             builder:
                 (_) => ChangeNotifierProvider(
-                  create: (_) {
-                    final provider = MessageProvider();
-                    provider.initializeChat(
-                      user: chatUser,
-                      roomId: chatUser.id!,
-                    ); // <-- preload chat data
-                    return provider;
-                  },
-                  child: MessageScreen(chatUser: chatUser),
-                ),
+              create: (_) {
+                final provider = MessageProvider();
+                provider.initializeChat(
+                  user: chatUser,
+                  roomId: postUserId ?? "",
+                );
+                return provider;
+              },
+              child: MessageScreen(chatUser: chatUser),
+            ),
           ),
         );
         // Navigate to chat screen or handle success

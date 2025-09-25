@@ -1,13 +1,9 @@
 import 'dart:ui' as ui;
-import 'package:aura_real/apis/model/geo_location_model.dart';
-import 'package:aura_real/apis/model/post_model.dart';
-import 'package:aura_real/apis/model/user_model.dart';
-import 'package:aura_real/apis/rating_profile_apis.dart';
-import 'package:aura_real/screens/rating/model/rating_profile_list_model.dart';
-import 'package:flip_card/flip_card_controller.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+
+import 'package:http/http.dart' as http; // Add for distance calculations
 import 'package:aura_real/aura_real.dart';
-import 'package:geolocator/geolocator.dart'; // Add for distance calculations
+import 'package:map_location_picker/map_location_picker.dart';
+
 
 class RatingProvider extends ChangeNotifier {
   bool isTorchOn = false; // Track torch state
@@ -16,7 +12,7 @@ class RatingProvider extends ChangeNotifier {
   }
 
   init() async {
-    await getAllUserRatingProfile();
+    await _loadMapDataInBackground();
   }
 
   ///====================== Profile Rating Map Section =========================
@@ -108,6 +104,7 @@ class RatingProvider extends ChangeNotifier {
     mapController = controller;
     await _createMarkers();
     final currentLocation = await getCurrentLocation();
+    print("currentLocation=====123========= ${currentLocation}");
     if (currentLocation != null) {
       mapController?.animateCamera(
         CameraUpdate.newLatLngZoom(currentLocation, 12), // Zoom level 12
@@ -172,9 +169,10 @@ class RatingProvider extends ChangeNotifier {
       final Canvas canvas = Canvas(pictureRecorder);
       final Paint paint = Paint()..isAntiAlias = true;
 
-      const double size = 120.0; // Total size of the marker
-      const double borderWidth = 4.0; // Border width
-      const double imageSize = 80.0; // Size of the SVG image inside the marker
+      const double size = 120.0;
+      const double borderWidth = 4.0;
+      const double badgeSize = 30.0;
+      const double badgeY = size - 15;
 
       // Draw outer white circle
       canvas.drawCircle(
@@ -190,42 +188,53 @@ class RatingProvider extends ChangeNotifier {
         paint..color = ColorRes.primaryColor,
       );
 
-      // Draw inner grey circle
+      // Draw inner circle
+      final double imageRadius = (size / 2) - (borderWidth * 2);
+      final Offset imageCenter = Offset(size / 2, size / 2);
+
+      // Load user profile image
+      ui.Image? profileImage;
+      if (user.profile?.profileImage != null) {
+        try {
+          final url =
+              '${EndPoints.domain}${user.profile!.profileImage!.toBackslashPath()}';
+          final response = await http.get(Uri.parse(url));
+          if (response.statusCode == 200) {
+            final codec = await ui.instantiateImageCodec(response.bodyBytes);
+            final frame = await codec.getNextFrame();
+            profileImage = frame.image;
+          }
+        } catch (e) {
+          print("Failed to load profile image: $e");
+        }
+      }
+
+      // Use default avatar if profile image fails
+      profileImage ??= await _loadDefaultAvatarAsUiImage();
+
+      // Clip canvas to a circle
+      canvas.save();
+      final clipPath =
+          Path()..addOval(
+            Rect.fromCircle(center: imageCenter, radius: imageRadius),
+          );
+      canvas.clipPath(clipPath);
+
+      // Draw profile image centered
+      final srcRect = Rect.fromLTWH(
+        0,
+        0,
+        profileImage.width.toDouble(),
+        profileImage.height.toDouble(),
+      );
+      final dstRect = Rect.fromCircle(center: imageCenter, radius: imageRadius);
+      canvas.drawImageRect(profileImage, srcRect, dstRect, paint);
+
+      canvas.restore();
+
+      // Draw rating badge
       canvas.drawCircle(
-        const Offset(size / 2, size / 2),
-        (size / 2) - (borderWidth * 2),
-        paint..color = Colors.grey[300]!,
-      );
-
-      // Load and render the SVG app logo
-      final String svgString = await DefaultAssetBundle.of(
-        navigatorKey.currentState!.context,
-      ).loadString(AssetRes.appLogo);
-      final SvgPicture svgPicture = SvgPicture.string(
-        svgString,
-        width: imageSize,
-        height: imageSize,
-      );
-
-      // Convert SvgPicture to ui.Image
-      final ui.Image svgImage = await _svgPictureToImage(
-        svgPicture,
-        imageSize.toInt(),
-      );
-
-      // Draw the SVG image in the center of the marker
-      canvas.drawImage(
-        svgImage,
-        Offset((size - imageSize) / 2, (size - imageSize) / 2),
-        paint,
-      );
-
-      // Draw the rating badge at the bottom
-      const double badgeSize = 30.0;
-      const double badgeY = size - 15;
-
-      canvas.drawCircle(
-        const Offset(size / 2, badgeY),
+        Offset(size / 2, badgeY),
         badgeSize / 2,
         paint..color = ColorRes.primaryColor,
       );
@@ -250,22 +259,135 @@ class RatingProvider extends ChangeNotifier {
         ),
       );
 
-      // Convert the canvas to an image
+      // Convert canvas to BitmapDescriptor
       final ui.Image markerImage = await pictureRecorder.endRecording().toImage(
         size.toInt(),
         size.toInt(),
       );
-      final ByteData? byteData = await markerImage.toByteData(
+      final byteData = await markerImage.toByteData(
         format: ui.ImageByteFormat.png,
       );
-      final Uint8List uint8List = byteData!.buffer.asUint8List();
-
-      return BitmapDescriptor.fromBytes(uint8List);
+      return BitmapDescriptor.bytes(byteData!.buffer.asUint8List());
     } catch (e) {
-      print('Error creating custom marker for ${user.displayName}: $e');
+      print('Error creating custom marker: $e');
       return BitmapDescriptor.defaultMarker;
     }
   }
+
+  // Helper to load default avatar as ui.Image
+  Future<ui.Image> _loadDefaultAvatarAsUiImage() async {
+    final byteData = await rootBundle.load(AssetRes.appLogo);
+    final codec = await ui.instantiateImageCodec(byteData.buffer.asUint8List());
+    final frame = await codec.getNextFrame();
+    return frame.image;
+  }
+
+  // Future<BitmapDescriptor> _createCustomMarker(
+  //   RatingProfileUserModel user,
+  // ) async {
+  //   print("User name--- ${user.username}");
+  //   print(
+  //     "user profile name-- ${EndPoints.domain + user.profile!.profileImage!.toBackslashPath()}",
+  //   );
+  //   try {
+  //     final ui.PictureRecorder pictureRecorder = ui.PictureRecorder();
+  //     final Canvas canvas = Canvas(pictureRecorder);
+  //     final Paint paint = Paint()..isAntiAlias = true;
+  //
+  //     const double size = 120.0; // Total size of the marker
+  //     const double borderWidth = 4.0; // Border width
+  //     const double imageSize = 80.0; // Size of the SVG image inside the marker
+  //
+  //     // Draw outer white circle
+  //     canvas.drawCircle(
+  //       const Offset(size / 2, size / 2),
+  //       size / 2,
+  //       paint..color = Colors.white,
+  //     );
+  //
+  //     // Draw primary color border
+  //     canvas.drawCircle(
+  //       const Offset(size / 2, size / 2),
+  //       (size / 2) - borderWidth,
+  //       paint..color = ColorRes.primaryColor,
+  //     );
+  //
+  //     // Draw inner grey circle
+  //     canvas.drawCircle(
+  //       const Offset(size / 2, size / 2),
+  //       (size / 2) - (borderWidth * 2),
+  //       paint..color = Colors.grey[300]!,
+  //     );
+  //
+  //     // Load and render the SVG app logo
+  //     final String svgString = await DefaultAssetBundle.of(
+  //       navigatorKey.currentState!.context,
+  //     ).loadString(AssetRes.appLogo);
+  //     final SvgPicture svgPicture = SvgPicture.string(
+  //       svgString,
+  //       width: imageSize,
+  //       height: imageSize,
+  //     );
+  //
+  //     // Convert SvgPicture to ui.Image
+  //     final ui.Image svgImage = await _svgPictureToImage(
+  //       svgPicture,
+  //       imageSize.toInt(),
+  //     );
+  //
+  //     // Draw the SVG image in the center of the marker
+  //     canvas.drawImage(
+  //       svgImage,
+  //       Offset((size - imageSize) / 2, (size - imageSize) / 2),
+  //       paint,
+  //     );
+  //
+  //     // Draw the rating badge at the bottom
+  //     const double badgeSize = 30.0;
+  //     const double badgeY = size - 15;
+  //
+  //     canvas.drawCircle(
+  //       const Offset(size / 2, badgeY),
+  //       badgeSize / 2,
+  //       paint..color = ColorRes.primaryColor,
+  //     );
+  //
+  //     final textPainter = TextPainter(
+  //       text: TextSpan(
+  //         text: user.ratingsAverage.toStringAsFixed(1),
+  //         style: const TextStyle(
+  //           color: Colors.white,
+  //           fontSize: 12,
+  //           fontWeight: FontWeight.bold,
+  //         ),
+  //       ),
+  //       textDirection: TextDirection.ltr,
+  //     );
+  //     textPainter.layout();
+  //     textPainter.paint(
+  //       canvas,
+  //       Offset(
+  //         (size / 2) - (textPainter.width / 2),
+  //         badgeY - (textPainter.height / 2),
+  //       ),
+  //     );
+  //
+  //     // Convert the canvas to an image
+  //     final ui.Image markerImage = await pictureRecorder.endRecording().toImage(
+  //       size.toInt(),
+  //       size.toInt(),
+  //     );
+  //     final ByteData? byteData = await markerImage.toByteData(
+  //       format: ui.ImageByteFormat.png,
+  //     );
+  //     final Uint8List uint8List = byteData!.buffer.asUint8List();
+  //
+  //     return BitmapDescriptor.bytes(uint8List);
+  //   } catch (e) {
+  //     print('Error creating custom marker for ${user.displayName}: $e');
+  //     return BitmapDescriptor.defaultMarker;
+  //   }
+  // }
 
   // Helper method to convert SvgPicture to ui.Image
   Future<ui.Image> _svgPictureToImage(SvgPicture svgPicture, int size) async {
@@ -446,7 +568,7 @@ class RatingProvider extends ChangeNotifier {
       postId: postId.toString(),
       rating: rating.toString(),
     );
-    await getAllUserRatingProfile();
+    await _loadMapDataInBackground();
     if (result) {
       context.navigator.pop();
     }
@@ -467,7 +589,7 @@ class RatingProvider extends ChangeNotifier {
       postId: postId.toString(),
       newRating: rating.toString(),
     );
-    await getAllUserRatingProfile();
+    await _loadMapDataInBackground();
     if (result) {
       context.navigator.pop();
     }
@@ -487,6 +609,7 @@ class RatingProvider extends ChangeNotifier {
   bool get isMapSelected => currentMode == 'map';
 
   void showCamera() {
+    // Check the current mode before changing it
     if (isMapSelected) {
       flipController.toggleCard();
     }
@@ -494,11 +617,49 @@ class RatingProvider extends ChangeNotifier {
   }
 
   Future<void> showMap() async {
-    await getAllUserRatingProfile();
+    print('showMap called - current mode: $currentMode');
+    // Check the current mode before changing it
     if (isCameraSelected) {
+      print('Flipping card...');
       flipController.toggleCard();
     }
     setMode('map');
+    print('Mode set to: $currentMode');
+
+    print('Loading map data...');
+    // Load data in background
+    _loadMapDataInBackground();
+    print('Map data loaded');
+  }
+
+  void setMode(String mode) {
+    currentMode = mode;
+    notifyListeners();
+  }
+
+  Future<void> _loadMapDataInBackground() async {
+    try {
+      await getAllUserRatingProfile();
+    } catch (e) {
+      print('Error loading map data: $e');
+      // You might want to show an error message to the user
+    }
+  }
+
+  Color getCameraTabBgColor() {
+    return isCameraSelected ? ColorRes.primaryColor : ColorRes.lightBlue;
+  }
+
+  Color getCameraTabTextColor() {
+    return isCameraSelected ? ColorRes.white : ColorRes.primaryColor;
+  }
+
+  Color getMapTabBgColor() {
+    return isMapSelected ? ColorRes.primaryColor : ColorRes.lightBlue;
+  }
+
+  Color getMapTabTextColor() {
+    return isMapSelected ? ColorRes.white : ColorRes.primaryColor;
   }
 
   final ImagePicker _picker = ImagePicker();
@@ -562,27 +723,6 @@ class RatingProvider extends ChangeNotifier {
       isLoading = false;
       notifyListeners();
     }
-  }
-
-  void setMode(String mode) {
-    currentMode = mode;
-    notifyListeners();
-  }
-
-  Color getCameraTabBgColor() {
-    return isCameraSelected ? ColorRes.primaryColor : ColorRes.lightBlue;
-  }
-
-  Color getCameraTabTextColor() {
-    return isCameraSelected ? ColorRes.white : ColorRes.primaryColor;
-  }
-
-  Color getMapTabBgColor() {
-    return isMapSelected ? ColorRes.primaryColor : ColorRes.lightBlue;
-  }
-
-  Color getMapTabTextColor() {
-    return isMapSelected ? ColorRes.white : ColorRes.primaryColor;
   }
 
   // Future<void> toggleTorch() async {

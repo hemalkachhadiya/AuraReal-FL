@@ -1,6 +1,4 @@
-import 'package:aura_real/apis/model/post_model.dart';
 import 'package:aura_real/aura_real.dart';
-import 'package:flutter/material.dart';
 
 class CommentsWidget extends StatefulWidget {
   final PostModel post;
@@ -296,12 +294,20 @@ class CommentTile extends StatelessWidget {
           //       comment.userId != null ? ColorRes.primaryColor : Colors.grey,
           //   child: const Icon(Icons.person, color: Colors.white, size: 16),
           // ),
-          Container(
-            width: 45.pw,
-            height: 45.ph,
-            child: CachedImage(
-              borderRadius: 50,
-              "${EndPoints.domain}${comment.userId!.profile?.profileImage?.toBackslashPath()}",
+          InkWell(
+            onTap: (){
+              context.navigator.pushNamed(
+                UploadScreen.routeName,
+
+              );
+            },
+            child: Container(
+              width: 45.pw,
+              height: 45.ph,
+              child: CachedImage(
+                borderRadius: 50,
+                "${EndPoints.domain}${comment.userId!.profile?.profileImage?.toBackslashPath()}",
+              ),
             ),
           ),
           const SizedBox(width: 12),
@@ -314,11 +320,14 @@ class CommentTile extends StatelessWidget {
                 // User + Time
                 Row(
                   children: [
-                    Flexible(
-                      child: Text(
-                        comment.userId?.fullName ?? "Unknown",
-                        style: styleW600S14,
-                        overflow: TextOverflow.ellipsis,
+                    InkWell(
+                      onTap: (){},
+                      child: Flexible(
+                        child: Text(
+                          comment.userId?.fullName ?? "Unknown",
+                          style: styleW600S14,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 8),

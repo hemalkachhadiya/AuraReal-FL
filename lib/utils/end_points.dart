@@ -70,7 +70,13 @@ class EndPoints {
 
   static const getAllnotification = "${baseUrl}getAllnotification";
 
-  /// ------------------------------------ Notification -------------------------------
+  /// ------------------------------------ User Profile -------------------------------
 
   static const createuserprofile = "${baseUrl}createuserprofile";
+
+  /// ------------------------------------ Rating Profile -------------------------------
+
+  static const rateprofile = "${baseUrl}rateprofile";
+  static const getProfileRatings = "${baseUrl}getProfileRatings";
+  static const updateProfileRating = "${baseUrl}updateProfileRating";
 }

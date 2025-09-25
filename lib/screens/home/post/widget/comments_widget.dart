@@ -1,4 +1,3 @@
-import 'package:aura_real/apis/model/post_model.dart';
 import 'package:aura_real/aura_real.dart';
 
 class CommentBottomSheetContent extends StatefulWidget {

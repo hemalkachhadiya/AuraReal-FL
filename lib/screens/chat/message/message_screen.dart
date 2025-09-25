@@ -1,6 +1,5 @@
 import 'package:aura_real/aura_real.dart';
-import 'package:emoji_keyboard_flutter/emoji_keyboard_flutter.dart';
-import 'package:flutter/material.dart';
+
 
 class MessageScreen extends StatefulWidget {
   final ChatUser chatUser;
@@ -512,6 +511,13 @@ class _MessageScreenState extends State<MessageScreen> {
                                 );
                               }
                             },
+                            onSubmitted: (text) {
+                              if (context
+                                  .read<MessageProvider>()
+                                  .canSendMessage) {
+                                _sendMessage(context.read<MessageProvider>());
+                              }
+                            },
                             decoration: InputDecoration(
                               hintText: "Type a message...",
                               border: InputBorder.none,
@@ -524,6 +530,9 @@ class _MessageScreenState extends State<MessageScreen> {
                             ),
                             maxLines: null,
                             textCapitalization: TextCapitalization.sentences,
+                            textInputAction:
+                                TextInputAction
+                                    .send, // Indicates "send" action for Enter key
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -611,6 +620,11 @@ class _MessageScreenState extends State<MessageScreen> {
     setState(() {
       _isUserAtBottom = true;
     });
-    WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToBottom();
+      FocusScope.of(
+        navigatorKey.currentContext!,
+      ).requestFocus(_focusNode); // Re-focus TextField
+    });
   }
 }

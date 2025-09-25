@@ -225,7 +225,6 @@ class HomeScreen extends StatelessWidget {
                                   },
                                   loading: provider.loader,
                                   onRatingSubmitted: (rate) {
-
                                     print(
                                       "Rate val 1= ${provider.postListResponse[index].postRating!.toRawRating()}",
                                     );
@@ -237,19 +236,17 @@ class HomeScreen extends StatelessWidget {
                                     );
                                     print("Rate val == ${rate}");
                                     print("RATE ----1 ${rate.toRawRating()}");
-                                    print(
-                                      "RATE ----2 ${rate.toStarRating()}",
-                                    );
+                                    print("RATE ----2 ${rate.toStarRating()}");
                                     if (provider
                                             .postListResponse[index]
-                                            .postRating!
-                                            .toRawRating() ==
-                                        0) {
+                                            .postRating ==
+                                        0.0) {
                                       provider.newRatePostAPI(
                                         context,
                                         postId:
                                             provider.postListResponse[index].id,
-                                        rating: rate.toStarRating()
+                                        rating: rate
+                                            .toStarRating()
                                             .toStringAsFixed(0),
                                       );
                                     } else {
@@ -257,7 +254,8 @@ class HomeScreen extends StatelessWidget {
                                         context,
                                         postId:
                                             provider.postListResponse[index].id,
-                                        rating:rate.toStarRating()
+                                        rating: rate
+                                            .toStarRating()
                                             .toStringAsFixed(0),
                                       );
                                     }

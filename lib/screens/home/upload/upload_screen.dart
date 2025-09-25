@@ -1,6 +1,4 @@
-import 'dart:ui' as ui;
 import 'package:aura_real/aura_real.dart';
-import 'package:aura_real/apis/model/post_model.dart';
 
 class UploadScreen extends StatelessWidget {
   final PostModel? post;
@@ -50,7 +48,7 @@ class UploadScreen extends StatelessWidget {
                         children: [
                           /// BackGround Image
                           Container(
-                            height: 315.ph,
+                            height: 330.ph,
                             width: double.infinity,
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(0),
@@ -71,7 +69,7 @@ class UploadScreen extends StatelessWidget {
                                 child: Center(
                                   child: AssetsImg(
                                     imagePath: AssetRes.uploadBgIcon,
-                                    height: 315,
+                                    height: 330,
                                     width: double.infinity,
                                     fit: BoxFit.cover,
                                   ),

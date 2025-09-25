@@ -1,8 +1,6 @@
 import 'package:aura_real/aura_real.dart';
 import 'package:aura_real/screens/rating/widget/user_profile_rating_widget.dart';
-import 'package:provider/provider.dart';
 import 'package:flip_card/flip_card.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class RatingScreen extends StatelessWidget {
   const RatingScreen({super.key});
@@ -178,13 +176,19 @@ class _RatingScreenContent extends StatelessWidget {
                             flex: 2,
                             child: InkWell(
                               onTap: () {
+                                print("rate---------------- 1");
                                 openCustomDialog(
                                   context,
                                   borderRadius: 30,
                                   title:
                                       context.l10n?.sendRating ?? "Send Rating",
                                   customChild: StarRatingWidget(
-                                    rating: 5,
+                                    rating:
+                                        provider
+                                            .selectedUser
+                                            ?.profile
+                                            ?.ratingsAvg ??
+                                        0.0,
                                     activeColor: ColorRes.primaryColor,
                                     inactiveColor: ColorRes.primaryColor,
                                     size: 37,
@@ -278,7 +282,9 @@ class _RatingScreenContent extends StatelessWidget {
                                     title:
                                         context.l10n?.profileVisit ??
                                         "Visit Profile",
-                                    onTap: () {},
+                                    onTap: () {
+                                      print("Visit Profile");
+                                    },
                                     icon: AssetRes.userIcon2,
                                   ),
                                 ),
@@ -406,316 +412,330 @@ class _RatingScreenContent extends StatelessWidget {
   }
 
   Widget _buildMapView(BuildContext context, RatingProvider provider) {
+    // if (provider.loader) {
+    //   return Center(child: CircularProgressIndicator());
+    // }
     var latitude = PrefService.getDouble(PrefKeys.latitude);
     var longitude = PrefService.getDouble(PrefKeys.longitude);
-    print("lat -- ${latitude} long --  ${longitude}");
-    return FutureBuilder<LatLng?>(
-      future: provider.getCurrentLocation(),
-      builder: (context, snapshot) {
-        LatLng initialPosition = LatLng(
-          latitude,
-          longitude,
-        ); // Fallback: San Francisco
-        Set<Circle> circles = {};
 
-        if (snapshot.connectionState == ConnectionState.done &&
-            snapshot.hasData &&
-            snapshot.data != null) {
-          initialPosition = snapshot.data!;
-          circles.add(
-            Circle(
-              circleId: const CircleId('user_location'),
-              center: initialPosition,
-              radius: 16093.4,
-              // 10 miles in meters
-              fillColor: Colors.blue.withValues(alpha: 0.2),
-              strokeColor: Colors.blue,
-              strokeWidth: 2,
-            ),
-          );
-        }
+    return StackedLoader(
+      loading: provider.loader,
+      child: FutureBuilder<LatLng?>(
+        future: provider.getCurrentLocation(),
+        builder: (context, snapshot) {
+          LatLng initialPosition = LatLng(
+            latitude,
+            longitude,
+          ); // Fallback: San Francisco
+          Set<Circle> circles = {};
 
-        return StackedLoader(
-          loading: provider.loader,
-          child: Container(
-            color: Colors.white,
-            child: Stack(
-              children: [
-                GoogleMap(
-                  initialCameraPosition: CameraPosition(
-                    target: initialPosition,
-                    zoom: 12,
+          if (snapshot.connectionState == ConnectionState.done &&
+              snapshot.hasData &&
+              snapshot.data != null) {
+            initialPosition = snapshot.data!;
+            circles.add(
+              Circle(
+                circleId: const CircleId('user_location'),
+                center: initialPosition,
+                radius: 16093.4,
+                // 10 miles in meters
+                fillColor: Colors.blue.withValues(alpha: 0.2),
+                strokeColor: ColorRes.primaryColor.withValues(alpha: 0.3),
+                strokeWidth: 1,
+              ),
+            );
+          }
+
+          return StackedLoader(
+            loading: provider.loader,
+            child: Container(
+              color: Colors.white,
+              child: Stack(
+                children: [
+                  GoogleMap(
+                    initialCameraPosition: CameraPosition(
+                      target: initialPosition,
+                      zoom: 12,
+                    ),
+                    markers: provider.markers,
+                    circles: circles,
+                    onMapCreated: provider.onMapCreated,
+                    myLocationEnabled: true,
+                    myLocationButtonEnabled: false,
+                    zoomControlsEnabled: false,
+                    mapToolbarEnabled: false,
+                    buildingsEnabled: true,
+                    indoorViewEnabled: true,
+                    trafficEnabled: false,
+                    mapType: MapType.normal,
+                    style: '''
+                [
+                  {
+                    "elementType": "geometry",
+                    "stylers": [
+                      {
+                        "color": "#f5f5f5"
+                      }
+                    ]
+                  },
+                  {
+                    "elementType": "labels.icon",
+                    "stylers": [
+                      {
+                        "visibility": "off"
+                      }
+                    ]
+                  },
+                  {
+                    "elementType": "labels.text.fill",
+                    "stylers": [
+                      {
+                        "color": "#616161"
+                      }
+                    ]
+                  },
+                  {
+                    "elementType": "labels.text.stroke",
+                    "stylers": [
+                      {
+                        "color": "#f5f5f5"
+                      }
+                    ]
+                  },
+                  {
+                    "featureType": "water",
+                    "elementType": "geometry",
+                    "stylers": [
+                      {
+                        "color": "#c9c9c9"
+                      }
+                    ]
+                  }
+                ]
+                ''',
                   ),
-                  markers: provider.markers,
-                  circles: circles,
-                  onMapCreated: provider.onMapCreated,
-                  myLocationEnabled: true,
 
-                  myLocationButtonEnabled: false,
-                  zoomControlsEnabled: false,
-                  mapToolbarEnabled: false,
-                  buildingsEnabled: true,
-                  indoorViewEnabled: true,
-                  trafficEnabled: false,
-                  mapType: MapType.normal,
-                  style: '''
-              [
-                {
-                  "elementType": "geometry",
-                  "stylers": [
-                    {
-                      "color": "#f5f5f5"
-                    }
-                  ]
-                },
-                {
-                  "elementType": "labels.icon",
-                  "stylers": [
-                    {
-                      "visibility": "off"
-                    }
-                  ]
-                },
-                {
-                  "elementType": "labels.text.fill",
-                  "stylers": [
-                    {
-                      "color": "#616161"
-                    }
-                  ]
-                },
-                {
-                  "elementType": "labels.text.stroke",
-                  "stylers": [
-                    {
-                      "color": "#f5f5f5"
-                    }
-                  ]
-                },
-                {
-                  "featureType": "water",
-                  "elementType": "geometry",
-                  "stylers": [
-                    {
-                      "color": "#c9c9c9"
-                    }
-                  ]
-                }
-              ]
-              ''',
-                ),
-                ...provider.mapOverlays, // Add cust
-                // om overlays
-                ///Camera and Map
-                Positioned(
-                  top: 40,
-                  left: 0,
-                  right: 0,
-                  child: Consumer<RatingProvider>(
-                    builder: (context, provider, child) {
-                      return Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            decoration: BoxDecoration(
-                              color: ColorRes.lightBlue,
-                              borderRadius: BorderRadius.circular(25),
-                              border: Border.all(color: ColorRes.lightBlue),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: Row(
-                              children: [
-                                SizedBox(
-                                  width: 131,
-                                  height: 41,
-                                  child: SubmitButton(
-                                    title: context.l10n?.camera ?? "Camera",
-                                    onTap: () {
-                                      provider.setMode('camera');
-                                      provider.flipController.toggleCard();
-                                    },
-                                    style: styleW500S14.copyWith(
-                                      color: provider.getCameraTabTextColor(),
-                                    ),
-                                    bgColor: provider.getCameraTabBgColor(),
-                                    raduis: 10,
-                                  ),
-                                ),
-                                SizedBox(
-                                  width: 131,
-                                  height: 41,
-                                  child: SubmitButton(
-                                    raduis: 10,
-                                    title: context.l10n?.map ?? "Map",
-                                    style: styleW500S14.copyWith(
-                                      color: provider.getMapTabTextColor(),
-                                    ),
-                                    onTap: () {
-                                      provider.setMode('map');
-                                    },
-                                    bgColor: provider.getMapTabBgColor(),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      );
-                    },
-                  ),
-                ),
-
-                ///Floating button
-                Positioned(
-                  left: Constants.horizontalPadding,
-                  top: 100,
-                  child: Column(
-                    children: [
-                      FloatingActionButton(
-                        mini: true,
-                        backgroundColor: Colors.white,
-                        onPressed: () async {
-                          final location = await provider.getCurrentLocation();
-                          if (location != null) {
-                            provider.mapController?.animateCamera(
-                              CameraUpdate.newLatLng(location),
-                            );
-                          }
-                        },
-                        child: const Icon(
-                          Icons.my_location,
-                          color: ColorRes.primaryColor,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      FloatingActionButton(
-                        mini: true,
-                        backgroundColor: Colors.white,
-                        onPressed: () {
-                          provider.mapController?.animateCamera(
-                            CameraUpdate.zoomIn(),
-                          );
-                        },
-                        child: const Icon(
-                          Icons.add,
-                          color: ColorRes.primaryColor,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      FloatingActionButton(
-                        mini: true,
-                        backgroundColor: Colors.white,
-                        onPressed: () {
-                          provider.mapController?.animateCamera(
-                            CameraUpdate.zoomOut(),
-                          );
-                        },
-                        child: const Icon(
-                          Icons.remove,
-                          color: ColorRes.primaryColor,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                ///Profile Rating
-                if (provider.selectedUser != null)
+                  // ...provider.mapOverlays, // Add cust
+                  // om overlays
+                  ///Camera and Map
                   Positioned(
-                    bottom: 80,
+                    top: 40,
                     left: 0,
                     right: 0,
-                    child: UserProfileRatingWidget(
-                      user: provider.selectedUser,
-
-                      onPrivateChat: () {
-                        print("On Private Chat");
-                      },
-                      onVisitProfile: () {
-                        print(
-                          "Selected User ------- ${provider.selectedUser?.fullName}",
-                        );
-                        // context.navigator.pushNamed(
-                        //   UploadScreen.routeName,
-                        //   arguments: provider.selectedUser,
-                        // );
-
-                        print("On Visit Profile");
-                      },
-                      onRate: () {
-                        print("On Rate");
-                        openCustomDialog(
-                          context,
-                          borderRadius: 30,
-                          title: context.l10n?.sendRating ?? "Send Rating",
-                          customChild: Column(
-                            children: [
-                              StarRatingWidget(
-                                onRatingChanged: (rate) {
-                                  ///New Rate
-                                  newRateVal = rate;
-                                },
-                                rating: 5,
-                                activeColor: ColorRes.primaryColor,
-                                inactiveColor: ColorRes.primaryColor,
-                                size: 37,
+                    child: Consumer<RatingProvider>(
+                      builder: (context, provider, child) {
+                        return Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              decoration: BoxDecoration(
+                                color: ColorRes.lightBlue,
+                                borderRadius: BorderRadius.circular(25),
+                                // border: Border.all(
+                                //   color: ColorRes.primaryColor,
+                                // ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: ColorRes.primaryColor.withValues(
+                                      alpha: 0.1,
+                                    ),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
                               ),
-
-                              35.ph.spaceVertical,
-                              SubmitButton(
-                                height: 45.ph,
-                                loading: provider.rateLoader,
-                                title: context.l10n?.send ?? "Send",
-                                onTap: () {
-                                  // print(
-                                  //   "Default Rate value ---- ${(provider.selectedUser?.profile?.ratingsAvg?.toStarCount())}",
-                                  // );
-
-                                  // var rating = DoubleRatingExtension(
-                                  //   newRateVal,
-                                  // ).toStars().toRawRating().toStringAsFixed(0);
-                                  // var rating =
-                                  //     PostRatingToStars(
-                                  //       newRateVal,
-                                  //     ).toStarRating();
-
-                                  // print("New Rate value ------- ${rating}");
-                                  //
-                                  // if (provider.selectedUser?.profile?.ratingsAvg
-                                  //         ?.toStarCount() ==
-                                  //     0) {
-                                  //   provider.newRatePostAPI(
-                                  //     context,
-                                  //     postId: provider.selectedUser?.id,
-                                  //     rating: rating.toString(),
-                                  //   );
-                                  // } else {
-                                  //   provider.updateRatePostAPI(
-                                  //     context,
-                                  //     postId: provider.selectedUser?.id,
-                                  //     rating: rating.toString(),
-                                  //   );
-                                  // }
-                                  context.navigator.pop();
-                                },
+                              child: Row(
+                                children: [
+                                  SizedBox(
+                                    width: 131,
+                                    height: 41,
+                                    child: SubmitButton(
+                                      title: context.l10n?.camera ?? "Camera",
+                                      onTap: () {
+                                        provider.setMode('camera');
+                                        provider.flipController.toggleCard();
+                                      },
+                                      style: styleW500S14.copyWith(
+                                        color: provider.getCameraTabTextColor(),
+                                      ),
+                                      bgColor: provider.getCameraTabBgColor(),
+                                      raduis: 10,
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    width: 131,
+                                    height: 41,
+                                    child: SubmitButton(
+                                      raduis: 10,
+                                      title: context.l10n?.map ?? "Map",
+                                      style: styleW500S14.copyWith(
+                                        color: provider.getMapTabTextColor(),
+                                      ),
+                                      onTap: () {
+                                        provider.setMode('map');
+                                      },
+                                      bgColor: provider.getMapTabBgColor(),
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         );
                       },
                     ),
                   ),
-              ],
+
+                  ///Floating button
+                  Positioned(
+                    left: Constants.horizontalPadding,
+                    top: 100,
+                    child: Column(
+                      children: [
+                        FloatingActionButton(
+                          mini: true,
+                          backgroundColor: Colors.white,
+                          onPressed: () async {
+                            final location =
+                                await provider.getCurrentLocation();
+                            if (location != null) {
+                              provider.mapController?.animateCamera(
+                                CameraUpdate.newLatLng(location),
+                              );
+                            }
+                          },
+                          child: const Icon(
+                            Icons.my_location,
+                            color: ColorRes.primaryColor,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        FloatingActionButton(
+                          mini: true,
+                          backgroundColor: Colors.white,
+                          onPressed: () {
+                            provider.mapController?.animateCamera(
+                              CameraUpdate.zoomIn(),
+                            );
+                          },
+                          child: const Icon(
+                            Icons.add,
+                            color: ColorRes.primaryColor,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        FloatingActionButton(
+                          mini: true,
+                          backgroundColor: Colors.white,
+                          onPressed: () {
+                            provider.mapController?.animateCamera(
+                              CameraUpdate.zoomOut(),
+                            );
+                          },
+                          child: const Icon(
+                            Icons.remove,
+                            color: ColorRes.primaryColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  ///Profile Rating
+                  if (provider.selectedUser != null)
+                    Positioned(
+                      bottom: 80,
+                      left: 0,
+                      right: 0,
+                      child: UserProfileRatingWidget(
+                        user: provider.selectedUser,
+
+                        onPrivateChat: () {
+                          print("On Private Chat");
+                        },
+                        onVisitProfile: () {
+                          print(
+                            "Selected User ------- ${provider.selectedUser?.fullName}",
+                          );
+                          // context.navigator.pushNamed(
+                          //   UploadScreen.routeName,
+                          //   arguments: provider.selectedUser,
+                          // );
+
+                          print("On Visit Profile");
+                        },
+                        onRate: () {
+                          print("On Rate -------- 2");
+                          openCustomDialog(
+                            context,
+                            borderRadius: 30,
+                            title: context.l10n?.sendRating ?? "Send Rating",
+                            customChild: Column(
+                              children: [
+                                StarRatingWidget(
+                                  onRatingChanged: (rate) {
+                                    ///New Rate
+                                    newRateVal = rate;
+                                  },
+                                  rating:
+                                      provider
+                                          .selectedUser
+                                          ?.profile
+                                          ?.ratingsAvg ??
+                                      0.0,
+                                  activeColor: ColorRes.primaryColor,
+                                  inactiveColor: ColorRes.primaryColor,
+                                  size: 37,
+                                ),
+
+                                35.ph.spaceVertical,
+                                SubmitButton(
+                                  height: 45.ph,
+                                  loading: provider.rateLoader,
+                                  title: context.l10n?.send ?? "Send",
+
+                                  bgColor:
+                                      newRateVal == 0.0
+                                          ? ColorRes.lightGrey5
+                                          : ColorRes.primaryColor,
+                                  onTap: () {
+                                    print("newRateVal--- ${newRateVal}");
+                                    print(
+                                      "Default Rate value ---- ${(provider.selectedUser?.profile?.ratingsAvg)}",
+                                    );
+
+                                    if (provider
+                                            .selectedUser
+                                            ?.profile
+                                            ?.ratingsAvg ==
+                                        0.0) {
+                                      provider.newRatePostAPI(
+                                        context,
+                                        postId: provider.selectedUser?.id,
+                                        rating: newRateVal.toString(),
+                                      );
+                                    } else {
+                                      provider.updateRatePostAPI(
+                                        context,
+                                        postId: provider.selectedUser?.id,
+                                        rating: newRateVal.toString(),
+                                      );
+                                    }
+                                    context.navigator.pop();
+                                  },
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                ],
+              ),
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 }

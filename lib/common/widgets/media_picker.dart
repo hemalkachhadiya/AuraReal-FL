@@ -2,9 +2,10 @@ import 'package:aura_real/aura_real.dart';
 import 'package:file_picker/file_picker.dart';
 
 Future<File?> openMediaPicker(
-    BuildContext context, {
-      bool useCameraForImage = false,
-    }) async {
+  BuildContext context, {
+  bool useCameraForImage = false,
+  String? mediaType, // New parameter to specify media type (e.g., 'profile')
+}) async {
   // If useCameraForImage is true, open the camera directly for images
   if (useCameraForImage) {
     final canOpenCamera = await checkCameraPermission(context);
@@ -22,7 +23,49 @@ Future<File?> openMediaPicker(
   }
 
   // Step 1: Choose between Image or Video
-  final mediaType = await showModalBottomSheet<String>(
+  if (mediaType == 'profile') {
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      isScrollControlled: true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
+      ),
+      builder: (BuildContext context) {
+        return MediaPicker(mediaType: 'image'); // Only image options
+      },
+    );
+
+    if (source != null) {
+      if (source == ImageSource.camera && context.mounted) {
+        final canOpenCamera = await checkCameraPermission(context);
+        if (canOpenCamera) {
+          final xFile = await ImagePicker().pickImage(source: source);
+          if (xFile != null) {
+            final compressedFile = await compressImage(
+              File(xFile.path),
+              requestedSize: (1024 * 1024 * 0.5),
+            );
+            if (compressedFile != null) {
+              return compressedFile;
+            }
+          }
+        }
+      } else {
+        final xFile = await ImagePicker().pickImage(source: source);
+        if (xFile != null) {
+          final compressedFile = await compressImage(
+            File(xFile.path),
+            requestedSize: (1024 * 1024 * 0.5),
+          );
+          if (compressedFile != null) {
+            return compressedFile;
+          }
+        }
+      }
+    }
+    return null;
+  }
+  final mediaTypeSelected = await showModalBottomSheet<String>(
     context: context,
     isScrollControlled: true,
     shape: RoundedRectangleBorder(
@@ -57,11 +100,11 @@ Future<File?> openMediaPicker(
     },
   );
 
-  if (mediaType == null) return null;
+  if (mediaTypeSelected == null) return null;
 
   // Step 2: Show options based on selected media type
   File? selectedFile;
-  if (mediaType == 'image') {
+  if (mediaTypeSelected == 'image') {
     final source = await showModalBottomSheet<ImageSource>(
       context: context,
       isScrollControlled: true,
@@ -103,7 +146,7 @@ Future<File?> openMediaPicker(
         }
       }
     }
-  } else if (mediaType == 'video') {
+  } else if (mediaTypeSelected == 'video') {
     final source = await showModalBottomSheet<File?>(
       context: context,
       isScrollControlled: true,
@@ -147,7 +190,6 @@ Future<File?> openFilePicker({
     return null;
   }
 }
-
 
 class MediaPicker extends StatelessWidget {
   final String? mediaType; // Determines whether to show image or video options

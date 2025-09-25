@@ -33,6 +33,7 @@ class ProfileProvider extends ChangeNotifier {
     validate();
   }
 
+  ///On Mobile Changed
   void onMobileChanged(String value) {
     validate();
   }
@@ -40,7 +41,10 @@ class ProfileProvider extends ChangeNotifier {
   /// Handle image selection
   Future<void> pickImage(BuildContext context) async {
     try {
-      final File? imageFile = await openMediaPicker(context);
+      final File? imageFile = await openMediaPicker(
+        context,
+        mediaType: "profile",
+      );
 
       if (imageFile != null) {
         selectedImage = imageFile;
@@ -128,7 +132,7 @@ class ProfileProvider extends ChangeNotifier {
     init();
   }
 
-  // Helper method to get userData safely
+  /// Helper method to get userData safely
   LoginRes? get userData {
     try {
       final str = PrefService.getString(PrefKeys.userData);
@@ -141,6 +145,7 @@ class ProfileProvider extends ChangeNotifier {
     return null;
   }
 
+  ///Init
   Future<void> init() async {
     await getUserProfileAPI();
   }
@@ -208,6 +213,7 @@ class ProfileProvider extends ChangeNotifier {
     }
   }
 
+  ///Get User Profile API
   Future<void> getUserProfileAPI() async {
     if (userData == null || userData?.id == null) return;
     loader = true;
@@ -284,7 +290,7 @@ class ProfileProvider extends ChangeNotifier {
       if (updateSuccess) {
         await getUserProfileAPI(); // Refresh profile data
         if (context.mounted) {
-          // Navigator.pop(context); // Close the screen
+          Navigator.pop(context); // Close the screen
         }
         return true;
       } else {

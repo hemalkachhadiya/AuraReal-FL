@@ -1,7 +1,4 @@
-import 'package:aura_real/apis/model/post_model.dart';
 import 'package:aura_real/aura_real.dart';
-import 'package:aura_real/screens/home/post/posts/image_preview_screen.dart';
-import 'package:aura_real/screens/home/post/posts/video_player_screen.dart';
 
 class PostCard extends StatefulWidget {
   final PostModel post;
