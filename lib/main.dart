@@ -23,8 +23,9 @@ Future<void> main() async {
       projectId: 'aurareal-a2ca3',
       // projectId: 'com.smarttechnica.aura.real.social.media',
     );
+
     ///Notification code
-    // initializeNotifications();
+    initializeNotifications();
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
@@ -41,13 +42,13 @@ Future<void> main() async {
         String payload = jsonEncode(message.data);
         debugPrint('🔥 Showing notification with payload: $payload');
         RemoteNotification notification = message.notification!;
-       ///===============Notification Code
-        // showNotification(
-        //   title: notification.title ?? '',
-        //   body: notification.body ?? '',
-        //   payload: payload,
-        // );
-        // }
+
+        ///===============Notification Code
+        showNotification(
+          title: notification.title ?? '',
+          body: notification.body ?? '',
+          payload: payload,
+        );
       }
     });
     debugPrint("Firebase connect Andoid");
