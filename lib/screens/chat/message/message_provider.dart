@@ -530,7 +530,7 @@ class MessageProvider extends ChangeNotifier {
     _messageText = text;
   }
 
-  bool get canSendMessage => _messageText.trim().length >= 3;
+  bool get canSendMessage => messageText.trim().isNotEmpty;
 
   void clearMessages() {
     _messages.clear();
