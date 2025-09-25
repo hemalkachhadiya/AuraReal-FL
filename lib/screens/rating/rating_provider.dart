@@ -261,7 +261,7 @@ class RatingProvider extends ChangeNotifier {
       );
       final Uint8List uint8List = byteData!.buffer.asUint8List();
 
-      return BitmapDescriptor.fromBytes(uint8List);
+      return BitmapDescriptor.bytes(uint8List);
     } catch (e) {
       print('Error creating custom marker for ${user.displayName}: $e');
       return BitmapDescriptor.defaultMarker;

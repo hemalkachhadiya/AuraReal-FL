@@ -96,8 +96,8 @@ class _SearchScreenState extends State<SearchScreen> {
                           !provider.loader && provider.postListResponse.isEmpty,
                       separatorBuilder:
                           (_, __) => Divider(
-                            color: ColorRes.black.withOpacity(
-                              0.1,
+                            color: ColorRes.black.withValues(
+                              alpha: 0.1,
                             ), // ✅ Fixed here
                           ),
                       itemBuilder: (context, index) {

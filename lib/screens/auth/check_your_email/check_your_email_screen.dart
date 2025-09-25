@@ -130,7 +130,7 @@ class CheckYourEmailScreen extends StatelessWidget {
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(color: ColorRes.primaryColor),
-                          color: ColorRes.primaryColor.withOpacity(0.1),
+                          color: ColorRes.primaryColor.withValues(alpha: 0.1),
                         ),
                       ),
 
@@ -142,7 +142,7 @@ class CheckYourEmailScreen extends StatelessWidget {
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(color: Colors.red),
-                          color: Colors.red.withOpacity(0.1),
+                          color: Colors.red.withValues(alpha: 0.1),
                         ),
                       ),
                     ),

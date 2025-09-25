@@ -62,7 +62,7 @@ class AppProvider extends ChangeNotifier {
       print('Error changing language: $e');
       // Revert locale on error
       final savedLanguage =
-          PrefService.getString(PrefKeys.localLanguage) ?? 'en_US';
+          PrefService.getString(PrefKeys.localLanguage);
       locale = getLanStrToLocale(savedLanguage);
     } finally {
       loader = false;

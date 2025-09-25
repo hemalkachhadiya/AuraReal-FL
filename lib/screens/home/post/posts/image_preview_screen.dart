@@ -64,12 +64,6 @@ class _ImagePreviewScreenState extends State<ImagePreviewScreen>
     });
   }
 
-  void _onPageChanged(int index) {
-    setState(() {
-      _currentIndex = index;
-    });
-  }
-
   List<String> get _imageList {
     if (widget.imageUrls != null && widget.imageUrls!.isNotEmpty) {
       return widget.imageUrls!;

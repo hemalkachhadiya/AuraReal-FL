@@ -56,8 +56,8 @@ dependencies:
   google_places_flutter: ^2.1.0
 
   # -------------------------- Dart Methods -------------------------- #
-#  intl: ^0.19.0
-  intl: ^0.19.0
+  intl: ^0.20.2
+  #  intl: ^0.19.0
 
 
   # -------------------------- Internationalization -------------------------- #
@@ -68,8 +68,8 @@ dependencies:
 
   # -------------------------- Notification -------------------------- #
   flutter_local_notifications: ^18.0.1
-#    ///
-#    flutter_local_notifications: ^18.0.1
+  #    ///
+  #    flutter_local_notifications: ^18.0.1
 
 
 
@@ -101,9 +101,8 @@ dependencies:
   firebase_core: ^3.8.1
   google_sign_in: ^6.2.2
   firebase_messaging: ^15.1.6
-  flutter_local_notifications: ^18.0.1
 
-  
+
 
 
 

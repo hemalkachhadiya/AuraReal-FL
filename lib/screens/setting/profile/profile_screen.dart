@@ -61,7 +61,7 @@ class ProfileScreen extends StatelessWidget {
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: ColorRes.primaryColor.withOpacity(0.3),
+                              color: ColorRes.primaryColor.withValues(alpha: 0.3),
                               width: 2,
                             ),
                           ),
@@ -102,7 +102,7 @@ class ProfileScreen extends StatelessWidget {
                           Positioned.fill(
                             child: Container(
                               decoration: BoxDecoration(
-                                color: Colors.black.withOpacity(0.3),
+                                color: Colors.black.withValues(alpha: 0.3),
                                 shape: BoxShape.circle,
                               ),
                               child: const Center(

@@ -1,9 +1,5 @@
-import 'package:aura_real/app/app_provider.dart';
 import 'package:aura_real/aura_real.dart';
-import 'package:aura_real/screens/rating/rating_provider.dart';
 import 'package:aura_real/screens/rating/widget/user_profile_rating_widget.dart';
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:flip_card/flip_card.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
@@ -86,8 +82,8 @@ class _RatingScreenContent extends StatelessWidget {
                   end: Alignment.bottomCenter,
                   colors: [
                     Colors.transparent,
-                    Colors.black.withOpacity(0.3),
-                    Colors.black.withOpacity(0.7),
+                    Colors.black.withValues(alpha: 0.3),
+                    Colors.black.withValues(alpha: 0.7),
                   ],
                 ),
               ),
@@ -197,7 +193,7 @@ class _RatingScreenContent extends StatelessWidget {
                               },
                               child: Container(
                                 decoration: BoxDecoration(
-                                  color: ColorRes.primaryColor.withOpacity(0.1),
+                                  color: ColorRes.primaryColor.withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(15),
                                 ),
                                 padding: const EdgeInsets.symmetric(
@@ -372,10 +368,10 @@ class _RatingScreenContent extends StatelessWidget {
                                   width: 60,
                                   height: 60,
                                   decoration: BoxDecoration(
-                                    color: Colors.black.withOpacity(0.5),
+                                    color: Colors.black.withValues(alpha: 0.5),
                                     shape: BoxShape.circle,
                                     border: Border.all(
-                                      color: Colors.white.withOpacity(0.3),
+                                      color: Colors.white.withValues(alpha: 0.3),
                                     ),
                                   ),
                                   child: const Padding(
@@ -424,7 +420,7 @@ class _RatingScreenContent extends StatelessWidget {
               center: initialPosition,
               radius: 16093.4,
               // 10 miles in meters
-              fillColor: Colors.blue.withOpacity(0.2),
+              fillColor: Colors.blue.withValues(alpha: 0.2),
               strokeColor: Colors.blue,
               strokeWidth: 2,
             ),
@@ -519,7 +515,7 @@ class _RatingScreenContent extends StatelessWidget {
                               border: Border.all(color: ColorRes.lightBlue),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
+                                  color: Colors.black.withValues(alpha: 0.1),
                                   blurRadius: 10,
                                   offset: const Offset(0, 2),
                                 ),

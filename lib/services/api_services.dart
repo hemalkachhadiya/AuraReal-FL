@@ -1,8 +1,6 @@
-import 'package:aura_real/apis/app_response.dart';
 import 'package:aura_real/apis/model/file_data_model.dart';
 import 'package:aura_real/apis/model/multipart_list_model.dart';
 import 'package:http/http.dart' as http;
-
 import 'package:aura_real/aura_real.dart';
 
 class ApiService {

@@ -106,7 +106,7 @@ class _CommentBottomSheetContentState extends State<CommentBottomSheetContent> {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 10,
               offset: const Offset(0, -2),
             ),
@@ -135,7 +135,7 @@ class _CommentBottomSheetContentState extends State<CommentBottomSheetContent> {
               decoration: BoxDecoration(
                 border: Border(
                   bottom: BorderSide(
-                    color: ColorRes.grey.withOpacity(0.2),
+                    color: ColorRes.grey.withValues(alpha: 0.2),
                     width: 1,
                   ),
                 ),
@@ -194,7 +194,7 @@ class _CommentBottomSheetContentState extends State<CommentBottomSheetContent> {
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               border: Border.all(
-                                color: ColorRes.primaryColor.withOpacity(0.3),
+                                color: ColorRes.primaryColor.withValues(alpha: 0.3),
                                 width: 1.5,
                               ),
                             ),
@@ -241,7 +241,7 @@ class _CommentBottomSheetContentState extends State<CommentBottomSheetContent> {
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(10),
                                 border: Border.all(
-                                  color: ColorRes.grey.withOpacity(0.2),
+                                  color: ColorRes.grey.withValues(alpha: 0.2),
                                   width: 1,
                                 ),
                               ),
@@ -282,8 +282,8 @@ class _CommentBottomSheetContentState extends State<CommentBottomSheetContent> {
                               border: Border.all(
                                 color:
                                     _isTextFieldFocused
-                                        ? ColorRes.primaryColor.withOpacity(0.4)
-                                        : ColorRes.grey.withOpacity(0.2),
+                                        ? ColorRes.primaryColor.withValues(alpha: 0.4)
+                                        : ColorRes.grey.withValues(alpha: 0.2),
                                 width: 1.5,
                               ),
                               borderRadius: BorderRadius.circular(12),
@@ -292,7 +292,7 @@ class _CommentBottomSheetContentState extends State<CommentBottomSheetContent> {
                                       ? [
                                         BoxShadow(
                                           color: ColorRes.primaryColor
-                                              .withOpacity(0.1),
+                                              .withValues(alpha: 0.1),
                                           blurRadius: 6,
                                           offset: const Offset(0, 2),
                                         ),

@@ -76,11 +76,11 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     String payload = jsonEncode(message.data);
     debugPrint('🔥 Showing notification with payload: $payload');
     RemoteNotification notification = message.notification!;
-    // showNotification(
-    //   title: notification.title ?? '',
-    //   body: notification.body ?? '',
-    //   payload: payload,
-    // );
+    showNotification(
+      title: notification.title ?? '',
+      body: notification.body ?? '',
+      payload: payload,
+    );
   }
   debugPrint('👉 Full message: ${message.toMap()}'); // Logs everything
   debugPrint('Handling background message: ${message.data}');

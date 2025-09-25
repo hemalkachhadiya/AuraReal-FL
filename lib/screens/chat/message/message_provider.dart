@@ -254,13 +254,16 @@ class MessageProvider extends ChangeNotifier {
       status: MessageStatus.sending,
     );
 
-    _messages.add(newMessage); // Add the message immediately to UI
+    // _messages.add(newMessage); // Add the message immediately to UI
     notifyListeners();
 
     debugPrint("📤 Sending message at: $currentTime");
-    debugPrint("📤 Message details: ID=${newMessage.id}, text=${newMessage.text}");
+    debugPrint(
+      "📤 Message details: ID=${newMessage.id}, text=${newMessage.text}",
+    );
 
-    if (socketIoHelper.socketApp == null || !socketIoHelper.socketApp!.connected) {
+    if (socketIoHelper.socketApp == null ||
+        !socketIoHelper.socketApp!.connected) {
       debugPrint("❌ Socket not connected, marking message as failed");
       _updateMessageStatus(newMessage.id, MessageStatus.failed);
       ScaffoldMessenger.of(navigatorKey.currentContext!).showSnackBar(
@@ -307,9 +310,9 @@ class MessageProvider extends ChangeNotifier {
       acknowledgmentTimer?.cancel();
       debugPrint("❌ Server error on sendMessage: $error");
       _updateMessageStatus(newMessage.id, MessageStatus.failed);
-      ScaffoldMessenger.of(navigatorKey.currentContext!).showSnackBar(
-        SnackBar(content: Text("Failed to send message: $error")),
-      );
+      ScaffoldMessenger.of(
+        navigatorKey.currentContext!,
+      ).showSnackBar(SnackBar(content: Text("Failed to send message: $error")));
     }
 
     socketIoHelper.socketApp!.once("messageSent", handleMessageSent);
@@ -492,16 +495,24 @@ class MessageProvider extends ChangeNotifier {
 
       if (messageId != null) {
         final index = _messages.indexWhere((m) => m.id == messageId);
-        if (index != -1 && _messages[index].isFromMe && _messages[index].status == MessageStatus.sent) {
-          _messages[index] = _messages[index].copyWith(status: MessageStatus.delivered);
+        if (index != -1 &&
+            _messages[index].isFromMe &&
+            _messages[index].status == MessageStatus.sent) {
+          _messages[index] = _messages[index].copyWith(
+            status: MessageStatus.delivered,
+          );
           hasChanges = true;
         }
       } else if (messageIds != null) {
         for (final id in messageIds) {
           final messageIdStr = id.toString();
           final index = _messages.indexWhere((m) => m.id == messageIdStr);
-          if (index != -1 && _messages[index].isFromMe && _messages[index].status == MessageStatus.sent) {
-            _messages[index] = _messages[index].copyWith(status: MessageStatus.delivered);
+          if (index != -1 &&
+              _messages[index].isFromMe &&
+              _messages[index].status == MessageStatus.sent) {
+            _messages[index] = _messages[index].copyWith(
+              status: MessageStatus.delivered,
+            );
             hasChanges = true;
           }
         }
@@ -519,7 +530,7 @@ class MessageProvider extends ChangeNotifier {
     _messageText = text;
   }
 
-  bool get canSendMessage => _messageText.trim().isNotEmpty;
+  bool get canSendMessage => _messageText.trim().length >= 3;
 
   void clearMessages() {
     _messages.clear();
@@ -565,7 +576,7 @@ class MessageProvider extends ChangeNotifier {
         "${istTime.year}";
   }
 
-// Add these helper methods to your MessageProvider class
+  // Add these helper methods to your MessageProvider class
   DateTime convertToIndianTime(DateTime utcTime) {
     // Indian Standard Time is UTC + 5:30
     return utcTime.add(const Duration(hours: 5, minutes: 30));
@@ -574,6 +585,7 @@ class MessageProvider extends ChangeNotifier {
   DateTime getCurrentIndianTime() {
     return convertToIndianTime(DateTime.now().toUtc());
   }
+
   // String formatMessageTime(DateTime timestamp) {
   //   final now = DateTime.now();
   //   final today = DateTime(now.year, now.month, now.day);

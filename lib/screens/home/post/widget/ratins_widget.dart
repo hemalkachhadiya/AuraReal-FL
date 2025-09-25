@@ -72,7 +72,7 @@ Future<double?> showRatingDialog(
                         // Use star rating (0–5)
                         size: 30.0,
                         activeColor: ColorRes.primaryColor,
-                        inactiveColor: ColorRes.primaryColor.withOpacity(0.3),
+                        inactiveColor: ColorRes.primaryColor.withValues(alpha: 0.3),
                         onRatingChanged: (rating) {
                           setDialogState(() {
                             selectedRating = rating; // Update star rating

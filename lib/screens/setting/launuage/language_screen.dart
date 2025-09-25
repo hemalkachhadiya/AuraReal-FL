@@ -261,7 +261,7 @@ class LanguageScreen extends StatelessWidget {
                   //             color: (appProvider.loader ||
                   //                 appProvider.locale?.languageCode == 'en')
                   //                 ? Colors.grey[300]
-                  //                 : ColorRes.primaryColor.withOpacity(0.1),
+                  //                 : ColorRes.primaryColor.withValues(alpha: 0.1),
                   //             borderRadius: BorderRadius.circular(8),
                   //             border: Border.all(
                   //               color: (appProvider.loader ||

@@ -1,7 +1,5 @@
 import 'package:aura_real/aura_real.dart';
 import 'package:video_compress/video_compress.dart';
-import 'package:flutter/material.dart';
-import 'package:mime/mime.dart'; // Assuming you import this for lookupMimeType
 
 class AddPostProvider extends ChangeNotifier {
   final TextEditingController textController = TextEditingController();

@@ -195,7 +195,7 @@ class AddPostScreen extends StatelessWidget {
                                     borderRadius: BorderRadius.circular(10),
                                     color:
                                         isSelected
-                                            ? ColorRes.primaryColor.withOpacity(
+                                            ? ColorRes.primaryColor.withValues(alpha:
                                               0.1,
                                             )
                                             : null,

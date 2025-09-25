@@ -93,7 +93,7 @@ class _DraggableCustomBottomSheetState<T>
     extends State<DraggableCustomBottomSheet<T>>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  late Animation<double> _animation;
+  Animation<double>? _animation;
   bool _isExpanded = false;
 
   @override

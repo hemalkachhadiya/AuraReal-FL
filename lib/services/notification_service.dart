@@ -142,6 +142,9 @@
 // /Smart code ==============================
 // import 'package:aura_real/aura_real.dart';
 
+import 'package:aura_real/aura_real.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
 
