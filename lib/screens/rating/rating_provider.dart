@@ -33,9 +33,6 @@ class RatingProvider extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     final double? latitude = prefs.getDouble(PrefKeys.latitude);
     final double? longitude = prefs.getDouble(PrefKeys.longitude);
-
-    print("Provider latitude------- $latitude");
-    print("Provider longitude------- $longitude");
     if (latitude != null && longitude != null) {
       return LatLng(latitude, longitude);
     }
@@ -48,7 +45,7 @@ class RatingProvider extends ChangeNotifier {
     LatLng userLocation,
     double radiusMiles,
   ) {
-    const double milesToMeters = 1609.34; // 1 mile = 1609.34 meters
+    const double milesToMeters = 100; // 1 mile = 1609.34 meters
     return users.where((user) {
       if (user.latitude == null || user.longitude == null) return false;
       final distance = Geolocator.distanceBetween(
@@ -425,6 +422,7 @@ class RatingProvider extends ChangeNotifier {
     if (response != null && response.isSuccess) {
       users = response.list ?? [];
       print("✅ Loaded ${users.length} users");
+      showCustomToast("${users.length} users loaded on map");
       await _createMarkers();
     } else {
       print("❌ Failed to fetch users");
