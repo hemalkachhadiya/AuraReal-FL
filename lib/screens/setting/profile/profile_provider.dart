@@ -1,4 +1,3 @@
-import 'package:aura_real/apis/rating_profile_apis.dart';
 import 'package:aura_real/aura_real.dart';
 
 class ProfileProvider extends ChangeNotifier {

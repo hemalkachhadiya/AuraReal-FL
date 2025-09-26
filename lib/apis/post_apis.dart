@@ -1,5 +1,4 @@
 import 'package:aura_real/aura_real.dart';
-import 'package:aura_real/apis/model/post_model.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 
@@ -119,6 +118,7 @@ class PostAPI {
       final queryParams = {
         "page": page,
         "page_size": pageSize,
+        "user_id": userData?.id,
         if (search != null && search.isNotEmpty) "search": search,
         // Add search if provided
       };
@@ -187,7 +187,6 @@ class PostAPI {
       );
 
       if (model.isSuccess) {
-        print("Profile model======== ${model.profile?.username}");
         // showSuccessToast(model.message ?? "Posts fetched successfully");
         return model;
       } else {

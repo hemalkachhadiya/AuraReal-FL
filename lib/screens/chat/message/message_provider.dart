@@ -1,7 +1,5 @@
 import 'dart:async';
-
 import 'package:aura_real/aura_real.dart';
-import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart'; // Add dependency: flutter pub add uuid
 
 class Message {

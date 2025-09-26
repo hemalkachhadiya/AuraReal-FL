@@ -133,7 +133,8 @@ class _SearchScreenState extends State<SearchScreen> {
                           onTap: () {
                             context.navigator.pushNamed(
                               UploadScreen.routeName,
-                              arguments: provider.postListResponse[index],
+                              arguments:
+                                  provider.postListResponse[index].userId?.id,
                             );
                           },
                           onRatingSubmitted: (rate) {

@@ -49,6 +49,7 @@ class _StarRatingWidgetState extends State<StarRatingWidget> {
     }
   }
 
+
   @override
   Widget build(BuildContext context) {
     return Row(

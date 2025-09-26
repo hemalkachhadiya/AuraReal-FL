@@ -1,4 +1,3 @@
-import 'package:aura_real/apis/model/post_model.dart';
 import 'package:aura_real/aura_real.dart';
 import 'package:http/http.dart' as http;
 
@@ -202,6 +201,7 @@ class PostsProvider extends ChangeNotifier {
           // Create updated post with new rating
           final updatedPost = currentPost.copyWith(
             postRating: ratingValue,
+            isRated: true,
             // Update other rating-related fields if needed
             // userRating: ratingValue,
             // averageRating: calculateNewAverage(currentPost, ratingValue),
@@ -323,8 +323,6 @@ class PostsProvider extends ChangeNotifier {
     }
   }
 
-  ///Comment Post API
-  /// Comment or Reply on Post
   Future<void> commentPostAPI(
     BuildContext context, {
     String? postId,

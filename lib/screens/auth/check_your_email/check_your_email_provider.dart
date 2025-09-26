@@ -1,6 +1,4 @@
-import 'package:aura_real/apis/auth_apis.dart';
 import 'package:aura_real/aura_real.dart';
-import 'package:aura_real/screens/auth/create_new_password/create_new_password_screen.dart';
 import 'package:map_location_picker/map_location_picker.dart';
 
 class CheckYourMailProvider extends ChangeNotifier {

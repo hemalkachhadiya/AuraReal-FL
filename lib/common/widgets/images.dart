@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:aura_real/aura_real.dart';
 
 class SvgAsset extends StatelessWidget {

@@ -23,18 +23,25 @@ class PostCard extends StatefulWidget {
 }
 
 class _PostCardState extends State<PostCard> {
-  late double _localRawRating; // Store rating in raw format (0.0–0.1)
+  late double _localRawRating;
   int _localCommentCount = 0;
   String? _commentString;
-  bool _isCommentTapped = false; // Track comment tap state
+  bool _isCommentTapped = false;
 
   @override
   void initState() {
     super.initState();
-    _localRawRating = widget.post.postRating?.toRawRating() ?? 0.0; // Use raw rating
+    // Initialize _localRawRating from API rating
+    _updateLocalRating(widget.post.postRating ?? 0.0);
     _localCommentCount = widget.post.commentsCount ?? 0;
     _commentString = widget.post.content ?? "";
-    print("widget.post.postRating (raw) === $_localRawRating");
+
+    print("=== PostCard Debug ===");
+    print("API returned: ${widget.post.postRating}");
+    print("Storing as raw rating: $_localRawRating");
+    print("Will display: ${_localRawRating.toStarRating()} filled stars");
+    print("Will show text: ${_localRawRating.toStringAsFixed(2)}");
+    print("===================");
   }
 
   @override
@@ -42,7 +49,8 @@ class _PostCardState extends State<PostCard> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.post.postRating != widget.post.postRating) {
       setState(() {
-        _localRawRating = widget.post.postRating?.toRawRating() ?? 0.0;
+        // Apply the same conversion logic as initState
+        _updateLocalRating(widget.post.postRating ?? 0.0);
       });
     }
     if (oldWidget.post.commentsCount != widget.post.commentsCount) {
@@ -53,20 +61,45 @@ class _PostCardState extends State<PostCard> {
     }
   }
 
+  // Helper method to handle rating conversion
+  void _updateLocalRating(double apiRating) {
+    if (apiRating >= 1.0) {
+      // If API returned integer format (e.g., 2.0), convert to decimal (e.g., 0.04)
+      _localRawRating = apiRating.toRawRating();
+    } else {
+      // If API returned decimal format (e.g., 0.04), use as is
+      _localRawRating = apiRating;
+    }
+  }
+
   void _handleCommentSubmitted(String comment) async {
     if (comment.trim().isEmpty) return;
     widget.onCommentSubmitted?.call(comment);
     setState(() {
-      _localCommentCount += 1; // Update comment count locally
+      _localCommentCount += 1;
     });
   }
 
   void _handleRatingSubmitted(double starRating) {
+    // starRating comes as 3.0 (from popup)
+    // Convert to raw decimal for display (0.02, 0.04, 0.06, 0.08, 0.10)
+    double rawRating = starRating.toRawRating();
+    // Convert to integer for API (1, 2, 3, 4, 5)
+    int integerRating = starRating.round();
+
     setState(() {
-      _localRawRating = starRating.toRawRating(); // Convert stars (0–5) to raw (0.0–0.1)
+      _localRawRating = rawRating; // Store as decimal (e.g., 0.06)
     });
-    print("Star Rating -- ${_localRawRating}");
-    widget.onRatingSubmitted?.call(_localRawRating); // Pass raw rating
+
+    print("=== Rating Submission Debug ===");
+    print("Star Rating selected: $starRating stars");
+    print("Sending to API: $integerRating (integer)");
+    print("Storing for display: $rawRating (decimal)");
+    print("Will show: ${rawRating.toStarRating()} filled stars");
+    print("=============================");
+
+    // Send integer to API
+    widget.onRatingSubmitted?.call(integerRating.toDouble());
   }
 
   @override
@@ -109,7 +142,8 @@ class _PostCardState extends State<PostCard> {
                       style: styleW600S12,
                     ),
                     const SizedBox(height: 4),
-                    if (_localRawRating > 0)
+                    if (widget.post.userId?.profile?.ratingsAvg != null &&
+                        (widget.post.userId?.profile?.ratingsAvg ?? 0) > 0)
                       Row(
                         children: [
                           SvgAsset(
@@ -120,9 +154,8 @@ class _PostCardState extends State<PostCard> {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            widget.post.userId?.profile?.ratingsAvg!
-                                .toStringAsFixed(2) ??
-                                "0.0",
+                            widget.post.userId!.profile!.ratingsAvg!
+                                .toStringAsFixed(2),
                             style: styleW600S12,
                           ),
                         ],
@@ -153,14 +186,14 @@ class _PostCardState extends State<PostCard> {
                   if (widget.loading == true) return;
                   final selectedRating = await showRatingDialog(
                     context,
-                    widget.post,
+                    widget.post.postRating??0.0,
                     loading: widget.loading,
                     onSubmit: () {
                       print("Rating submitted for post ${widget.post.id}");
                     },
                   );
                   if (selectedRating != null) {
-                    _handleRatingSubmitted(selectedRating); // Handle star rating (0–5)
+                    _handleRatingSubmitted(selectedRating);
                   }
                 },
                 child: Column(
@@ -172,11 +205,11 @@ class _PostCardState extends State<PostCard> {
                           rating: _localRawRating.toStarRating(),
                           size: 20,
                           activeColor: ColorRes.primaryColor,
-                          inactiveColor: ColorRes.primaryColor,
+                          inactiveColor: Colors.grey,
                         ),
                         10.pw.spaceHorizontal,
                         Text(
-                          widget.post.postRating!.toStringAsFixed(2),
+                          _localRawRating.toStringAsFixed(2),
                           style: styleW700S16,
                         ),
                       ],
@@ -198,10 +231,13 @@ class _PostCardState extends State<PostCard> {
               /// Comment Section
               InkWell(
                 onTap: () async {
+                  if (widget.loading == true) return;
                   setState(() {
-                    _isCommentTapped = true; // Set flag when comment is tapped
+                    _isCommentTapped = true;
                   });
-                  print("Opening comment bottom sheet for post ${widget.post.id}");
+                  print(
+                    "Opening comment bottom sheet for post ${widget.post.id}",
+                  );
                   try {
                     final postsProvider = Provider.of<PostsProvider>(
                       context,
@@ -218,20 +254,22 @@ class _PostCardState extends State<PostCard> {
                     await openCustomDraggableBottomSheet(
                       context,
                       title: context.l10n?.comments ?? "Comments",
-                      customChild: ChangeNotifierProvider.value(
-                        value: postsProvider,
-                        child: Consumer<PostsProvider>(
-                          builder: (context, provider, _) {
-                            return CommentsWidget(
-                              post: widget.post,
-                              comments: provider.commentListResponse,
-                              onCommentSubmitted: (val) async {
-                                print("Submitting comment: $val");
-                                _handleCommentSubmitted(val);
-                                print("Comment submitted successfully");
-                              },
-                            );
-                          },
+                      customChild: Container(
+                        child: ChangeNotifierProvider.value(
+                          value: postsProvider,
+                          child: Consumer<PostsProvider>(
+                            builder: (context, provider, _) {
+                              return CommentsWidget(
+                                post: widget.post,
+                                comments: provider.commentListResponse,
+                                onCommentSubmitted: (val) async {
+                                  print("Submitting comment: $val");
+                                  _handleCommentSubmitted(val);
+                                  print("Comment submitted successfully");
+                                },
+                              );
+                            },
+                          ),
                         ),
                       ),
                       showButtons: false,
@@ -267,10 +305,10 @@ class _PostCardState extends State<PostCard> {
   }
 
   Widget buildMedia(
-      BuildContext context,
-      PostModel post,
-      VoidCallback onTapPost,
-      ) {
+    BuildContext context,
+    PostModel post,
+    VoidCallback onTapPost,
+  ) {
     if (post.media != null && post.media?.type == 1) {
       final videoUrl = EndPoints.domain + post.media!.url!.toBackslashPath();
       return GestureDetector(
@@ -279,7 +317,6 @@ class _PostCardState extends State<PostCard> {
           future: generateVideoThumbnail(videoUrl),
           builder: (context, snapshot) {
             if (_isCommentTapped) {
-              // Skip shimmer if comment is tapped
               if (!snapshot.hasData || snapshot.data == null) {
                 return Container(
                   height: 390,
@@ -309,7 +346,6 @@ class _PostCardState extends State<PostCard> {
                 ],
               );
             }
-            // Show shimmer during loading if comment is not tapped
             if (snapshot.connectionState == ConnectionState.waiting) {
               return CustomShimmer(height: 390, width: double.infinity);
             }
@@ -346,9 +382,9 @@ class _PostCardState extends State<PostCard> {
       );
     } else {
       final imageUrl =
-      post.media?.url != null
-          ? EndPoints.domain + post.media!.url!.toBackslashPath()
-          : "";
+          post.media?.url != null
+              ? EndPoints.domain + post.media!.url!.toBackslashPath()
+              : "";
       return GestureDetector(
         onTap: onTapPost,
         child: CachedImage(imageUrl, height: 390.0, fit: BoxFit.cover),

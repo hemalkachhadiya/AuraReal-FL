@@ -216,7 +216,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get publish => 'Publish';
 
   @override
-  String get camera => 'camera';
+  String get camera => 'Camera';
 
   @override
   String get map => 'Map';
@@ -339,5 +339,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get writeCaption => 'Write a Caption';
 
   @override
-  String get rateThisPost => 'Rate this Post';
+  String get rateUser => 'Rate User';
+
+  @override
+  String get rateThisProfile => 'Rate this profile';
+
+  @override
+  String get rateThisPost => 'Rate this post';
 }

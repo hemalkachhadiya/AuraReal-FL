@@ -1,11 +1,8 @@
-import 'package:aura_real/apis/model/post_model.dart';
 import 'package:aura_real/aura_real.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'dart:io';
 
 // ================== MEDIA TYPE ==================
 MediaType? getMediaType(String filePath) {

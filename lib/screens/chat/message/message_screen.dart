@@ -1,6 +1,5 @@
 import 'package:aura_real/aura_real.dart';
 
-
 class MessageScreen extends StatefulWidget {
   final ChatUser chatUser;
 
@@ -241,6 +240,9 @@ class _MessageScreenState extends State<MessageScreen> {
   }
 
   Widget _buildMessagesList(MessageProvider messageProvider) {
+    debugPrint(
+      "🔄 Rebuilding messages list with ${messageProvider.messages.length} messages",
+    );
     if (messageProvider.messages.isEmpty) {
       return const Center(
         child: Text(
@@ -250,7 +252,43 @@ class _MessageScreenState extends State<MessageScreen> {
       );
     }
 
-    return ListView.builder(
+    return CustomListView(
+      controller: _scrollController,
+      itemCount: messageProvider.messages.length,
+      separatorBuilder:
+          (ctx, ind) => Container(
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          ),
+      itemBuilder: (context, index) {
+        final message = messageProvider.messages[index];
+        final prevMessage =
+            index > 0 ? messageProvider.messages[index - 1] : null;
+        final showTimestamp =
+            prevMessage == null ||
+            message.timestamp.difference(prevMessage.timestamp).inMinutes > 5;
+
+        // Scroll to bottom for new messages if user is at bottom
+        if (index == messageProvider.messages.length - 1) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (_scrollController.hasClients && _isUserAtBottom) {
+              _scrollController.animateTo(
+                _scrollController.position.maxScrollExtent,
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeOut,
+              );
+              debugPrint("📜 Scrolled to bottom for new message");
+            }
+          });
+        }
+
+        return Column(
+          children: [
+            if (showTimestamp) _buildTimestamp(message.timestamp),
+            _buildMessageBubble(message, messageProvider),
+          ],
+        );
+      },
+    ) /*ListView.builder(
       controller: _scrollController,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       itemCount: messageProvider.messages.length,
@@ -262,11 +300,18 @@ class _MessageScreenState extends State<MessageScreen> {
             prevMessage == null ||
             message.timestamp.difference(prevMessage.timestamp).inMinutes > 5;
 
-        // Only scroll for new messages if user is at bottom
-        if (index == messageProvider.messages.length - 1 && _isUserAtBottom) {
-          WidgetsBinding.instance.addPostFrameCallback(
-            (_) => _scrollToBottom(),
-          );
+        // Scroll to bottom for new messages if user is at bottom
+        if (index == messageProvider.messages.length - 1) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (_scrollController.hasClients && _isUserAtBottom) {
+              _scrollController.animateTo(
+                _scrollController.position.maxScrollExtent,
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeOut,
+              );
+              debugPrint("📜 Scrolled to bottom for new message");
+            }
+          });
         }
 
         return Column(
@@ -276,7 +321,7 @@ class _MessageScreenState extends State<MessageScreen> {
           ],
         );
       },
-    );
+    )*/;
   }
 
   Widget _buildTimestamp(DateTime timestamp) {
@@ -307,7 +352,10 @@ class _MessageScreenState extends State<MessageScreen> {
 
   Widget _buildMessageBubble(Message message, MessageProvider messageProvider) {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 4),
+      margin: EdgeInsets.symmetric(
+        vertical: 4,
+        horizontal: Constants.horizontalPadding,
+      ),
       child: Row(
         mainAxisAlignment:
             message.isFromMe ? MainAxisAlignment.end : MainAxisAlignment.start,
@@ -621,10 +669,33 @@ class _MessageScreenState extends State<MessageScreen> {
       _isUserAtBottom = true;
     });
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _scrollToBottom();
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+        debugPrint("📜 Scrolled to bottom after sending message");
+      }
       FocusScope.of(
         navigatorKey.currentContext!,
       ).requestFocus(_focusNode); // Re-focus TextField
     });
   }
+
+  // void _sendMessage(MessageProvider messageProvider) {
+  //   if (!mounted) return;
+  //   debugPrint("Sending message to receiverId: ${widget.chatUser.id}");
+  //   messageProvider.sendMessage(receiverId: widget.chatUser.id ?? "");
+  //   _messageController.clear();
+  //   setState(() {
+  //     _isUserAtBottom = true;
+  //   });
+  //   WidgetsBinding.instance.addPostFrameCallback((_) {
+  //     _scrollToBottom();
+  //     FocusScope.of(
+  //       navigatorKey.currentContext!,
+  //     ).requestFocus(_focusNode); // Re-focus TextField
+  //   });
+  // }
 }

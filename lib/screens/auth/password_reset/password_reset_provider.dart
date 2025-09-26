@@ -1,6 +1,4 @@
-import 'package:aura_real/apis/auth_apis.dart';
 import 'package:aura_real/aura_real.dart';
-import 'package:aura_real/screens/auth/check_your_email/check_your_email_screen.dart';
 
 // Updated Provider
 class PasswordResetProvider extends ChangeNotifier {

@@ -1,4 +1,3 @@
-import 'package:aura_real/apis/model/post_model.dart';
 import 'package:aura_real/aura_real.dart';
 
 class UploadProvider extends ChangeNotifier {
@@ -61,11 +60,9 @@ class UploadProvider extends ChangeNotifier {
         userId: postUserId,
       );
       if (kDebugMode) {
-        print("Model get by user profile ======== ${model?.profile}");
         if (model?.profile != null) {
           profileData = model?.profile;
           isFollowing = profileData?.is_following ?? false;
-          print("Profile Rating ------- ${profileData?.ratingsAvg}");
         }
       }
       if (model != null) {
@@ -159,31 +156,23 @@ class UploadProvider extends ChangeNotifier {
 
   ///Create Chat Room For Send Message
   Future<void> createChatRoom(BuildContext context) async {
-    print("test==============================1");
     if (userData == null || userData?.id == null) return;
 
     loader = true;
     notifyListeners();
 
     try {
-      print("test==============================2");
-      print("UserId============== ${userData!.id}");
-      print("postUserId============== ${postUserId}");
-
       final result = await ChatApis.createChatRoom(
         userId: userData!.id!,
         followUserId: postUserId, // The profile user's ID
       );
 
       if (result.success! && result.data != null) {
-        print("Chat Room Id -- ${result.data?.chatRoomId}");
-        // Navigate to MessageScreen with provider
-        // Build ChatUser for MessageScreen
         final chatUser = ChatUser(
           id: postUserId,
           name: profileData?.fullName ?? "User",
           avatarUrl: profileData?.profileImage ?? "",
-          isOnline: false,
+          isOnline: true,
           // lastSeen: DateTime.now().toString(),
         );
         Navigator.push(
@@ -191,16 +180,16 @@ class UploadProvider extends ChangeNotifier {
           MaterialPageRoute(
             builder:
                 (_) => ChangeNotifierProvider(
-              create: (_) {
-                final provider = MessageProvider();
-                provider.initializeChat(
-                  user: chatUser,
-                  roomId: postUserId ?? "",
-                );
-                return provider;
-              },
-              child: MessageScreen(chatUser: chatUser),
-            ),
+                  create: (_) {
+                    final provider = MessageProvider();
+                    provider.initializeChat(
+                      user: chatUser,
+                      roomId: result.data?.id ?? "",
+                    );
+                    return provider;
+                  },
+                  child: MessageScreen(chatUser: chatUser),
+                ),
           ),
         );
         // Navigate to chat screen or handle success

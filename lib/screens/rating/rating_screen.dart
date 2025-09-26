@@ -412,9 +412,6 @@ class _RatingScreenContent extends StatelessWidget {
   }
 
   Widget _buildMapView(BuildContext context, RatingProvider provider) {
-    // if (provider.loader) {
-    //   return Center(child: CircularProgressIndicator());
-    // }
     var latitude = PrefService.getDouble(PrefKeys.latitude);
     var longitude = PrefService.getDouble(PrefKeys.longitude);
 
@@ -515,11 +512,31 @@ class _RatingScreenContent extends StatelessWidget {
                 ''',
                   ),
 
-                  // ...provider.mapOverlays, // Add cust
-                  // om overlays
+                  ///People Are Loaded
+                  Positioned(
+                    left: Constants.horizontalPadding,
+                    top: 8.ph,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        color: ColorRes.white,
+                      ),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 15.pw,
+                        vertical: 10.ph,
+                      ),
+                      child: Text(
+                        "${provider.users.length.toString()} people are loaded",
+                        style: styleW400S12.copyWith(
+                          color: ColorRes.primaryColor,
+                        ),
+                      ),
+                    ),
+                  ),
+
                   ///Camera and Map
                   Positioned(
-                    top: 40,
+                    top: 50,
                     left: 0,
                     right: 0,
                     child: Consumer<RatingProvider>(
@@ -649,84 +666,53 @@ class _RatingScreenContent extends StatelessWidget {
                       right: 0,
                       child: UserProfileRatingWidget(
                         user: provider.selectedUser,
-
                         onPrivateChat: () {
                           print("On Private Chat");
+
+                          provider.createChatRoom(context);
                         },
                         onVisitProfile: () {
                           print(
                             "Selected User ------- ${provider.selectedUser?.fullName}",
                           );
-                          // context.navigator.pushNamed(
-                          //   UploadScreen.routeName,
-                          //   arguments: provider.selectedUser,
-                          // );
+                          context.navigator.pushNamed(
+                            UploadScreen.routeName,
+                            arguments: provider.selectedUser?.id,
+                          );
 
                           print("On Visit Profile");
                         },
-                        onRate: () {
-                          print("On Rate -------- 2");
-                          openCustomDialog(
+                        onRate: () async {
+                          final selectedRating = await showRatingDialog(
                             context,
-                            borderRadius: 30,
-                            title: context.l10n?.sendRating ?? "Send Rating",
-                            customChild: Column(
-                              children: [
-                                StarRatingWidget(
-                                  onRatingChanged: (rate) {
-                                    ///New Rate
-                                    newRateVal = rate;
-                                  },
-                                  rating:
-                                      provider
-                                          .selectedUser
-                                          ?.profile
-                                          ?.ratingsAvg ??
-                                      0.0,
-                                  activeColor: ColorRes.primaryColor,
-                                  inactiveColor: ColorRes.primaryColor,
-                                  size: 37,
-                                ),
-
-                                35.ph.spaceVertical,
-                                SubmitButton(
-                                  height: 45.ph,
-                                  loading: provider.rateLoader,
-                                  title: context.l10n?.send ?? "Send",
-
-                                  bgColor:
-                                      newRateVal == 0.0
-                                          ? ColorRes.lightGrey5
-                                          : ColorRes.primaryColor,
-                                  onTap: () {
-                                    print("newRateVal--- ${newRateVal}");
-                                    print(
-                                      "Default Rate value ---- ${(provider.selectedUser?.profile?.ratingsAvg)}",
-                                    );
-
-                                    if (provider
-                                            .selectedUser
-                                            ?.profile
-                                            ?.ratingsAvg ==
-                                        0.0) {
-                                      provider.newRatePostAPI(
-                                        context,
-                                        postId: provider.selectedUser?.id,
-                                        rating: newRateVal.toString(),
-                                      );
-                                    } else {
-                                      provider.updateRatePostAPI(
-                                        context,
-                                        postId: provider.selectedUser?.id,
-                                        rating: newRateVal.toString(),
-                                      );
-                                    }
-                                    context.navigator.pop();
-                                  },
-                                ),
-                              ],
-                            ),
+                            isProfile: true,
+                            provider.selectedUser?.profile?.ratingsAvg ?? 0.0,
+                            onSubmit: () {},
                           );
+
+                          if (provider.selectedUser == null) return;
+
+                          final user = provider.selectedUser!;
+
+                          if (user.profile?.ratingsAvg == 0.0) {
+                            await provider.newProfileRateAPI(
+                              context,
+                              raterId: user.id,
+                              rating: selectedRating.toString(),
+                            );
+                          } else {
+                            await provider.updateProfileRateAPI(
+                              context,
+                              raterId: user.id,
+                              rating: selectedRating.toString(),
+                            );
+                          }
+
+                          // 🔹 Update local model immediately
+                          // user.profile?.ratingsAvg = selectedRating!;
+
+                          // 🔹 Notify provider to rebuild widgets
+                          provider.notifyListeners();
                         },
                       ),
                     ),

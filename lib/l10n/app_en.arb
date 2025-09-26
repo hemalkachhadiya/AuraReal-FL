@@ -68,7 +68,7 @@
   "post": "Post",
   "writeACaption": "Write a Caption",
   "publish": "Publish",
-  "camera": "camera",
+  "camera": "Camera",
   "map": "Map",
   "rate": "Rate",
   "profileVisit": "Profile Visit",
@@ -109,5 +109,7 @@
   "whatDoYouThink": "What do you think of this?",
   "reply": "Reply",
   "writeCaption": "Write a Caption",
-  "rateThisPost": "Rate this Post"
+  "rateUser": "Rate User",
+  "rateThisProfile": "Rate this profile",
+  "rateThisPost": "Rate this post"
 }

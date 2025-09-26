@@ -512,7 +512,7 @@ abstract class AppLocalizations {
   /// No description provided for @camera.
   ///
   /// In en, this message translates to:
-  /// **'camera'**
+  /// **'Camera'**
   String get camera;
 
   /// No description provided for @map.
@@ -755,10 +755,22 @@ abstract class AppLocalizations {
   /// **'Write a Caption'**
   String get writeCaption;
 
+  /// No description provided for @rateUser.
+  ///
+  /// In en, this message translates to:
+  /// **'Rate User'**
+  String get rateUser;
+
+  /// No description provided for @rateThisProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Rate this profile'**
+  String get rateThisProfile;
+
   /// No description provided for @rateThisPost.
   ///
   /// In en, this message translates to:
-  /// **'Rate this Post'**
+  /// **'Rate this post'**
   String get rateThisPost;
 }
 

@@ -96,7 +96,6 @@ class RatingProfileAPIS {
   }
 
   ///Get All Rating Profile List
-
   static Future<AppResponse2<RatingProfileUserModel>?>
   getAllRatingProfileUSerListAPI({
     int page = 1,
@@ -150,5 +149,59 @@ class RatingProfileAPIS {
       showCatchToast(exception, stack);
       return null;
     }
+  }
+
+  ///Rating Profile API
+  static Future<bool> ratingProfileAPI({
+    required String raterId,
+    required String newRating,
+  }) async {
+    try {
+      final response = await ApiService.postApi(
+        url: EndPoints.rateprofile,
+        body: {"userId": userData?.id, "raterId": raterId, "rating": newRating},
+      );
+      if (response == null) {
+        showCatchToast('No response from server', null);
+        return false;
+      }
+      final model = appResponseFromJson(response.body);
+      if (model.success == true) {
+        showSuccessToast(model.message ?? "Message Form Register API");
+        return true;
+      } else {
+        return false;
+      }
+    } catch (exception, stack) {
+      showCatchToast(exception, stack);
+    }
+    return false;
+  }
+
+  ///Rating Profile API
+  static Future<bool> updateProfileRateAPI({
+    required String raterId,
+    required String newRating,
+  }) async {
+    try {
+      final response = await ApiService.putApi(
+        url: EndPoints.updateProfileRating,
+        body: {"userId": userData?.id, "raterId": raterId, "rating": newRating},
+      );
+      if (response == null) {
+        showCatchToast('No response from server', null);
+        return false;
+      }
+      final model = appResponseFromJson(response.body);
+      if (model.success == true) {
+        showSuccessToast(model.message ?? "Message Form Register API");
+        return true;
+      } else {
+        return false;
+      }
+    } catch (exception, stack) {
+      showCatchToast(exception, stack);
+    }
+    return false;
   }
 }

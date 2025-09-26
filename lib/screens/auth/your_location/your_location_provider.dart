@@ -1,8 +1,4 @@
 import 'package:aura_real/aura_real.dart';
-import 'package:aura_real/screens/dahsboard/dashboard_screen.dart';
-import 'package:aura_real/services/location_services.dart';
-import 'package:aura_real/services/pref_services.dart';
-import 'package:aura_real/utils/pref_keys.dart';
 import 'package:geolocator/geolocator.dart';
 
 class YourLocationProvider extends ChangeNotifier {

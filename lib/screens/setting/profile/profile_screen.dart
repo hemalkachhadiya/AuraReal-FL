@@ -1,6 +1,4 @@
-import 'dart:io';
 import 'package:aura_real/aura_real.dart';
-import 'package:aura_real/common/widgets/media_picker.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -61,13 +59,17 @@ class ProfileScreen extends StatelessWidget {
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: ColorRes.primaryColor.withValues(alpha: 0.3),
+                              color: ColorRes.primaryColor.withValues(
+                                alpha: 0.3,
+                              ),
                               width: 2,
                             ),
                           ),
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(100),
-                            child: _buildProfileImage(provider),
+                            child: CachedImage(
+                              "${EndPoints.domain}${userData?.profile.profileImage}",
+                            ),
                           ),
                         ),
 
@@ -231,45 +233,6 @@ class ProfileScreen extends StatelessWidget {
           ),
         );
       },
-    );
-  }
-
-  Widget _buildProfileImage(ProfileProvider provider) {
-    if (provider.selectedImage != null) {
-      // Show selected local image
-      return Image.file(
-        provider.selectedImage!,
-        width: 164.pw,
-        height: 164.ph,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) {
-          return _buildDefaultImage();
-        },
-      );
-    } else if (provider.profileData?.profileImage != null &&
-        provider.profileData!.profileImage!.isNotEmpty) {
-      // Show existing profile image from server
-      final imageUrl =
-          "${EndPoints.domain}${provider.profileData!.profileImage}";
-      return CachedImage(
-        imageUrl,
-        width: 164.pw,
-        height: 164.ph,
-        fit: BoxFit.cover,
-        errorWidget: _buildDefaultImage(),
-      );
-    } else {
-      // Show default image
-      return _buildDefaultImage();
-    }
-  }
-
-  Widget _buildDefaultImage() {
-    return AssetsImg(
-      imagePath: AssetRes.notificationUserImg,
-      width: 164.pw,
-      height: 164.ph,
-      fit: BoxFit.cover,
     );
   }
 }

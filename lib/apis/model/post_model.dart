@@ -17,6 +17,7 @@ class PostModel {
   final int? commentsCount;
   final int? sharesCount;
   final bool? isDeleted;
+  final bool? isRated;
   final List<dynamic>? hashtags;
   final DateTime? createdAt;
   final DateTime? updatedAt;
@@ -36,6 +37,7 @@ class PostModel {
     this.commentsCount,
     this.sharesCount,
     this.isDeleted,
+    this.isRated,
     this.hashtags,
     this.createdAt,
     this.updatedAt,
@@ -56,6 +58,7 @@ class PostModel {
     int? commentsCount,
     int? sharesCount,
     bool? isDeleted,
+    bool? isRated,
     List<dynamic>? hashtags,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -74,6 +77,7 @@ class PostModel {
     commentsCount: commentsCount ?? this.commentsCount,
     sharesCount: sharesCount ?? this.sharesCount,
     isDeleted: isDeleted ?? this.isDeleted,
+    isRated: isRated ?? this.isRated,
     hashtags: hashtags ?? this.hashtags,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
@@ -100,6 +104,7 @@ class PostModel {
       commentsCount: json['comments_count'] as int?,
       sharesCount: json['shares_count'] as int?,
       isDeleted: json['is_deleted'] as bool?,
+      isRated: json['isRated'] as bool?,
       hashtags:
           (json['hashtags'] is List)
               ? List<dynamic>.from(json['hashtags'])
@@ -143,6 +148,7 @@ class PostModel {
       'comments_count': commentsCount,
       'shares_count': sharesCount,
       'is_deleted': isDeleted,
+      'isRated': isRated,
       'hashtags': hashtags,
       'created_at': createdAt?.toIso8601String(),
       'updated_at': updatedAt?.toIso8601String(),

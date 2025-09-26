@@ -45,25 +45,25 @@ class _ChatScreenState extends State<ChatScreen> {
               _buildSearchBar(context),
               Expanded(
                 child:
-                chatProvider.isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : chatProvider.visibleChatList.isEmpty
-                    ? _buildEmptyState(context)
-                    : CustomListView(
-                  itemCount: chatProvider.visibleChatList.length,
-                  onRefresh: () => chatProvider.fetchUserChatRooms(),
-                  itemBuilder: (context, index) {
-                    final chat = chatProvider.visibleChatList[index];
-                    return Padding(
-                      padding: EdgeInsets.only(
-                        left: 24,
-                        right: 24,
-                        top: index == 0 ? 0 : 30,
-                      ),
-                      child: _buildChatTile(context, chat),
-                    );
-                  },
-                ),
+                    chatProvider.isLoading
+                        ? const Center(child: CircularProgressIndicator())
+                        : chatProvider.visibleChatList.isEmpty
+                        ? _buildEmptyState(context)
+                        : CustomListView(
+                          itemCount: chatProvider.visibleChatList.length,
+                          onRefresh: () => chatProvider.fetchUserChatRooms(),
+                          itemBuilder: (context, index) {
+                            final chat = chatProvider.visibleChatList[index];
+                            return Padding(
+                              padding: EdgeInsets.only(
+                                left: 24,
+                                right: 24,
+                                top: index == 0 ? 0 : 30,
+                              ),
+                              child: _buildChatTile(context, chat),
+                            );
+                          },
+                        ),
               ),
             ],
           ),
@@ -122,15 +122,15 @@ class _ChatScreenState extends State<ChatScreen> {
     final chatProvider = Provider.of<ChatProvider>(context, listen: false);
 
     final otherParticipant = chatRoom.participants?.firstWhere(
-          (p) => p.id != userData!.id!,
+      (p) => p.id != userData!.id!,
       orElse: () => chatRoom.participants!.first,
     );
 
     final avatarUrl =
-    (otherParticipant?.profile?.profileImage != null &&
-        otherParticipant!.profile!.profileImage!.isNotEmpty)
-        ? "${EndPoints.domain}${otherParticipant.profile!.profileImage}"
-        : "https://via.placeholder.com/150";
+        (otherParticipant?.profile?.profileImage != null &&
+                otherParticipant!.profile!.profileImage!.isNotEmpty)
+            ? "${EndPoints.domain}${otherParticipant.profile!.profileImage}"
+            : "https://via.placeholder.com/150";
 
     // Fix unread count for current user
     final unreadCount = chatRoom.unreadCount?[userData!.id!] ?? 0;
@@ -158,16 +158,17 @@ class _ChatScreenState extends State<ChatScreen> {
             MaterialPageRoute(
               builder:
                   (_) => ChangeNotifierProvider(
-                create: (_) {
-                  final provider = MessageProvider();
-                  provider.initializeChat(
-                    user: chatUser,
-                    roomId: chatRoom.id ?? "",
-                  );
-                  return provider;
-                },
-                child: MessageScreen(chatUser: chatUser),
-              ),
+                    create: (_) {
+                      final provider = MessageProvider();
+                      provider.initializeChat(
+                        user: chatUser,
+                        roomId: chatRoom.id ?? "",
+                      );
+                      return provider;
+
+                    },
+                    child: MessageScreen(chatUser: chatUser),
+                  ),
             ),
           );
         }
@@ -185,9 +186,9 @@ class _ChatScreenState extends State<ChatScreen> {
                     borderRadius: BorderRadius.circular(24),
                     border: Border.all(
                       color:
-                      avatarUrl.isEmpty
-                          ? ColorRes.white
-                          : ColorRes.primaryColor,
+                          avatarUrl.isEmpty
+                              ? ColorRes.white
+                              : ColorRes.primaryColor,
                       width: 2,
                     ),
                   ),
@@ -201,17 +202,17 @@ class _ChatScreenState extends State<ChatScreen> {
                   right: 0,
                   bottom: 0,
                   child:
-                  isOtherUserOnline
-                      ? Container(
-                    width: 14.pw,
-                    height: 14.ph,
-                    decoration: BoxDecoration(
-                      color: Colors.green,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 2),
-                    ),
-                  )
-                      : const SizedBox.shrink(),
+                      isOtherUserOnline
+                          ? Container(
+                            width: 14.pw,
+                            height: 14.ph,
+                            decoration: BoxDecoration(
+                              color: Colors.green,
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.white, width: 2),
+                            ),
+                          )
+                          : const SizedBox.shrink(),
                 ),
               ],
             ),
@@ -235,9 +236,9 @@ class _ChatScreenState extends State<ChatScreen> {
                         : "Tap to view messages",
                     style: styleW400S12.copyWith(
                       color:
-                      unreadCount > 0
-                          ? ColorRes.primaryColor
-                          : ColorRes.black,
+                          unreadCount > 0
+                              ? ColorRes.primaryColor
+                              : ColorRes.black,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,

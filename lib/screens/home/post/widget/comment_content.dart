@@ -79,19 +79,28 @@ class _CommentsWidgetState extends State<CommentsWidget> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // User Profile Image
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(50),
-                  child: CachedImage(
-                    (widget.post.userId != null &&
-                            widget.post.userId?.profile != null &&
-                            widget.post.userId?.profile?.profileImage != null)
-                        ? EndPoints.domain +
-                            widget.post.userId!.profile!.profileImage!
-                                .toString()
-                        : "",
-                    width: 50,
-                    height: 50,
-                    fit: BoxFit.cover,
+                InkWell(
+                  onTap: () {
+                    context.navigator.pushNamed(
+                      UploadScreen.routeName,
+                      arguments: widget.post.userId?.id,
+                    );
+                  },
+
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(50),
+                    child: CachedImage(
+                      (widget.post.userId != null &&
+                              widget.post.userId?.profile != null &&
+                              widget.post.userId?.profile?.profileImage != null)
+                          ? EndPoints.domain +
+                              widget.post.userId!.profile!.profileImage!
+                                  .toString()
+                          : "",
+                      width: 50,
+                      height: 50,
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -101,18 +110,34 @@ class _CommentsWidgetState extends State<CommentsWidget> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        widget.post.userId?.fullName ?? "Unknown User",
-                        style: styleW600S14.copyWith(fontSize: 16),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                      InkWell(
+                        onTap: () {
+                          context.navigator.pushNamed(
+                            UploadScreen.routeName,
+                            arguments: widget.post.userId?.id,
+                          );
+                        },
+                        child: Text(
+                          widget.post.userId?.fullName ?? "Unknown User",
+                          style: styleW600S14.copyWith(fontSize: 16),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                       const SizedBox(height: 4),
-                      Text(
-                        widget.post.userId?.email ?? "No email",
-                        style: styleW400S12.copyWith(),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                      InkWell(
+                        onTap: () {
+                          context.navigator.pushNamed(
+                            UploadScreen.routeName,
+                            arguments: widget.post.userId?.id,
+                          );
+                        },
+                        child: Text(
+                          widget.post.userId?.email ?? "No email",
+                          style: styleW400S12.copyWith(),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                     ],
                   ),
@@ -133,6 +158,8 @@ class _CommentsWidgetState extends State<CommentsWidget> {
               ],
             ),
           ),
+
+          ///Divider
           const Divider(color: Colors.grey, height: 1),
           // Comments list with scroll
           Expanded(
@@ -147,6 +174,12 @@ class _CommentsWidgetState extends State<CommentsWidget> {
 
                       return CommentTile(
                         comment: comment,
+                        onTapProfileImg: () {
+                          context.navigator.pushNamed(
+                            UploadScreen.routeName,
+                            arguments: comment.userId?.id,
+                          );
+                        },
                         onReply: (c) {
                           setState(() {
                             _replyToComment = c;
@@ -266,6 +299,7 @@ class CommentTile extends StatelessWidget {
   final Function(CommentModel) onReply;
   final int depth;
   final bool hasReplied; // New parameter to check if a reply exists
+  final VoidCallback onTapProfileImg;
 
   const CommentTile({
     super.key,
@@ -273,6 +307,7 @@ class CommentTile extends StatelessWidget {
     required this.onReply,
     this.depth = 0,
     required this.hasReplied,
+    required this.onTapProfileImg,
   });
 
   @override
@@ -295,12 +330,7 @@ class CommentTile extends StatelessWidget {
           //   child: const Icon(Icons.person, color: Colors.white, size: 16),
           // ),
           InkWell(
-            onTap: (){
-              context.navigator.pushNamed(
-                UploadScreen.routeName,
-
-              );
-            },
+            onTap: onTapProfileImg,
             child: Container(
               width: 45.pw,
               height: 45.ph,
@@ -321,13 +351,11 @@ class CommentTile extends StatelessWidget {
                 Row(
                   children: [
                     InkWell(
-                      onTap: (){},
-                      child: Flexible(
-                        child: Text(
-                          comment.userId?.fullName ?? "Unknown",
-                          style: styleW600S14,
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                      onTap: onTapProfileImg,
+                      child: Text(
+                        comment.userId?.fullName ?? "Unknown",
+                        style: styleW600S14,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -370,6 +398,7 @@ class CommentTile extends StatelessWidget {
                         (comment.replies ?? <CommentModel>[])
                             .map(
                               (reply) => CommentTile(
+                                onTapProfileImg: onTapProfileImg,
                                 comment: reply,
                                 onReply: onReply,
                                 depth: depth + 1,

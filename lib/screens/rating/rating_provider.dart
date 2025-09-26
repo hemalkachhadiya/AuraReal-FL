@@ -4,7 +4,6 @@ import 'package:http/http.dart' as http; // Add for distance calculations
 import 'package:aura_real/aura_real.dart';
 import 'package:map_location_picker/map_location_picker.dart';
 
-
 class RatingProvider extends ChangeNotifier {
   bool isTorchOn = false; // Track torch state
   RatingProvider() {
@@ -29,9 +28,6 @@ class RatingProvider extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     final double? latitude = prefs.getDouble(PrefKeys.latitude);
     final double? longitude = prefs.getDouble(PrefKeys.longitude);
-
-    print("Provider latitude------- $latitude");
-    print("Provider longitude------- $longitude");
     if (latitude != null && longitude != null) {
       return LatLng(latitude, longitude);
     }
@@ -39,7 +35,6 @@ class RatingProvider extends ChangeNotifier {
     return null;
   }
 
-  // Filter users within 10 miles
   List<RatingProfileUserModel> getUsersWithinRadius(
     LatLng userLocation,
     double radiusMiles,
@@ -60,46 +55,7 @@ class RatingProvider extends ChangeNotifier {
 
   List<Widget> mapOverlays = [];
 
-  Future<void> _createMapOverlays() async {
-    final currentLocation = await getCurrentLocation();
-    final nearbyUsers =
-        currentLocation != null
-            ? getUsersWithinRadius(currentLocation, 10.0)
-            : users;
-
-    mapOverlays = await Future.wait(
-      nearbyUsers.map((user) async {
-        if (!user.hasLocation) return SizedBox.shrink();
-
-        final imageProvider =
-            user.profile?.profileImage != null
-                ? NetworkImage(
-                  '${EndPoints.domain}${user.profile?.profileImage}',
-                )
-                : SvgAsset(imagePath: AssetRes.appLogo) as ImageProvider;
-
-        return Positioned(
-          left: 0,
-          // Convert lat/lng to screen coordinates (requires map controller)
-          top: 0,
-          // Convert lat/lng to screen coordinates (requires map controller)
-          child: GestureDetector(
-            onTap: () => _onMarkerTapped(user),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                CircleAvatar(radius: 30, backgroundImage: imageProvider),
-                Text('${user.ratingsAverage.toStringAsFixed(1)}/10 ⭐'),
-              ],
-            ),
-          ),
-        );
-      }).toList(),
-    );
-
-    notifyListeners();
-  }
-
+  /// on Map Created
   Future<void> onMapCreated(GoogleMapController controller) async {
     mapController = controller;
     await _createMarkers();
@@ -113,6 +69,7 @@ class RatingProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// create Markers
   Future<void> _createMarkers() async {
     final Set<Marker> newMarkers = {};
     final currentLocation = await getCurrentLocation();
@@ -161,36 +118,31 @@ class RatingProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// create Custom Marker
   Future<BitmapDescriptor> _createCustomMarker(
-    RatingProfileUserModel user,
-  ) async {
+    RatingProfileUserModel user, {
+    double size = 70.0, // default small
+  }) async {
     try {
       final ui.PictureRecorder pictureRecorder = ui.PictureRecorder();
       final Canvas canvas = Canvas(pictureRecorder);
       final Paint paint = Paint()..isAntiAlias = true;
 
-      const double size = 120.0;
       const double borderWidth = 4.0;
-      const double badgeSize = 30.0;
-      const double badgeY = size - 15;
+      const double badgeHeight = 20.0;
+      const double badgeWidth = 40.0;
 
-      // Draw outer white circle
-      canvas.drawCircle(
-        const Offset(size / 2, size / 2),
-        size / 2,
-        paint..color = Colors.white,
-      );
+      // Draw white circular border background
+      final center = Offset(size / 2, size / 2);
+      final radius = size / 2;
+      canvas.drawCircle(center, radius, paint..color = Colors.white);
 
-      // Draw primary color border
+      // Draw primary color circle (inner border)
       canvas.drawCircle(
-        const Offset(size / 2, size / 2),
-        (size / 2) - borderWidth,
+        center,
+        radius - borderWidth / 2,
         paint..color = ColorRes.primaryColor,
       );
-
-      // Draw inner circle
-      final double imageRadius = (size / 2) - (borderWidth * 2);
-      final Offset imageCenter = Offset(size / 2, size / 2);
 
       // Load user profile image
       ui.Image? profileImage;
@@ -212,38 +164,46 @@ class RatingProvider extends ChangeNotifier {
       // Use default avatar if profile image fails
       profileImage ??= await _loadDefaultAvatarAsUiImage();
 
-      // Clip canvas to a circle
+      // Clip profile image into circle
       canvas.save();
       final clipPath =
           Path()..addOval(
-            Rect.fromCircle(center: imageCenter, radius: imageRadius),
+            Rect.fromCircle(center: center, radius: radius - borderWidth),
           );
       canvas.clipPath(clipPath);
 
-      // Draw profile image centered
+      // Draw profile image inside circle
       final srcRect = Rect.fromLTWH(
         0,
         0,
         profileImage.width.toDouble(),
         profileImage.height.toDouble(),
       );
-      final dstRect = Rect.fromCircle(center: imageCenter, radius: imageRadius);
+      final dstRect = Rect.fromCircle(
+        center: center,
+        radius: radius - borderWidth,
+      );
       canvas.drawImageRect(profileImage, srcRect, dstRect, paint);
-
       canvas.restore();
 
-      // Draw rating badge
-      canvas.drawCircle(
-        Offset(size / 2, badgeY),
-        badgeSize / 2,
-        paint..color = ColorRes.primaryColor,
+      // Draw rating badge (white rounded rectangle)
+      final badgeRect = RRect.fromRectAndRadius(
+        Rect.fromLTWH(
+          (size - badgeWidth) / 2,
+          size - badgeHeight - 4,
+          badgeWidth,
+          badgeHeight,
+        ),
+        const Radius.circular(6),
       );
+      canvas.drawRRect(badgeRect, paint..color = Colors.white);
 
+      // Draw rating text in primary color
       final textPainter = TextPainter(
         text: TextSpan(
           text: user.ratingsAverage.toStringAsFixed(1),
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: ColorRes.primaryColor,
             fontSize: 12,
             fontWeight: FontWeight.bold,
           ),
@@ -254,8 +214,8 @@ class RatingProvider extends ChangeNotifier {
       textPainter.paint(
         canvas,
         Offset(
-          (size / 2) - (textPainter.width / 2),
-          badgeY - (textPainter.height / 2),
+          (size - textPainter.width) / 2,
+          size - badgeHeight - 4 + (badgeHeight - textPainter.height) / 2,
         ),
       );
 
@@ -274,7 +234,7 @@ class RatingProvider extends ChangeNotifier {
     }
   }
 
-  // Helper to load default avatar as ui.Image
+  /// Helper to load default avatar as ui.Image
   Future<ui.Image> _loadDefaultAvatarAsUiImage() async {
     final byteData = await rootBundle.load(AssetRes.appLogo);
     final codec = await ui.instantiateImageCodec(byteData.buffer.asUint8List());
@@ -282,192 +242,7 @@ class RatingProvider extends ChangeNotifier {
     return frame.image;
   }
 
-  // Future<BitmapDescriptor> _createCustomMarker(
-  //   RatingProfileUserModel user,
-  // ) async {
-  //   print("User name--- ${user.username}");
-  //   print(
-  //     "user profile name-- ${EndPoints.domain + user.profile!.profileImage!.toBackslashPath()}",
-  //   );
-  //   try {
-  //     final ui.PictureRecorder pictureRecorder = ui.PictureRecorder();
-  //     final Canvas canvas = Canvas(pictureRecorder);
-  //     final Paint paint = Paint()..isAntiAlias = true;
-  //
-  //     const double size = 120.0; // Total size of the marker
-  //     const double borderWidth = 4.0; // Border width
-  //     const double imageSize = 80.0; // Size of the SVG image inside the marker
-  //
-  //     // Draw outer white circle
-  //     canvas.drawCircle(
-  //       const Offset(size / 2, size / 2),
-  //       size / 2,
-  //       paint..color = Colors.white,
-  //     );
-  //
-  //     // Draw primary color border
-  //     canvas.drawCircle(
-  //       const Offset(size / 2, size / 2),
-  //       (size / 2) - borderWidth,
-  //       paint..color = ColorRes.primaryColor,
-  //     );
-  //
-  //     // Draw inner grey circle
-  //     canvas.drawCircle(
-  //       const Offset(size / 2, size / 2),
-  //       (size / 2) - (borderWidth * 2),
-  //       paint..color = Colors.grey[300]!,
-  //     );
-  //
-  //     // Load and render the SVG app logo
-  //     final String svgString = await DefaultAssetBundle.of(
-  //       navigatorKey.currentState!.context,
-  //     ).loadString(AssetRes.appLogo);
-  //     final SvgPicture svgPicture = SvgPicture.string(
-  //       svgString,
-  //       width: imageSize,
-  //       height: imageSize,
-  //     );
-  //
-  //     // Convert SvgPicture to ui.Image
-  //     final ui.Image svgImage = await _svgPictureToImage(
-  //       svgPicture,
-  //       imageSize.toInt(),
-  //     );
-  //
-  //     // Draw the SVG image in the center of the marker
-  //     canvas.drawImage(
-  //       svgImage,
-  //       Offset((size - imageSize) / 2, (size - imageSize) / 2),
-  //       paint,
-  //     );
-  //
-  //     // Draw the rating badge at the bottom
-  //     const double badgeSize = 30.0;
-  //     const double badgeY = size - 15;
-  //
-  //     canvas.drawCircle(
-  //       const Offset(size / 2, badgeY),
-  //       badgeSize / 2,
-  //       paint..color = ColorRes.primaryColor,
-  //     );
-  //
-  //     final textPainter = TextPainter(
-  //       text: TextSpan(
-  //         text: user.ratingsAverage.toStringAsFixed(1),
-  //         style: const TextStyle(
-  //           color: Colors.white,
-  //           fontSize: 12,
-  //           fontWeight: FontWeight.bold,
-  //         ),
-  //       ),
-  //       textDirection: TextDirection.ltr,
-  //     );
-  //     textPainter.layout();
-  //     textPainter.paint(
-  //       canvas,
-  //       Offset(
-  //         (size / 2) - (textPainter.width / 2),
-  //         badgeY - (textPainter.height / 2),
-  //       ),
-  //     );
-  //
-  //     // Convert the canvas to an image
-  //     final ui.Image markerImage = await pictureRecorder.endRecording().toImage(
-  //       size.toInt(),
-  //       size.toInt(),
-  //     );
-  //     final ByteData? byteData = await markerImage.toByteData(
-  //       format: ui.ImageByteFormat.png,
-  //     );
-  //     final Uint8List uint8List = byteData!.buffer.asUint8List();
-  //
-  //     return BitmapDescriptor.bytes(uint8List);
-  //   } catch (e) {
-  //     print('Error creating custom marker for ${user.displayName}: $e');
-  //     return BitmapDescriptor.defaultMarker;
-  //   }
-  // }
-
-  // Helper method to convert SvgPicture to ui.Image
-  Future<ui.Image> _svgPictureToImage(SvgPicture svgPicture, int size) async {
-    final pictureRecorder = ui.PictureRecorder();
-    final canvas = Canvas(pictureRecorder);
-    // svgPicture.paint(canvas, Size(size.toDouble(), size.toDouble()));
-    final picture = pictureRecorder.endRecording();
-    return await picture.toImage(size, size);
-  }
-
-  // Future<BitmapDescriptor> _createCustomMarker(
-  //   RatingProfileUserModel user,
-  // ) async {
-  //   print(
-  //     "User PRofile image -- ${EndPoints.domain}${user.profile?.profileImage}",
-  //   );
-  //   final ui.PictureRecorder pictureRecorder = ui.PictureRecorder();
-  //   final Canvas canvas = Canvas(pictureRecorder);
-  //   final Paint paint = Paint()..isAntiAlias = true;
-  //
-  //   const double size = 120.0;
-  //   const double borderWidth = 4.0;
-  //
-  //   canvas.drawCircle(
-  //     const Offset(size / 2, size / 2),
-  //     size / 2,
-  //     paint..color = Colors.white,
-  //   );
-  //
-  //   canvas.drawCircle(
-  //     const Offset(size / 2, size / 2),
-  //     (size / 2) - borderWidth,
-  //     paint..color = ColorRes.primaryColor,
-  //   );
-  //
-  //   canvas.drawCircle(
-  //     const Offset(size / 2, size / 2),
-  //     (size / 2) - (borderWidth * 2),
-  //     paint..color = Colors.grey[300]!,
-  //   );
-  //
-  //   const double badgeSize = 30.0;
-  //   const double badgeY = size - 15;
-  //
-  //   canvas.drawCircle(
-  //     const Offset(size / 2, badgeY),
-  //     badgeSize / 2,
-  //     paint..color = ColorRes.primaryColor,
-  //   );
-  //
-  //   final textPainter = TextPainter(
-  //     text: TextSpan(
-  //       text: user.ratingsAverage.toStringAsFixed(1),
-  //       style: const TextStyle(
-  //         color: Colors.white,
-  //         fontSize: 12,
-  //         fontWeight: FontWeight.bold,
-  //       ),
-  //     ),
-  //     textDirection: TextDirection.ltr,
-  //   );
-  //   textPainter.layout();
-  //   textPainter.paint(
-  //     canvas,
-  //     Offset(
-  //       (size / 2) - (textPainter.width / 2),
-  //       badgeY - (textPainter.height / 2),
-  //     ),
-  //   );
-  //
-  //   final ui.Picture picture = pictureRecorder.endRecording();
-  //   final ui.Image image = await picture.toImage(size.toInt(), size.toInt());
-  //   final ByteData? byteData = await image.toByteData(
-  //     format: ui.ImageByteFormat.png,
-  //   );
-  //   final Uint8List uint8List = byteData!.buffer.asUint8List();
-  //
-  //   return BitmapDescriptor.fromBytes(uint8List);
-  // }
-
+  ///on Marker Tapped
   Future<void> _onMarkerTapped(RatingProfileUserModel user) async {
     selectedPost = null;
     selectedUser = user;
@@ -478,16 +253,7 @@ class RatingProvider extends ChangeNotifier {
     );
   }
 
-  // Future<void> _onMarkerTapped(RatingProfileUserModel user) async {
-  //   selectedPost=null;
-  //   selectedUser = user;
-  //   notifyListeners();
-  //   await _fetchOrCreateSelectedPost(user);
-  //   mapController?.animateCamera(
-  //     CameraUpdate.newLatLng(LatLng(user.latitude ?? 0, user.longitude ?? 0)),
-  //   );
-  // }
-
+  ///fetch Or Create Selected Post
   Future<void> _fetchOrCreateSelectedPost(RatingProfileUserModel user) async {
     try {
       // Option 2: Create a placeholder PostModel if API fetch fails or no userId
@@ -530,6 +296,7 @@ class RatingProvider extends ChangeNotifier {
     }
   }
 
+  ///get All User Rating Profile
   Future<void> getAllUserRatingProfile() async {
     if (userData == null || userData?.id == null) return;
     loader = true;
@@ -576,25 +343,122 @@ class RatingProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  ///New Rate API
-  Future<void> newRatePostAPI(
+  ///New Profile Rating API
+  Future<void> newProfileRateAPI(
     BuildContext context, {
-    String? postId,
+    String? raterId,
     String? rating,
   }) async {
     if (userData == null || userData?.id == null) return;
-    rateLoader = true;
-    notifyListeners();
-    final result = await PostAPI.newRatePostAPI(
-      postId: postId.toString(),
-      newRating: rating.toString(),
-    );
-    await _loadMapDataInBackground();
-    if (result) {
-      context.navigator.pop();
+
+    try {
+      rateLoader = true;
+      notifyListeners();
+
+      final result = await RatingProfileAPIS.ratingProfileAPI(
+        raterId: raterId.toString(),
+        newRating: rating.toString(),
+      );
+      if (!result) {
+        // Revert changes if API failed - use original rating instead of 0.0
+
+        // showCatchToast(result, null);
+      }
+    } catch (e) {
+      // Revert changes on error - use original rating instead of 0.0
+
+      showCatchToast("Error adding rating: ${e.toString()}", null);
+    } finally {
+      rateLoader = false;
+      notifyListeners();
     }
-    rateLoader = false;
+  }
+
+  ///New Rate API - Add new rating
+  Future<void> updateProfileRateAPI(
+    BuildContext context, {
+    String? raterId,
+    String? rating,
+  }) async {
+    if (userData == null || userData?.id == null) return;
+
+    try {
+      rateLoader = true;
+      notifyListeners();
+
+      final result = await RatingProfileAPIS.updateProfileRateAPI(
+        raterId: raterId.toString(),
+        newRating: rating.toString(),
+      );
+      if (!result) {
+        // Revert changes if API failed - use original rating instead of 0.0
+
+        // showCatchToast(result, null);
+      }
+    } catch (e) {
+      // Revert changes on error - use original rating instead of 0.0
+
+      showCatchToast("Error adding rating: ${e.toString()}", null);
+    } finally {
+      rateLoader = false;
+      notifyListeners();
+    }
+  }
+
+  ///Create Chat Room For Send Message
+  Future<void> createChatRoom(BuildContext context) async {
+    if (userData == null || userData?.id == null) return;
+
+    loader = true;
     notifyListeners();
+
+    try {
+      final result = await ChatApis.createChatRoom(
+        userId: userData!.id!,
+        followUserId: selectedUser!.id!, // The profile user's ID
+      );
+
+      if (result.success! && result.data != null) {
+        // Navigate to MessageScreen with provider
+        // Build ChatUser for MessageScreen
+        final chatUser = ChatUser(
+          id: selectedUser?.id!,
+          name: selectedUser?.fullName ?? "User",
+          avatarUrl: selectedUser?.profile?.profileImage ?? "",
+          isOnline: true,
+          // lastSeen: DateTime.now().toString(),
+        );
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder:
+                (_) => ChangeNotifierProvider(
+                  create: (_) {
+                    final provider = MessageProvider();
+                    provider.initializeChat(
+                      user: chatUser,
+                      roomId: result.data?.id ?? "",
+                    );
+                    return provider;
+                  },
+                  child: MessageScreen(chatUser: chatUser),
+                ),
+          ),
+        );
+        // Navigate to chat screen or handle success
+
+        // Navigator.push(context, MaterialPageRoute(
+        //   builder: (context) => MessageScreen(chatUser: ),
+        // ));
+      } else {
+        showCatchToast(result.message ?? "Failed to create chat room", null);
+      }
+    } catch (e) {
+      showCatchToast(e.toString(), null);
+    } finally {
+      loader = false;
+      notifyListeners();
+    }
   }
 
   ///====================== Profile Rating Camera Section ======================
@@ -724,31 +588,4 @@ class RatingProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
-
-  // Future<void> toggleTorch() async {
-  //   try {
-  //     // Request camera permission
-  //     var status = await Permission.camera.request();
-  //     if (status.isGranted) {
-  //       if (isTorchOn) {
-  //         await TorchLight.disableTorch(); // Turn off torch
-  //         isTorchOn = false;
-  //       } else {
-  //         await TorchLight.enableTorch(); // Turn on torch
-  //         isTorchOn = true;
-  //       }
-  //       print('Torch ${isTorchOn ? "on" : "off"}');
-  //       notifyListeners(); // Update UI if needed
-  //     } else if (status.isDenied) {
-  //       print('Camera permission denied');
-  //     } else if (status.isPermanentlyDenied) {
-  //       print('Camera permission permanently denied. Open app settings to grant.');
-  //       await openAppSettings(); // Open settings for user to grant permission
-  //     }
-  //   } catch (e) {
-  //     print('Error toggling torch: $e');
-  //     isTorchOn = false; // Reset state on error
-  //     notifyListeners();
-  //   }
-  // }
 }

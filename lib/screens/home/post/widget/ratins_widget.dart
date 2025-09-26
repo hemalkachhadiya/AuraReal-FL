@@ -3,13 +3,13 @@ import 'package:aura_real/aura_real.dart';
 
 Future<double?> showRatingDialog(
   BuildContext context,
-  PostModel post, {
+  double postRating, {
   VoidCallback? onSubmit,
   bool? loading,
+  bool? isProfile = false,
 }) async {
   double selectedRating =
-      post.postRating?.toStarRating() ??
-      0.0; // Initialize with star rating (0–5)
+      postRating.toStarRating() ?? 0.0; // Initialize with star rating (0–5)
 
   final result = await showDialog<double?>(
     context: context,
@@ -47,7 +47,9 @@ Future<double?> showRatingDialog(
                       ],
                     ),
                     Text(
-                      context.l10n?.rateThisPost ?? "Rate this post",
+                      isProfile!
+                          ? context.l10n?.rateThisProfile ?? "Rate this profile"
+                          : context.l10n?.rateThisPost ?? "Rate this post",
                       style: styleW700S24.copyWith(
                         color: ColorRes.primaryColor,
                       ),
@@ -59,9 +61,10 @@ Future<double?> showRatingDialog(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      if ((post.postRating ?? 0.0) > 0) ...[
+                      if ((postRating ?? 0.0) > 0) ...[
                         Text(
-                          "Current Rating: ${post.postRating?.toStringAsFixed(2)}", // Display raw rating
+                          "Current Rating: ${postRating.toStringAsFixed(2)}",
+                          // Display raw rating
                           style: styleW400S14.copyWith(color: ColorRes.grey),
                         ),
                         const SizedBox(height: 15),
@@ -72,7 +75,9 @@ Future<double?> showRatingDialog(
                         // Use star rating (0–5)
                         size: 30.0,
                         activeColor: ColorRes.primaryColor,
-                        inactiveColor: ColorRes.primaryColor.withValues(alpha: 0.3),
+                        inactiveColor: ColorRes.primaryColor.withValues(
+                          alpha: 0.3,
+                        ),
                         onRatingChanged: (rating) {
                           setDialogState(() {
                             selectedRating = rating; // Update star rating
@@ -128,7 +133,7 @@ Future<double?> showRatingDialog(
                                   }
                                 },
                         title:
-                            (post.postRating ?? 0.0) > 0
+                            (postRating ?? 0.0) > 0
                                 ? (context.l10n?.update ?? "Update")
                                 : (context.l10n?.submit ?? "Submit"),
                         style: styleW600S12.copyWith(color: ColorRes.white),

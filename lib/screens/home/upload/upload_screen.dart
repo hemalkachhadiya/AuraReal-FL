@@ -1,30 +1,27 @@
 import 'package:aura_real/aura_real.dart';
 
 class UploadScreen extends StatelessWidget {
-  final PostModel? post;
+  final String? userId; // Changed from PostModel? to String?
 
-  const UploadScreen({super.key, this.post});
+  const UploadScreen({super.key, this.userId});
 
   static const routeName = "upload_screen";
 
-  static Widget builder(BuildContext context, {PostModel? post}) {
-    // If post is not provided directly, try to get it from route arguments
-    final PostModel? routePost =
-        post ?? (ModalRoute.of(context)?.settings.arguments as PostModel?);
+  static Widget builder(BuildContext context, {String? userId}) {
+    // If userId is not provided directly, try to get it from route arguments
+    final String? routeUserId =
+        userId ?? (ModalRoute.of(context)?.settings.arguments as String?);
 
-    // Extract userId from routePost or provide a default/fallback
-    final String? userId = routePost?.userId?.id;
+    print("routeUserId: $routeUserId");
 
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<UploadProvider>(
-          create:
-              (c) =>
-                  UploadProvider(userId ?? ''), // Pass userId to UploadProvider
+          create: (c) => UploadProvider(routeUserId ?? ''), // Pass userId
         ),
         ChangeNotifierProvider<PostsProvider>(create: (c) => PostsProvider()),
       ],
-      child: UploadScreen(post: routePost),
+      child: UploadScreen(userId: routeUserId),
     );
   }
 
@@ -69,7 +66,7 @@ class UploadScreen extends StatelessWidget {
                                 child: Center(
                                   child: AssetsImg(
                                     imagePath: AssetRes.uploadBgIcon,
-                                    height: 330,
+                                    height: 370,
                                     width: double.infinity,
                                     fit: BoxFit.cover,
                                   ),
@@ -90,7 +87,10 @@ class UploadScreen extends StatelessWidget {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     ///Space
-                                    40.ph.spaceVertical,
+                                    SizedBox(
+                                      height:
+                                          MediaQuery.of(context).padding.top,
+                                    ),
 
                                     /// Back button
                                     InkWell(
@@ -137,6 +137,7 @@ class UploadScreen extends StatelessWidget {
                                         10.pw.spaceHorizontal,
                                         Text(
                                           provider.profileData?.ratingsAvg
+                                                  ?.toStringAsFixed(2)
                                                   .toString() ??
                                               "0.0",
                                           style: styleW700S12.copyWith(
@@ -306,6 +307,7 @@ class UploadScreen extends StatelessWidget {
                                             children: [
                                               Text(
                                                 provider.profileData?.ratingsAvg
+                                                        ?.toStringAsFixed(2)
                                                         .toString() ??
                                                     "",
                                                 style: styleW700S16.copyWith(
@@ -352,122 +354,124 @@ class UploadScreen extends StatelessWidget {
                       ),
 
                       ///Follow & Message
-                      Positioned(
-                        right: isArabic ? null : 0,
-                        left: isArabic ? 0 : null,
-                        bottom: 0,
-                        child: Container(
-                          margin: const EdgeInsets.only(top: 10.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              /// Custom Follow Button
-                              Container(
-                                width: 100.pw,
-                                height: 45.ph,
-                                decoration: BoxDecoration(
-                                  color: ColorRes.primaryColor,
-                                  borderRadius: BorderRadius.circular(15),
-                                ),
-                                child: Material(
-                                  color: Colors.transparent,
-                                  child: InkWell(
+                      if (userData?.id != userId)
+                        Positioned(
+                          right: isArabic ? null : 0,
+                          left: isArabic ? 0 : null,
+                          bottom: 0,
+                          child: Container(
+                            margin: const EdgeInsets.only(top: 10.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                /// Custom Follow Button
+                                Container(
+                                  width: 100.pw,
+                                  height: 45.ph,
+                                  decoration: BoxDecoration(
+                                    color: ColorRes.primaryColor,
                                     borderRadius: BorderRadius.circular(15),
-                                    onTap: () async {
-                                      if (provider.isFollowing) {
-                                        await provider.unfollowUserProfile(
-                                          context,
-                                        );
-                                      } else {
-                                        await provider.followUserProfile(
-                                          context,
-                                        );
-                                      }
-                                    },
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        SvgAsset(
-                                          imagePath: AssetRes.userIcon2,
-                                          width: 16,
-                                          height: 16,
-                                          color: ColorRes.white,
-                                        ),
-                                        SizedBox(width: 6.pw),
-                                        provider.followLoader
-                                            ? CircularProgressIndicator(
-                                              color: ColorRes.white,
-                                            )
-                                            : Text(
-                                              provider.isFollowing
-                                                  ? context.l10n?.following ??
-                                                      ""
-                                                  : context.l10n?.follow ?? "",
-                                              style: TextStyle(
-                                                color: ColorRes.white,
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                            ),
-                                      ],
-                                    ),
                                   ),
-                                ),
-                              ),
-                              7.pw.spaceHorizontal,
-
-                              /// Custom Message Button
-                              Container(
-                                width: 100.pw,
-                                height: 45.ph,
-                                decoration: BoxDecoration(
-                                  color: ColorRes.primaryColor,
-                                  borderRadius: BorderRadius.circular(15),
-                                ),
-                                child: Material(
-                                  color: Colors.transparent,
-                                  child: InkWell(
-                                    borderRadius: BorderRadius.circular(15),
-                                    onTap: () {
-                                      provider.createChatRoom(context);
-
-                                      // socketIoHelper.webSocketData(
-                                      //     messageType: 'text',
-                                      //     roomId: '${provider.postUserId}',
-                                      //     text: chatTxtController.text);
-                                      // Handle message action
-                                    },
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        SvgAsset(
-                                          imagePath: AssetRes.msgIcon,
-                                          width: 16,
-                                          height: 16,
-                                          color: ColorRes.white,
-                                        ),
-                                        SizedBox(width: 6.pw),
-                                        Text(
-                                          context.l10n?.message ?? "",
-                                          style: TextStyle(
+                                  child: Material(
+                                    color: Colors.transparent,
+                                    child: InkWell(
+                                      borderRadius: BorderRadius.circular(15),
+                                      onTap: () async {
+                                        if (provider.isFollowing) {
+                                          await provider.unfollowUserProfile(
+                                            context,
+                                          );
+                                        } else {
+                                          await provider.followUserProfile(
+                                            context,
+                                          );
+                                        }
+                                      },
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          SvgAsset(
+                                            imagePath: AssetRes.userIcon2,
+                                            width: 16,
+                                            height: 16,
                                             color: ColorRes.white,
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w600,
                                           ),
-                                        ),
-                                      ],
+                                          SizedBox(width: 6.pw),
+                                          provider.followLoader
+                                              ? CircularProgressIndicator(
+                                                color: ColorRes.white,
+                                              )
+                                              : Text(
+                                                provider.isFollowing
+                                                    ? context.l10n?.following ??
+                                                        ""
+                                                    : context.l10n?.follow ??
+                                                        "",
+                                                style: TextStyle(
+                                                  color: ColorRes.white,
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                              14.pw.spaceHorizontal,
-                            ],
+                                7.pw.spaceHorizontal,
+
+                                /// Custom Message Button
+                                Container(
+                                  width: 100.pw,
+                                  height: 45.ph,
+                                  decoration: BoxDecoration(
+                                    color: ColorRes.primaryColor,
+                                    borderRadius: BorderRadius.circular(15),
+                                  ),
+                                  child: Material(
+                                    color: Colors.transparent,
+                                    child: InkWell(
+                                      borderRadius: BorderRadius.circular(15),
+                                      onTap: () {
+                                        provider.createChatRoom(context);
+
+                                        // socketIoHelper.webSocketData(
+                                        //     messageType: 'text',
+                                        //     roomId: '${provider.postUserId}',
+                                        //     text: chatTxtController.text);
+                                        // Handle message action
+                                      },
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          SvgAsset(
+                                            imagePath: AssetRes.msgIcon,
+                                            width: 16,
+                                            height: 16,
+                                            color: ColorRes.white,
+                                          ),
+                                          SizedBox(width: 6.pw),
+                                          Text(
+                                            context.l10n?.message ?? "",
+                                            style: TextStyle(
+                                              color: ColorRes.white,
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                14.pw.spaceHorizontal,
+                              ],
+                            ),
                           ),
                         ),
-                      ),
                     ],
                   ),
 
@@ -517,6 +521,7 @@ class UploadScreen extends StatelessWidget {
                             );
                           }
                           return PostCard(
+                            loading: provider.loader,
                             onTapPost: () {},
                             onCommentSubmitted: (val) {},
                             onRatingSubmitted: (val) {

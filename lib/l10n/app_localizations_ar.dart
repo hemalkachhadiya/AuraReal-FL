@@ -339,5 +339,11 @@ class AppLocalizationsAr extends AppLocalizations {
   String get writeCaption => 'اكتب تعليقًا';
 
   @override
-  String get rateThisPost => 'قيم هذه المشاركة';
+  String get rateUser => 'قيِّم المستخدم';
+
+  @override
+  String get rateThisProfile => 'قيِّم هذا الملف الشخصي';
+
+  @override
+  String get rateThisPost => 'قيِّم هذا المنشور';
 }

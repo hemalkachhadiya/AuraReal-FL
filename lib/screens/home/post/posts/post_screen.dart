@@ -226,21 +226,11 @@ class HomeScreen extends StatelessWidget {
                                   loading: provider.loader,
                                   onRatingSubmitted: (rate) {
                                     print(
-                                      "Rate val 1= ${provider.postListResponse[index].postRating!.toRawRating()}",
+                                      "isRated ---- ${provider.postListResponse[index].isRated}",
                                     );
-                                    print(
-                                      "Rate val 2= ${provider.postListResponse[index].postRating!.toStarRating()}",
-                                    );
-                                    print(
-                                      "Rate val = ${provider.postListResponse[index].postRating}",
-                                    );
-                                    print("Rate val == ${rate}");
-                                    print("RATE ----1 ${rate.toRawRating()}");
-                                    print("RATE ----2 ${rate.toStarRating()}");
-                                    if (provider
-                                            .postListResponse[index]
-                                            .postRating ==
-                                        0.0) {
+                                    if (!provider
+                                        .postListResponse[index]
+                                        .isRated!) {
                                       provider.newRatePostAPI(
                                         context,
                                         postId:
@@ -273,7 +263,10 @@ class HomeScreen extends StatelessWidget {
                                     context.navigator.pushNamed(
                                       UploadScreen.routeName,
                                       arguments:
-                                          provider.postListResponse[index],
+                                          provider
+                                              .postListResponse[index]
+                                              .userId
+                                              ?.id,
                                     );
                                   },
                                 );
@@ -336,63 +329,5 @@ class HomeScreen extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  void _handleMediaNavigation(
-    BuildContext context,
-    PostsProvider provider,
-    int index,
-  ) {
-    try {
-      final post = provider.postListResponse[index];
-      final media = post.media;
-
-      // Validate media exists
-      if (media == null) {
-        showErrorMsg('No media available for this post');
-        return;
-      }
-
-      // Validate URL exists
-      final url = media.url;
-      if (url == null || url.isEmpty) {
-        showErrorMsg('Media URL not available');
-        return;
-      }
-
-      final fullMediaUrl = EndPoints.domain + url;
-      final postTitle = post.content ?? 'Post Media';
-
-      // Navigate based on media type
-      if (media.type == 0) {
-        // Image
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder:
-                (_) => ImagePreviewScreen(
-                  imageUrl: fullMediaUrl,
-                  title: postTitle,
-                ),
-          ),
-        );
-      } else {
-        // Video
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder:
-                (_) => VideoPlayerScreen(
-                  thumbnailUrl: fullMediaUrl,
-                  title: postTitle,
-                  url: fullMediaUrl,
-                ),
-          ),
-        );
-      }
-    } catch (e) {
-      print('Error navigating to media: $e');
-      showErrorMsg('Unable to open media');
-    }
   }
 }

@@ -69,17 +69,19 @@ class UserProfileRatingWidget extends StatelessWidget {
 
                         // Rating Section
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Text(
                               "(${(user?.ratingsAverage ?? 0).toStringAsFixed(2)}/10)",
-                              style: styleW700S12.copyWith(
+                              style: styleW700S10.copyWith(
                                 color: ColorRes.primaryColor,
                               ),
                             ),
                             6.pw.spaceHorizontal,
                             StarRatingWidget(
-                              rating: user?.ratingsAverage ?? 0.0,
+                              rating:
+                                  (user?.ratingsAverage ?? 0.0).toStarRating(),
                               size: 10,
                               space: 8,
                               activeColor: ColorRes.yellowColor,
@@ -87,8 +89,8 @@ class UserProfileRatingWidget extends StatelessWidget {
                             ),
                             6.pw.spaceHorizontal,
                             Text(
-                              "${user?.ratingsAverage}",
-                              style: styleW700S12.copyWith(
+                              "${user?.ratingsAverage.toStringAsFixed(2)}",
+                              style: styleW700S10.copyWith(
                                 color: ColorRes.primaryColor,
                               ),
                             ),
@@ -130,7 +132,7 @@ class UserProfileRatingWidget extends StatelessWidget {
                         raduis: 15,
                         height: 45,
                         title: context.l10n?.profileVisit ?? "Visit Profile",
-                        // onTap: onVisitProfile,
+                        onTap: onVisitProfile,
                         icon: AssetRes.userIcon2,
                       ),
                     ),
@@ -141,7 +143,7 @@ class UserProfileRatingWidget extends StatelessWidget {
                         height: 45,
                         raduis: 15,
                         title: context.l10n?.privateChat ?? "Private Chat",
-                        // onTap: onPrivateChat,
+                        onTap: onPrivateChat,
                         icon: AssetRes.msgIcon,
                       ),
                     ),

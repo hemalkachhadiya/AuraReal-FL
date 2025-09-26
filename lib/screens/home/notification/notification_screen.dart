@@ -40,8 +40,9 @@ class NotificationScreen extends StatelessWidget {
                         child: CustomListView(
                           itemCount: provider.notificationList.length,
                           onRefresh:
-                              () =>
-                                  provider.getAllNotificationAPI(resetData: true),
+                              () => provider.getAllNotificationAPI(
+                                resetData: true,
+                              ),
                           separatorBuilder: (p0, p1) => SizedBox(height: 16.ph),
                           itemBuilder:
                               (context, index) => Dismissible(
@@ -72,12 +73,16 @@ class NotificationScreen extends StatelessWidget {
                                           borderRadius: BorderRadius.circular(
                                             28.5,
                                           ),
-                                          child: AssetsImg(
-                                            imagePath:
-                                                AssetRes.notificationUserImg,
-                                            width: 57,
-                                            height: 57,
-                                            fit: BoxFit.cover,
+                                          child: CachedImage(
+                                            EndPoints.domain +
+                                                provider
+                                                    .notificationList[index]
+                                                    .userId!
+                                                    .profile!
+                                                    .profileImage!
+                                                    .toBackslashPath(),
+                                            height: 57.ph,
+                                            width: 57.pw,
                                           ),
                                         ),
                                       ),
