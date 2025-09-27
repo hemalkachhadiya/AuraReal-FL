@@ -345,5 +345,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get rateThisProfile => 'Rate this profile';
 
   @override
+  String get thisUserHasReceivedAVeryHighRating => 'This user has received a very high rating!';
+
+  @override
   String get rateThisPost => 'Rate this post';
 }

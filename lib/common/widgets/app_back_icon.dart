@@ -10,6 +10,7 @@ class AppBackIcon extends StatelessWidget {
     return Row(
       children: [
         InkWell(
+          borderRadius: BorderRadius.circular(45),
           onTap: () => context.navigator.pop(),
           child: Container(
             width: 45,

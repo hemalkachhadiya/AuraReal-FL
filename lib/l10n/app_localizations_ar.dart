@@ -345,5 +345,8 @@ class AppLocalizationsAr extends AppLocalizations {
   String get rateThisProfile => 'قيِّم هذا الملف الشخصي';
 
   @override
+  String get thisUserHasReceivedAVeryHighRating => 'حصل هذا المستخدم على تقييم مرتفع جدًا!';
+
+  @override
   String get rateThisPost => 'قيِّم هذا المنشور';
 }

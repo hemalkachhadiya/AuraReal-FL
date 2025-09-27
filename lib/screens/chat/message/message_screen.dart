@@ -27,13 +27,13 @@ class _MessageScreenState extends State<MessageScreen> {
         _initializeChat(); // 👈 use widget’s own context
       }
     });
-    _scrollController.addListener(() {
-      final offset = _scrollController.offset;
-      final maxExtent = _scrollController.position.maxScrollExtent;
-      setState(() {
-        _isUserAtBottom = (maxExtent - offset) <= 100;
-      });
-    });
+    // _scrollController.addListener(() {
+    //   final offset = _scrollController.offset;
+    //   final maxExtent = _scrollController.position.maxScrollExtent;
+    //   setState(() {
+    //     _isUserAtBottom = (maxExtent - offset) <= 100;
+    //   });
+    // });
 
     _focusNode.addListener(() {
       if (_focusNode.hasFocus && _isEmojiVisible) {
@@ -53,7 +53,6 @@ class _MessageScreenState extends State<MessageScreen> {
     );
 
     if (widget.chatUser.id == null || widget.chatUser.id!.isEmpty) {
-      debugPrint("❌ Invalid chat user ID: ${widget.chatUser.id}");
       ScaffoldMessenger.of(
         navigatorKey.currentContext!,
       ).showSnackBar(const SnackBar(content: Text("Error: Invalid chat user")));
@@ -66,19 +65,16 @@ class _MessageScreenState extends State<MessageScreen> {
       roomId: widget.chatUser.id!,
     );
 
-    // ✅ Mark all messages as read when opening the chat
     _messageProvider?.markAllAsRead();
-    // Force scroll to bottom after messages are loaded
-    if (mounted) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (_scrollController.hasClients &&
-            _messageProvider != null &&
-            !_messageProvider!.isLoading) {
-          _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
-          debugPrint("📜 Scrolled to bottom on screen entry");
-        }
-      });
-    }
+
+    // ✅ Scroll to bottom after messages are loaded
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients &&
+          _messageProvider!.messages.isNotEmpty) {
+        _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+        debugPrint("📜 Scrolled to bottom on screen entry");
+      }
+    });
   }
 
   @override
@@ -132,11 +128,11 @@ class _MessageScreenState extends State<MessageScreen> {
                       // Mark as read when user is viewing the chat
                       messageProvider.markAllAsRead();
 
-                      if (_scrollController.hasClients && _isUserAtBottom) {
-                        _scrollController.jumpTo(
-                          _scrollController.position.maxScrollExtent,
-                        );
-                      }
+                      // if (_scrollController.hasClients && _isUserAtBottom) {
+                      //   _scrollController.jumpTo(
+                      //     _scrollController.position.maxScrollExtent,
+                      //   );
+                      // }
                     });
                   }
 
@@ -276,7 +272,6 @@ class _MessageScreenState extends State<MessageScreen> {
                 duration: const Duration(milliseconds: 300),
                 curve: Curves.easeOut,
               );
-              debugPrint("📜 Scrolled to bottom for new message");
             }
           });
         }

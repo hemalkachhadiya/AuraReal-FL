@@ -174,35 +174,4 @@ class _YourLocationScreenState extends State<YourLocationScreen>
       },
     );
   }
-
-  Future<String?> _showManualLocationDialog(BuildContext context) async {
-    final controller = TextEditingController();
-    return showDialog<String>(
-      context: context,
-      builder:
-          (_) => AlertDialog(
-            title: Text(
-              context.l10n?.interLocationManually ?? "Enter Location",
-            ),
-            content: TextField(
-              controller: controller,
-              decoration: InputDecoration(
-                hintText:
-                    context.l10n?.typeYourCityOrArea ??
-                    "Type your city or area",
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, null),
-                child: Text(context.l10n?.cancel ?? "Cancel"),
-              ),
-              ElevatedButton(
-                onPressed: () => Navigator.pop(context, controller.text.trim()),
-                child: Text(context.l10n?.save ?? "Save"),
-              ),
-            ],
-          ),
-    );
-  }
 }

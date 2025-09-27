@@ -1,7 +1,6 @@
 import 'package:aura_real/aura_real.dart';
 import 'package:aura_real/screens/auth/your_location/map_screen_provider.dart';
 import 'package:google_places_flutter/google_places_flutter.dart';
-import 'package:map_location_picker/map_location_picker.dart';
 
 class MapScreen extends StatelessWidget {
   const MapScreen({super.key});

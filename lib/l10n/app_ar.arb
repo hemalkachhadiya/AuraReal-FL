@@ -113,6 +113,7 @@
   "rateUser": "قيِّم المستخدم",
   "rateThisProfile": "قيِّم هذا الملف الشخصي",
   "rateThisPost": "قيِّم هذا المنشور",
+  "thisUserHasReceivedAVeryHighRating": "حصل هذا المستخدم على تقييم مرتفع جدًا!",
   "@cameraPermissionContent": {
     "description": "رسالة طلب إذن الكاميرا"
   }

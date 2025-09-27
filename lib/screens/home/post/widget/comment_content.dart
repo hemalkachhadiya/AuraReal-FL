@@ -44,7 +44,7 @@ class _CommentsWidgetState extends State<CommentsWidget> {
   bool hasAnyReply(CommentModel? comment) {
     if (comment == null) return false;
     if (comment.replies.isNotEmpty) return true;
-    for (var reply in comment.replies ?? <CommentModel>[]) {
+    for (var reply in comment.replies) {
       if (hasAnyReply(reply)) return true;
     }
     return false;
@@ -392,10 +392,10 @@ class CommentTile extends StatelessWidget {
                 ),
 
                 // Nested replies with null safety
-                if (comment.replies.isNotEmpty ?? false)
+                if (comment.replies.isNotEmpty)
                   Column(
                     children:
-                        (comment.replies ?? <CommentModel>[])
+                        (comment.replies)
                             .map(
                               (reply) => CommentTile(
                                 onTapProfileImg: onTapProfileImg,

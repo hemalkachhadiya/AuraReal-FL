@@ -1,5 +1,4 @@
 import 'package:aura_real/aura_real.dart';
-import 'package:aura_real/screens/rating/model/rating_profile_list_model.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 

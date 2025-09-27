@@ -3,9 +3,12 @@ import 'dart:ui' as ui;
 import 'package:http/http.dart' as http; // Add for distance calculations
 import 'package:aura_real/aura_real.dart';
 import 'package:map_location_picker/map_location_picker.dart';
+import 'package:torch_light/torch_light.dart';
 
 class RatingProvider extends ChangeNotifier {
   bool isTorchOn = false; // Track torch state
+  bool isTorchAvailable = false;
+
   RatingProvider() {
     init();
   }
@@ -119,120 +122,6 @@ class RatingProvider extends ChangeNotifier {
   }
 
   /// create Custom Marker
-  // Future<BitmapDescriptor> _createCustomMarker(
-  //   RatingProfileUserModel user, {
-  //   double size = 70.0, // default small
-  // }) async {
-  //   try {
-  //     final ui.PictureRecorder pictureRecorder = ui.PictureRecorder();
-  //     final Canvas canvas = Canvas(pictureRecorder);
-  //     final Paint paint = Paint()..isAntiAlias = true;
-  //
-  //     const double borderWidth = 4.0;
-  //     const double badgeHeight = 20.0;
-  //     const double badgeWidth = 40.0;
-  //
-  //     // Draw white circular border background
-  //     final center = Offset(size / 2, size / 2);
-  //     final radius = size / 2;
-  //     canvas.drawCircle(center, radius, paint..color = Colors.white);
-  //
-  //     // Draw primary color circle (inner border)
-  //     canvas.drawCircle(
-  //       center,
-  //       radius - borderWidth / 2,
-  //       paint..color = ColorRes.primaryColor,
-  //     );
-  //
-  //     // Load user profile image
-  //     ui.Image? profileImage;
-  //     if (user.profile?.profileImage != null) {
-  //       try {
-  //         final url =
-  //             '${EndPoints.domain}${user.profile!.profileImage!.toBackslashPath()}';
-  //         final response = await http.get(Uri.parse(url));
-  //         if (response.statusCode == 200) {
-  //           final codec = await ui.instantiateImageCodec(response.bodyBytes);
-  //           final frame = await codec.getNextFrame();
-  //           profileImage = frame.image;
-  //         }
-  //       } catch (e) {
-  //         print("Failed to load profile image: $e");
-  //       }
-  //     }
-  //
-  //     // Use default avatar if profile image fails
-  //     profileImage ??= await _loadDefaultAvatarAsUiImage();
-  //
-  //     // Clip profile image into circle
-  //     canvas.save();
-  //     final clipPath =
-  //         Path()..addOval(
-  //           Rect.fromCircle(center: center, radius: radius - borderWidth),
-  //         );
-  //     canvas.clipPath(clipPath);
-  //
-  //     // Draw profile image inside circle
-  //     final srcRect = Rect.fromLTWH(
-  //       0,
-  //       0,
-  //       profileImage.width.toDouble(),
-  //       profileImage.height.toDouble(),
-  //     );
-  //     final dstRect = Rect.fromCircle(
-  //       center: center,
-  //       radius: radius - borderWidth,
-  //     );
-  //     canvas.drawImageRect(profileImage, srcRect, dstRect, paint);
-  //     canvas.restore();
-  //
-  //     // Draw rating badge (white rounded rectangle)
-  //     final badgeRect = RRect.fromRectAndRadius(
-  //       Rect.fromLTWH(
-  //         (size - badgeWidth) / 2,
-  //         size - badgeHeight - 4,
-  //         badgeWidth,
-  //         badgeHeight,
-  //       ),
-  //       const Radius.circular(6),
-  //     );
-  //     canvas.drawRRect(badgeRect, paint..color = Colors.white);
-  //
-  //     // Draw rating text in primary color
-  //     final textPainter = TextPainter(
-  //       text: TextSpan(
-  //         text: user.ratingsAverage.toStringAsFixed(1),
-  //         style: TextStyle(
-  //           color: ColorRes.primaryColor,
-  //           fontSize: 12,
-  //           fontWeight: FontWeight.bold,
-  //         ),
-  //       ),
-  //       textDirection: TextDirection.ltr,
-  //     );
-  //     textPainter.layout();
-  //     textPainter.paint(
-  //       canvas,
-  //       Offset(
-  //         (size - textPainter.width) / 2,
-  //         size - badgeHeight - 4 + (badgeHeight - textPainter.height) / 2,
-  //       ),
-  //     );
-  //
-  //     // Convert canvas to BitmapDescriptor
-  //     final ui.Image markerImage = await pictureRecorder.endRecording().toImage(
-  //       size.toInt(),
-  //       size.toInt(),
-  //     );
-  //     final byteData = await markerImage.toByteData(
-  //       format: ui.ImageByteFormat.png,
-  //     );
-  //     return BitmapDescriptor.bytes(byteData!.buffer.asUint8List());
-  //   } catch (e) {
-  //     print('Error creating custom marker: $e');
-  //     return BitmapDescriptor.defaultMarker;
-  //   }
-  // }
   Future<BitmapDescriptor> _createCustomMarker(
     RatingProfileUserModel user, {
     double size = 70.0,
@@ -530,67 +419,6 @@ class RatingProvider extends ChangeNotifier {
     return await picture.toImage(50, 50);
   }
 
-  /// Create a marker with just the app logo as fallback
-  Future<BitmapDescriptor> _createAppLogoMarker() async {
-    try {
-      final ui.PictureRecorder pictureRecorder = ui.PictureRecorder();
-      final Canvas canvas = Canvas(pictureRecorder);
-      final Paint paint = Paint()..isAntiAlias = true;
-
-      const double size = 70.0;
-      final center = Offset(size / 2, size / 2);
-      final radius = size / 2;
-
-      // Draw white circular background
-      canvas.drawCircle(center, radius, paint..color = Colors.white);
-
-      // Draw primary color border
-      canvas.drawCircle(
-        center,
-        radius - 2,
-        paint..color = ColorRes.primaryColor,
-      );
-
-      // Load and draw app logo
-      final appLogoImage = await _loadAppLogoAsUiImage();
-
-      canvas.save();
-      final clipPath =
-          Path()..addOval(Rect.fromCircle(center: center, radius: radius - 4));
-      canvas.clipPath(clipPath);
-
-      final srcRect = Rect.fromLTWH(
-        0,
-        0,
-        appLogoImage.width.toDouble(),
-        appLogoImage.height.toDouble(),
-      );
-      final dstRect = Rect.fromCircle(center: center, radius: radius - 4);
-      canvas.drawImageRect(appLogoImage, srcRect, dstRect, paint);
-      canvas.restore();
-
-      final ui.Image markerImage = await pictureRecorder.endRecording().toImage(
-        size.toInt(),
-        size.toInt(),
-      );
-      final byteData = await markerImage.toByteData(
-        format: ui.ImageByteFormat.png,
-      );
-      return BitmapDescriptor.bytes(byteData!.buffer.asUint8List());
-    } catch (e) {
-      print('Error creating app logo marker: $e');
-      // Ultimate fallback
-      return BitmapDescriptor.defaultMarker;
-    }
-  }
-
-  /// Helper to load default avatar as ui.Image
-  Future<ui.Image> _loadDefaultAvatarAsUiImage() async {
-    final byteData = await rootBundle.load(AssetRes.appLogo);
-    final codec = await ui.instantiateImageCodec(byteData.buffer.asUint8List());
-    final frame = await codec.getNextFrame();
-    return frame.image;
-  }
 
   ///on Marker Tapped
   Future<void> _onMarkerTapped(RatingProfileUserModel user) async {
@@ -821,6 +649,58 @@ class RatingProvider extends ChangeNotifier {
   bool get isCameraSelected => currentMode == 'camera';
 
   bool get isMapSelected => currentMode == 'map';
+
+  /// Initialize torch availability check
+  Future<void> initializeTorch() async {
+    try {
+      isTorchAvailable = await TorchLight.isTorchAvailable();
+      notifyListeners();
+    } catch (e) {
+      print('Error checking torch availability: $e');
+      isTorchAvailable = false;
+      notifyListeners();
+    }
+  }
+
+  /// Toggle torch on/off
+  Future<void> toggleTorch() async {
+    if (!isTorchAvailable) {
+      errorMessage = 'Torch not available on this device';
+      notifyListeners();
+      return;
+    }
+
+    try {
+      if (isTorchOn) {
+        print('torhc---------------1');
+        await TorchLight.disableTorch();
+        isTorchOn = false;
+      } else {
+        print('torhc---------------2');
+
+        await TorchLight.enableTorch();
+        isTorchOn = true;
+      }
+      notifyListeners();
+    } catch (e) {
+      print('Error toggling torch: $e');
+      errorMessage = 'Failed to toggle torch: $e';
+      notifyListeners();
+    }
+  }
+
+  /// Turn off torch when switching modes or disposing
+  Future<void> turnOffTorch() async {
+    if (isTorchOn && isTorchAvailable) {
+      try {
+        await TorchLight.disableTorch();
+        isTorchOn = false;
+        notifyListeners();
+      } catch (e) {
+        print('Error turning off torch: $e');
+      }
+    }
+  }
 
   void showCamera() {
     // Check the current mode before changing it

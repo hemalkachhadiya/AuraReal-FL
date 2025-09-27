@@ -531,7 +531,7 @@ class MessageProvider extends ChangeNotifier {
 
   bool get canSendMessage {
     final result = messageText.trim().isNotEmpty;
-    debugPrint("canSendMessage: $result, messageText: '$messageText'");
+    // debugPrint("canSendMessage: $result, messageText: '$messageText'");
     return result;
   }
 

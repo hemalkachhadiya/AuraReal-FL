@@ -767,6 +767,12 @@ abstract class AppLocalizations {
   /// **'Rate this profile'**
   String get rateThisProfile;
 
+  /// No description provided for @thisUserHasReceivedAVeryHighRating.
+  ///
+  /// In en, this message translates to:
+  /// **'This user has received a very high rating!'**
+  String get thisUserHasReceivedAVeryHighRating;
+
   /// No description provided for @rateThisPost.
   ///
   /// In en, this message translates to:

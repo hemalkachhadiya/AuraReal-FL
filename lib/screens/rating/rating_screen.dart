@@ -26,9 +26,14 @@ class RatingScreen extends StatelessWidget {
 }
 
 // Separate content widget that consumes the provider
-class _RatingScreenContent extends StatelessWidget {
-  _RatingScreenContent({super.key});
+class _RatingScreenContent extends StatefulWidget {
+  _RatingScreenContent();
 
+  @override
+  State<_RatingScreenContent> createState() => _RatingScreenContentState();
+}
+
+class _RatingScreenContentState extends State<_RatingScreenContent> {
   var newRateVal;
 
   @override
@@ -47,6 +52,7 @@ class _RatingScreenContent extends StatelessWidget {
                 direction: FlipDirection.HORIZONTAL,
                 flipOnTouch: false,
                 controller: provider.flipController,
+                // front: _buildCameraView(context, provider, isArabic),
                 front: _buildCameraView(context, provider, isArabic),
                 back: _buildMapView(context, provider),
               );
@@ -68,10 +74,18 @@ class _RatingScreenContent extends StatelessWidget {
       child: Stack(
         children: [
           // Background Image
+          // Positioned.fill(
+          //   child: SvgAsset(imagePath: AssetRes.ratingImg, fit: BoxFit.cover),
+          // ),
           Positioned.fill(
-            child: SvgAsset(imagePath: AssetRes.ratingImg, fit: BoxFit.cover),
+            child:
+                provider.capturedImage != null
+                    ? Image.file(provider.capturedImage!, fit: BoxFit.cover)
+                    : SvgAsset(
+                      imagePath: AssetRes.ratingImg,
+                      fit: BoxFit.cover,
+                    ),
           ),
-
           // Gradient Overlay
           Positioned.fill(
             child: Container(
@@ -160,7 +174,7 @@ class _RatingScreenContent extends StatelessWidget {
                 // Spacer to push content to bottom
                 const Spacer(),
 
-                // Profile Info Section
+                /// Profile Info Section
                 Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 20,
@@ -168,168 +182,175 @@ class _RatingScreenContent extends StatelessWidget {
                   ),
                   child: Column(
                     children: [
-                      // Name and Action Buttons Row
-                      Row(
-                        children: [
-                          // Profile Info
-                          Expanded(
-                            flex: 2,
-                            child: InkWell(
-                              onTap: () {
-                                print("rate---------------- 1");
-                                openCustomDialog(
-                                  context,
-                                  borderRadius: 30,
-                                  title:
-                                      context.l10n?.sendRating ?? "Send Rating",
-                                  customChild: StarRatingWidget(
-                                    rating:
-                                        provider
-                                            .selectedUser
-                                            ?.profile
-                                            ?.ratingsAvg ??
-                                        0.0,
-                                    activeColor: ColorRes.primaryColor,
-                                    inactiveColor: ColorRes.primaryColor,
-                                    size: 37,
-                                  ),
-                                  confirmBtnTitle: context.l10n?.send ?? "Send",
-                                );
-                              },
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: ColorRes.primaryColor.withValues(
-                                    alpha: 0.1,
-                                  ),
-                                  borderRadius: BorderRadius.circular(15),
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 15,
-                                  vertical: 15,
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      isArabic!
-                                          ? "كادين شلايفر"
-                                          : "Kadin Schleifer",
-                                      overflow: TextOverflow.ellipsis,
-                                      maxLines: 2,
-                                      style: styleW700S20.copyWith(
-                                        color: ColorRes.white,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 9),
-                                    // Rating Section
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          "(8.84/10)",
-                                          style: styleW700S12.copyWith(
-                                            color: ColorRes.white,
-                                          ),
-                                        ),
-                                        6.pw.spaceHorizontal,
-                                        StarRatingWidget(
-                                          rating: 4.5,
-                                          size: 10,
-                                          space: 8,
-                                          activeColor: ColorRes.yellowColor,
-                                          inactiveColor: ColorRes.yellowColor,
-                                        ),
-                                        6.pw.spaceHorizontal,
-                                        Text(
-                                          "00",
-                                          style: styleW700S12.copyWith(
-                                            color: ColorRes.white,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 10),
-                                    // Rate Button
-                                    SizedBox(
-                                      width: 80,
-                                      child: SubmitButton(
-                                        title: context.l10n?.rate ?? "Rate",
-                                        height: 28,
-                                        style: styleW500S12.copyWith(
-                                          color: ColorRes.white,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-
-                          15.pw.spaceHorizontal,
-
-                          // Action Buttons
-                          Expanded(
-                            flex: 1,
-                            child: Column(
-                              children: [
-                                SizedBox(
-                                  width: 120,
-                                  child: SubmitButton2(
-                                    raduis: 15,
-                                    height: 45,
-                                    title:
-                                        context.l10n?.profileVisit ??
-                                        "Visit Profile",
-                                    onTap: () {
-                                      print("Visit Profile");
-                                    },
-                                    icon: AssetRes.userIcon2,
-                                  ),
-                                ),
-                                const SizedBox(height: 10),
-                                SizedBox(
-                                  width: 120,
-                                  child: SubmitButton2(
-                                    height: 45,
-                                    raduis: 15,
-                                    title:
-                                        context.l10n?.privateChat ??
-                                        "Private Chat",
-                                    onTap: () {},
-                                    icon: AssetRes.msgIcon,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-
+                      /// Name and Action Buttons Row
+                      // Row(
+                      //   children: [
+                      //     // Profile Info
+                      //     Expanded(
+                      //       flex: 2,
+                      //       child: InkWell(
+                      //         onTap: () {
+                      //           print("rate---------------- 1");
+                      //           openCustomDialog(
+                      //             context,
+                      //             borderRadius: 30,
+                      //             title:
+                      //                 context.l10n?.sendRating ?? "Send Rating",
+                      //             customChild: StarRatingWidget(
+                      //               rating:
+                      //                   provider
+                      //                       .selectedUser
+                      //                       ?.profile
+                      //                       ?.ratingsAvg ??
+                      //                   0.0,
+                      //               activeColor: ColorRes.primaryColor,
+                      //               inactiveColor: ColorRes.primaryColor,
+                      //               size: 37,
+                      //             ),
+                      //             confirmBtnTitle: context.l10n?.send ?? "Send",
+                      //           );
+                      //         },
+                      //         child: Container(
+                      //           decoration: BoxDecoration(
+                      //             color: ColorRes.primaryColor.withValues(
+                      //               alpha: 0.1,
+                      //             ),
+                      //             borderRadius: BorderRadius.circular(15),
+                      //           ),
+                      //           padding: const EdgeInsets.symmetric(
+                      //             horizontal: 15,
+                      //             vertical: 15,
+                      //           ),
+                      //           child: Column(
+                      //             crossAxisAlignment: CrossAxisAlignment.start,
+                      //             children: [
+                      //               Text(
+                      //                 isArabic!
+                      //                     ? "كادين شلايفر"
+                      //                     : "Kadin Schleifer",
+                      //                 overflow: TextOverflow.ellipsis,
+                      //                 maxLines: 2,
+                      //                 style: styleW700S20.copyWith(
+                      //                   color: ColorRes.white,
+                      //                 ),
+                      //               ),
+                      //               const SizedBox(height: 9),
+                      //               // Rating Section
+                      //               Row(
+                      //                 mainAxisAlignment:
+                      //                     MainAxisAlignment.start,
+                      //                 children: [
+                      //                   Text(
+                      //                     "(8.84/10)",
+                      //                     style: styleW700S12.copyWith(
+                      //                       color: ColorRes.white,
+                      //                     ),
+                      //                   ),
+                      //                   6.pw.spaceHorizontal,
+                      //                   StarRatingWidget(
+                      //                     rating: 4.5,
+                      //                     size: 10,
+                      //                     space: 8,
+                      //                     activeColor: ColorRes.yellowColor,
+                      //                     inactiveColor: ColorRes.yellowColor,
+                      //                   ),
+                      //                   6.pw.spaceHorizontal,
+                      //                   Text(
+                      //                     "00",
+                      //                     style: styleW700S12.copyWith(
+                      //                       color: ColorRes.white,
+                      //                     ),
+                      //                   ),
+                      //                 ],
+                      //               ),
+                      //               const SizedBox(height: 10),
+                      //               // Rate Button
+                      //               SizedBox(
+                      //                 width: 80,
+                      //                 child: SubmitButton(
+                      //                   title: context.l10n?.rate ?? "Rate",
+                      //                   height: 28,
+                      //                   style: styleW500S12.copyWith(
+                      //                     color: ColorRes.white,
+                      //                   ),
+                      //                 ),
+                      //               ),
+                      //             ],
+                      //           ),
+                      //         ),
+                      //       ),
+                      //     ),
+                      //
+                      //     15.pw.spaceHorizontal,
+                      //
+                      //     // Action Buttons
+                      //     Expanded(
+                      //       flex: 1,
+                      //       child: Column(
+                      //         children: [
+                      //           SizedBox(
+                      //             width: 120,
+                      //             child: SubmitButton2(
+                      //               raduis: 15,
+                      //               height: 45,
+                      //               title:
+                      //                   context.l10n?.profileVisit ??
+                      //                   "Visit Profile",
+                      //               onTap: () {
+                      //                 print("Visit Profile");
+                      //               },
+                      //               icon: AssetRes.userIcon2,
+                      //             ),
+                      //           ),
+                      //           const SizedBox(height: 10),
+                      //           SizedBox(
+                      //             width: 120,
+                      //             child: SubmitButton2(
+                      //               height: 45,
+                      //               raduis: 15,
+                      //               title:
+                      //                   context.l10n?.privateChat ??
+                      //                   "Private Chat",
+                      //               onTap: () {},
+                      //               icon: AssetRes.msgIcon,
+                      //             ),
+                      //           ),
+                      //         ],
+                      //       ),
+                      //     ),
+                      //   ],
+                      // ),
                       const SizedBox(height: 40),
 
                       // Bottom Control Buttons
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
-                          // Lightning Button
-                          Container(
-                            width: 60,
-                            height: 60,
-                            decoration: BoxDecoration(
-                              color: Colors.black.withValues(alpha: 0.4),
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: Colors.white.withValues(alpha: 0.4),
+                          ///Torch light
+                          // buildTorchToggleButton(),
+                          InkWell(
+                            borderRadius: BorderRadius.circular(50.pw),
+                            onTap: () {
+                              print("tourch vcamreta---------");
+                              provider.toggleTorch();
+                            },
+                            child: Container(
+                              width: 60,
+                              height: 60,
+                              decoration: BoxDecoration(
+                                color: Colors.black.withValues(alpha: 0.4),
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.white.withValues(alpha: 0.4),
+                                ),
                               ),
-                            ),
-                            child: const Padding(
-                              padding: EdgeInsets.all(19),
-                              child: SvgAsset(
-                                imagePath: AssetRes.flashIcon,
-                                width: 19,
-                                height: 19,
+                              child: const Padding(
+                                padding: EdgeInsets.all(19),
+                                child: SvgAsset(
+                                  imagePath: AssetRes.flashIcon,
+                                  width: 19,
+                                  height: 19,
+                                ),
                               ),
                             ),
                           ),
@@ -408,6 +429,41 @@ class _RatingScreenContent extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  // Add this widget to your camera UI
+  Widget buildTorchToggleButton() {
+    return Consumer<RatingProvider>(
+      builder: (context, provider, child) {
+        if (!provider.isCameraSelected || !provider.isTorchAvailable) {
+          return const SizedBox.shrink();
+        }
+
+        return GestureDetector(
+          onTap: provider.toggleTorch,
+          child: Container(
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(
+              color:
+                  provider.isTorchOn
+                      ? ColorRes.primaryColor
+                      : ColorRes.primaryColor.withValues(alpha: 0.7),
+              borderRadius: BorderRadius.circular(25),
+              border: Border.all(
+                color: ColorRes.white.withValues(alpha: 0.3),
+                width: 1,
+              ),
+            ),
+            child: Icon(
+              provider.isTorchOn ? Icons.flash_on : Icons.flash_off,
+              color: ColorRes.white,
+              size: 24,
+            ),
+          ),
+        );
+      },
     );
   }
 

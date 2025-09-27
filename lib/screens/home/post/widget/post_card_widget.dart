@@ -214,7 +214,18 @@ class _PostCardState extends State<PostCard> {
                         ),
                       ],
                     ),
-                    if (_localRawRating == 0)
+                    if (_localRawRating >= 150)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 5),
+                        child: Text(
+                          context.l10n?.thisUserHasReceivedAVeryHighRating ??
+                              "This user has received a very high rating!",
+                          style: styleW400S13.copyWith(
+                            color: ColorRes.primaryColor,
+                          ),
+                        ),
+                      ),
+                    if (_localRawRating > 0)
                       Padding(
                         padding: const EdgeInsets.only(top: 5),
                         child: Text(
@@ -235,9 +246,7 @@ class _PostCardState extends State<PostCard> {
                   setState(() {
                     _isCommentTapped = true;
                   });
-                  print(
-                    "Opening comment bottom sheet for post ${widget.post.id}",
-                  );
+
                   try {
                     final postsProvider = Provider.of<PostsProvider>(
                       context,
@@ -276,7 +285,6 @@ class _PostCardState extends State<PostCard> {
                       borderRadius: 20,
                       padding: const EdgeInsets.all(0),
                     );
-                    print("Bottom sheet opened successfully");
                   } catch (e) {
                     print("Error opening comment bottom sheet: $e");
                   }

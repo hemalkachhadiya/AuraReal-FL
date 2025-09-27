@@ -6,7 +6,6 @@ class AddPostProvider extends ChangeNotifier {
   File? selectedMedia; // Handles both image and video
   VideoPlayerController? videoController; // For video playback
   bool loader = false;
-  final ImagePicker _picker = ImagePicker();
   final List<String> selectedHashtags = [];
 
   AddPostProvider() {

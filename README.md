@@ -21,3 +21,6 @@ samples, guidance on mobile development, and a full API reference.
 "flutter gen-l10n"
 
 flutter config --explicit-package-dependencies
+
+
+#bns - https://we.tl/t-4qvxqi5dzu

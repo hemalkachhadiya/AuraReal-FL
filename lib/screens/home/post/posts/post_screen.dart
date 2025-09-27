@@ -283,6 +283,7 @@ class HomeScreen extends StatelessWidget {
                   right: Constants.horizontalPadding,
                   bottom: 100,
                   child: FloatingActionButton(
+                    heroTag: "add_post",
                     onPressed: () async {
                       // Await the navigation to AddPostScreen
                       await context.navigator.pushNamed(

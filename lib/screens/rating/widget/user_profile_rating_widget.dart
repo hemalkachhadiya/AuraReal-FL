@@ -1,5 +1,4 @@
 import 'package:aura_real/aura_real.dart';
-import 'package:aura_real/screens/rating/model/rating_profile_list_model.dart';
 
 class UserProfileRatingWidget extends StatelessWidget {
   final RatingProfileUserModel? user; // ✅ Pass only the model

@@ -1,4 +1,3 @@
-import 'package:aura_real/apis/model/post_model.dart';
 import 'package:aura_real/aura_real.dart';
 
 Future<double?> showRatingDialog(
@@ -61,7 +60,7 @@ Future<double?> showRatingDialog(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      if ((postRating ?? 0.0) > 0) ...[
+                      if ((postRating) > 0) ...[
                         Text(
                           "Current Rating: ${postRating.toStringAsFixed(2)}",
                           // Display raw rating
@@ -133,7 +132,7 @@ Future<double?> showRatingDialog(
                                   }
                                 },
                         title:
-                            (postRating ?? 0.0) > 0
+                            (postRating) > 0
                                 ? (context.l10n?.update ?? "Update")
                                 : (context.l10n?.submit ?? "Submit"),
                         style: styleW600S12.copyWith(color: ColorRes.white),

@@ -1,4 +1,6 @@
 import 'package:aura_real/aura_real.dart';
+import 'package:aura_real/screens/home/post/posts/image_preview_screen.dart';
+import 'package:aura_real/screens/home/post/posts/video_player_screen.dart';
 
 class UploadScreen extends StatelessWidget {
   final String? userId; // Changed from PostModel? to String?
@@ -522,10 +524,112 @@ class UploadScreen extends StatelessWidget {
                           }
                           return PostCard(
                             loading: provider.loader,
-                            onTapPost: () {},
+                            onTapPost: () {
+                              try {
+                                final post = provider.postByUserResponse[index];
+                                final media = post.media;
+
+                                // Always navigate to ImagePreviewScreen, let it handle null cases
+                                if (media?.type == 0) {
+                                  // Image case
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder:
+                                          (_) => ImagePreviewScreen(
+                                            imageUrl:
+                                                media?.url != null
+                                                    ? EndPoints.domain +
+                                                        media!.url!
+                                                    : null,
+                                            title: post.content,
+                                          ),
+                                    ),
+                                  );
+                                  print("Image Screen");
+                                } else if (media?.type == 1) {
+                                  // Video case
+                                  final videoUrl =
+                                      media?.url != null
+                                          ? EndPoints.domain + media!.url!
+                                          : null;
+                                  if (videoUrl != null) {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder:
+                                            (_) => VideoPlayerScreen(
+                                              thumbnailUrl: videoUrl,
+                                              title: post.content,
+                                              url: videoUrl,
+                                            ),
+                                      ),
+                                    );
+                                    print("Video Screen");
+                                  } else {
+                                    // Show error for video with no URL
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          'Video URL not available',
+                                        ),
+                                        backgroundColor: Colors.red,
+                                      ),
+                                    );
+                                  }
+                                } else {
+                                  // Unknown media type or null media
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder:
+                                          (_) => ImagePreviewScreen(
+                                            imageUrl: null,
+                                            // Will show empty widget
+                                            title:
+                                                post.content ?? 'Post Content',
+                                          ),
+                                    ),
+                                  );
+                                }
+                              } catch (e, stackTrace) {
+                                print('Error in navigation: $e');
+                                print('Stack trace: $stackTrace');
+
+                                // Navigate to empty screen on error
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder:
+                                        (_) => ImagePreviewScreen(
+                                          imageUrl: null,
+                                          title: 'Error Loading Content',
+                                        ),
+                                  ),
+                                );
+                              }
+                            },
                             onCommentSubmitted: (val) {},
-                            onRatingSubmitted: (val) {
-                              print("Val========= ${val}");
+                            onRatingSubmitted: (rate) {
+                              if (!provider
+                                  .postByUserResponse[index]
+                                  .isRated!) {
+                                provider.newRatePostAPI(
+                                  context,
+                                  postId: provider.postByUserResponse[index].id,
+                                  rating: rate.toStarRating().toStringAsFixed(
+                                    0,
+                                  ),
+                                );
+                              } else {
+                                provider.updateRatePostAPI(
+                                  context,
+                                  postId: provider.postByUserResponse[index].id,
+                                  rating: rate.toStarRating().toStringAsFixed(
+                                    0,
+                                  ),
+                                );
+                              }
                             },
                             post: provider.postByUserResponse[index],
                             onTap: () {},
