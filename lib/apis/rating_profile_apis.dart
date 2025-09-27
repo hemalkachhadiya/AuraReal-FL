@@ -116,10 +116,11 @@ class RatingProfileAPIS {
         url: EndPoints.getAllUsers,
         queryParams: {
           "page": page,
-          "page_size": pageSize,
-          "latitude": latitude,
-          "longitude": longitude,
-          "radius": 10,
+          "limit": pageSize,
+          "currentUserId": userData?.id,
+          // "latitude": latitude,
+          // "longitude": longitude,
+          // "radius": 10,
         },
         header: headers,
       );

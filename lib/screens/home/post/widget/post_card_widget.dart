@@ -186,7 +186,7 @@ class _PostCardState extends State<PostCard> {
                   if (widget.loading == true) return;
                   final selectedRating = await showRatingDialog(
                     context,
-                    widget.post.postRating??0.0,
+                    widget.post.postRating ?? 0.0,
                     loading: widget.loading,
                     onSubmit: () {
                       print("Rating submitted for post ${widget.post.id}");
@@ -205,7 +205,7 @@ class _PostCardState extends State<PostCard> {
                           rating: _localRawRating.toStarRating(),
                           size: 20,
                           activeColor: ColorRes.primaryColor,
-                          inactiveColor: Colors.grey,
+                          inactiveColor: ColorRes.primaryColor,
                         ),
                         10.pw.spaceHorizontal,
                         Text(

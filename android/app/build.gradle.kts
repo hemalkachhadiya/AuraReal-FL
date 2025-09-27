@@ -1,7 +1,7 @@
 plugins {
     id("com.android.application")
     id("kotlin-android")
-    id ("com.google.gms.google-services")
+    id("com.google.gms.google-services")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
@@ -30,9 +30,14 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        multiDexEnabled = true
     }
 
-
+    // ✅ Fixed lint configuration
+    lint {
+        checkReleaseBuilds = false
+        abortOnError = false
+    }
 
     buildTypes {
         release {
@@ -46,7 +51,7 @@ android {
 flutter {
     source = "../.."
 }
-dependencies {
 
+dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
 }

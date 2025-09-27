@@ -119,9 +119,123 @@ class RatingProvider extends ChangeNotifier {
   }
 
   /// create Custom Marker
+  // Future<BitmapDescriptor> _createCustomMarker(
+  //   RatingProfileUserModel user, {
+  //   double size = 70.0, // default small
+  // }) async {
+  //   try {
+  //     final ui.PictureRecorder pictureRecorder = ui.PictureRecorder();
+  //     final Canvas canvas = Canvas(pictureRecorder);
+  //     final Paint paint = Paint()..isAntiAlias = true;
+  //
+  //     const double borderWidth = 4.0;
+  //     const double badgeHeight = 20.0;
+  //     const double badgeWidth = 40.0;
+  //
+  //     // Draw white circular border background
+  //     final center = Offset(size / 2, size / 2);
+  //     final radius = size / 2;
+  //     canvas.drawCircle(center, radius, paint..color = Colors.white);
+  //
+  //     // Draw primary color circle (inner border)
+  //     canvas.drawCircle(
+  //       center,
+  //       radius - borderWidth / 2,
+  //       paint..color = ColorRes.primaryColor,
+  //     );
+  //
+  //     // Load user profile image
+  //     ui.Image? profileImage;
+  //     if (user.profile?.profileImage != null) {
+  //       try {
+  //         final url =
+  //             '${EndPoints.domain}${user.profile!.profileImage!.toBackslashPath()}';
+  //         final response = await http.get(Uri.parse(url));
+  //         if (response.statusCode == 200) {
+  //           final codec = await ui.instantiateImageCodec(response.bodyBytes);
+  //           final frame = await codec.getNextFrame();
+  //           profileImage = frame.image;
+  //         }
+  //       } catch (e) {
+  //         print("Failed to load profile image: $e");
+  //       }
+  //     }
+  //
+  //     // Use default avatar if profile image fails
+  //     profileImage ??= await _loadDefaultAvatarAsUiImage();
+  //
+  //     // Clip profile image into circle
+  //     canvas.save();
+  //     final clipPath =
+  //         Path()..addOval(
+  //           Rect.fromCircle(center: center, radius: radius - borderWidth),
+  //         );
+  //     canvas.clipPath(clipPath);
+  //
+  //     // Draw profile image inside circle
+  //     final srcRect = Rect.fromLTWH(
+  //       0,
+  //       0,
+  //       profileImage.width.toDouble(),
+  //       profileImage.height.toDouble(),
+  //     );
+  //     final dstRect = Rect.fromCircle(
+  //       center: center,
+  //       radius: radius - borderWidth,
+  //     );
+  //     canvas.drawImageRect(profileImage, srcRect, dstRect, paint);
+  //     canvas.restore();
+  //
+  //     // Draw rating badge (white rounded rectangle)
+  //     final badgeRect = RRect.fromRectAndRadius(
+  //       Rect.fromLTWH(
+  //         (size - badgeWidth) / 2,
+  //         size - badgeHeight - 4,
+  //         badgeWidth,
+  //         badgeHeight,
+  //       ),
+  //       const Radius.circular(6),
+  //     );
+  //     canvas.drawRRect(badgeRect, paint..color = Colors.white);
+  //
+  //     // Draw rating text in primary color
+  //     final textPainter = TextPainter(
+  //       text: TextSpan(
+  //         text: user.ratingsAverage.toStringAsFixed(1),
+  //         style: TextStyle(
+  //           color: ColorRes.primaryColor,
+  //           fontSize: 12,
+  //           fontWeight: FontWeight.bold,
+  //         ),
+  //       ),
+  //       textDirection: TextDirection.ltr,
+  //     );
+  //     textPainter.layout();
+  //     textPainter.paint(
+  //       canvas,
+  //       Offset(
+  //         (size - textPainter.width) / 2,
+  //         size - badgeHeight - 4 + (badgeHeight - textPainter.height) / 2,
+  //       ),
+  //     );
+  //
+  //     // Convert canvas to BitmapDescriptor
+  //     final ui.Image markerImage = await pictureRecorder.endRecording().toImage(
+  //       size.toInt(),
+  //       size.toInt(),
+  //     );
+  //     final byteData = await markerImage.toByteData(
+  //       format: ui.ImageByteFormat.png,
+  //     );
+  //     return BitmapDescriptor.bytes(byteData!.buffer.asUint8List());
+  //   } catch (e) {
+  //     print('Error creating custom marker: $e');
+  //     return BitmapDescriptor.defaultMarker;
+  //   }
+  // }
   Future<BitmapDescriptor> _createCustomMarker(
     RatingProfileUserModel user, {
-    double size = 70.0, // default small
+    double size = 70.0,
   }) async {
     try {
       final ui.PictureRecorder pictureRecorder = ui.PictureRecorder();
@@ -144,8 +258,10 @@ class RatingProvider extends ChangeNotifier {
         paint..color = ColorRes.primaryColor,
       );
 
-      // Load user profile image
-      ui.Image? profileImage;
+      // Load user profile image - use app logo as fallback
+      ui.Image profileImage;
+      bool usingAppLogo = false;
+
       if (user.profile?.profileImage != null) {
         try {
           final url =
@@ -155,14 +271,28 @@ class RatingProvider extends ChangeNotifier {
             final codec = await ui.instantiateImageCodec(response.bodyBytes);
             final frame = await codec.getNextFrame();
             profileImage = frame.image;
+          } else {
+            // If image load fails, use app logo
+            profileImage = await _loadAppLogoAsUiImage();
+            usingAppLogo = true;
           }
         } catch (e) {
           print("Failed to load profile image: $e");
+          // Use app logo if any error occurs
+          profileImage = await _loadAppLogoAsUiImage();
+          usingAppLogo = true;
         }
+      } else {
+        // If no profile image available, use app logo
+        profileImage = await _loadAppLogoAsUiImage();
+        usingAppLogo = true;
       }
 
-      // Use default avatar if profile image fails
-      profileImage ??= await _loadDefaultAvatarAsUiImage();
+      // If using app logo, don't draw the primary color border
+      if (usingAppLogo) {
+        // Redraw the white background to cover the primary color border
+        canvas.drawCircle(center, radius, paint..color = Colors.white);
+      }
 
       // Clip profile image into circle
       canvas.save();
@@ -172,7 +302,7 @@ class RatingProvider extends ChangeNotifier {
           );
       canvas.clipPath(clipPath);
 
-      // Draw profile image inside circle
+      // Draw profile image (or app logo) inside circle
       final srcRect = Rect.fromLTWH(
         0,
         0,
@@ -230,6 +360,226 @@ class RatingProvider extends ChangeNotifier {
       return BitmapDescriptor.bytes(byteData!.buffer.asUint8List());
     } catch (e) {
       print('Error creating custom marker: $e');
+      // Fallback to simple app logo marker without primary color
+      return await _createSimpleAppLogoMarker();
+    }
+  }
+
+  /// Helper to load app logo as ui.Image
+  Future<ui.Image> _loadAppLogoAsUiImage() async {
+    try {
+      final byteData = await rootBundle.load(AssetRes.appLogo);
+      final codec = await ui.instantiateImageCodec(
+        byteData.buffer.asUint8List(),
+      );
+      final frame = await codec.getNextFrame();
+      return frame.image;
+    } catch (e) {
+      print('Error loading app logo: $e');
+      // Fallback to a simple white circle
+      return _createSimpleFallbackImage();
+    }
+  }
+
+  /// Create a simple white circle as fallback
+  Future<ui.Image> _createSimpleFallbackImage() async {
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder);
+    final paint =
+        Paint()
+          ..color = Colors.white
+          ..style = PaintingStyle.fill;
+
+    canvas.drawCircle(Offset(25, 25), 25, paint);
+
+    final picture = recorder.endRecording();
+    return await picture.toImage(50, 50);
+  }
+
+  /// Create a simple marker with just the app logo (no primary color)
+  Future<BitmapDescriptor> _createSimpleAppLogoMarker() async {
+    try {
+      final ui.PictureRecorder pictureRecorder = ui.PictureRecorder();
+      final Canvas canvas = Canvas(pictureRecorder);
+      final Paint paint = Paint()..isAntiAlias = true;
+
+      const double size = 70.0;
+      final center = Offset(size / 2, size / 2);
+      final radius = size / 2;
+
+      // Draw white circular background only (no primary color)
+      canvas.drawCircle(center, radius, paint..color = Colors.white);
+
+      // Load and draw app logo
+      final appLogoImage = await _loadAppLogoAsUiImage();
+
+      canvas.save();
+      final clipPath =
+          Path()..addOval(Rect.fromCircle(center: center, radius: radius - 4));
+      canvas.clipPath(clipPath);
+
+      final srcRect = Rect.fromLTWH(
+        0,
+        0,
+        appLogoImage.width.toDouble(),
+        appLogoImage.height.toDouble(),
+      );
+      final dstRect = Rect.fromCircle(center: center, radius: radius - 4);
+      canvas.drawImageRect(appLogoImage, srcRect, dstRect, paint);
+      canvas.restore();
+
+      // Draw rating badge (white rounded rectangle)
+      const double badgeHeight = 20.0;
+      const double badgeWidth = 40.0;
+      final badgeRect = RRect.fromRectAndRadius(
+        Rect.fromLTWH(
+          (size - badgeWidth) / 2,
+          size - badgeHeight - 4,
+          badgeWidth,
+          badgeHeight,
+        ),
+        const Radius.circular(6),
+      );
+      canvas.drawRRect(badgeRect, paint..color = Colors.white);
+
+      final ui.Image markerImage = await pictureRecorder.endRecording().toImage(
+        size.toInt(),
+        size.toInt(),
+      );
+      final byteData = await markerImage.toByteData(
+        format: ui.ImageByteFormat.png,
+      );
+      return BitmapDescriptor.bytes(byteData!.buffer.asUint8List());
+    } catch (e) {
+      print('Error creating simple app logo marker: $e');
+      // Ultimate fallback - white circle with text
+      return await _createUltimateFallbackMarker();
+    }
+  }
+
+  /// Ultimate fallback marker - simple white circle with rating
+  Future<BitmapDescriptor> _createUltimateFallbackMarker() async {
+    final recorder = ui.PictureRecorder();
+    final Canvas canvas = Canvas(recorder);
+    final Paint paint = Paint()..isAntiAlias = true;
+
+    const double size = 70.0;
+    final center = Offset(size / 2, size / 2);
+    final radius = size / 2;
+
+    // Draw white circle
+    canvas.drawCircle(center, radius, paint..color = Colors.white);
+
+    // Draw gray border
+    canvas.drawCircle(center, radius - 2, paint..color = Colors.grey);
+
+    // Draw rating text in center
+    final textPainter = TextPainter(
+      text: TextSpan(
+        text: "⭐",
+        style: TextStyle(
+          color: Colors.pink,
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    );
+    textPainter.layout();
+    textPainter.paint(
+      canvas,
+      Offset((size - textPainter.width) / 2, (size - textPainter.height) / 2),
+    );
+
+    final ui.Image markerImage = await recorder.endRecording().toImage(
+      size.toInt(),
+      size.toInt(),
+    );
+    final byteData = await markerImage.toByteData(
+      format: ui.ImageByteFormat.png,
+    );
+    return BitmapDescriptor.bytes(byteData!.buffer.asUint8List());
+  }
+
+  // /// Helper to load app logo as ui.Image
+  // Future<ui.Image> _loadAppLogoAsUiImage() async {
+  //   try {
+  //     final byteData = await rootBundle.load(AssetRes.appLogo);
+  //     final codec = await ui.instantiateImageCodec(byteData.buffer.asUint8List());
+  //     final frame = await codec.getNextFrame();
+  //     return frame.image;
+  //   } catch (e) {
+  //     print('Error loading app logo: $e');
+  //     // Fallback to a simple colored circle if app logo fails
+  //     return _createFallbackImage();
+  //   }
+  // }
+
+  /// Create a simple fallback image if app logo fails to load
+  Future<ui.Image> _createFallbackImage() async {
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder);
+    final paint =
+        Paint()
+          ..color = ColorRes.primaryColor
+          ..style = PaintingStyle.fill;
+
+    canvas.drawCircle(Offset(25, 25), 25, paint);
+
+    final picture = recorder.endRecording();
+    return await picture.toImage(50, 50);
+  }
+
+  /// Create a marker with just the app logo as fallback
+  Future<BitmapDescriptor> _createAppLogoMarker() async {
+    try {
+      final ui.PictureRecorder pictureRecorder = ui.PictureRecorder();
+      final Canvas canvas = Canvas(pictureRecorder);
+      final Paint paint = Paint()..isAntiAlias = true;
+
+      const double size = 70.0;
+      final center = Offset(size / 2, size / 2);
+      final radius = size / 2;
+
+      // Draw white circular background
+      canvas.drawCircle(center, radius, paint..color = Colors.white);
+
+      // Draw primary color border
+      canvas.drawCircle(
+        center,
+        radius - 2,
+        paint..color = ColorRes.primaryColor,
+      );
+
+      // Load and draw app logo
+      final appLogoImage = await _loadAppLogoAsUiImage();
+
+      canvas.save();
+      final clipPath =
+          Path()..addOval(Rect.fromCircle(center: center, radius: radius - 4));
+      canvas.clipPath(clipPath);
+
+      final srcRect = Rect.fromLTWH(
+        0,
+        0,
+        appLogoImage.width.toDouble(),
+        appLogoImage.height.toDouble(),
+      );
+      final dstRect = Rect.fromCircle(center: center, radius: radius - 4);
+      canvas.drawImageRect(appLogoImage, srcRect, dstRect, paint);
+      canvas.restore();
+
+      final ui.Image markerImage = await pictureRecorder.endRecording().toImage(
+        size.toInt(),
+        size.toInt(),
+      );
+      final byteData = await markerImage.toByteData(
+        format: ui.ImageByteFormat.png,
+      );
+      return BitmapDescriptor.bytes(byteData!.buffer.asUint8List());
+    } catch (e) {
+      print('Error creating app logo marker: $e');
+      // Ultimate fallback
       return BitmapDescriptor.defaultMarker;
     }
   }

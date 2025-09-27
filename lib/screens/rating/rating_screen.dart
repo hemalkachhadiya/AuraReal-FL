@@ -694,7 +694,8 @@ class _RatingScreenContent extends StatelessWidget {
 
                           final user = provider.selectedUser!;
 
-                          if (user.profile?.ratingsAvg == 0.0) {
+                          print("user.isRated=== ${user.isRated}");
+                          if (!user.isRated!) {
                             await provider.newProfileRateAPI(
                               context,
                               raterId: user.id,

@@ -1,6 +1,5 @@
 import 'package:aura_real/aura_real.dart';
 
-
 class RatingProfileUserModel {
   final String? id;
   final String? fullName;
@@ -24,6 +23,11 @@ class RatingProfileUserModel {
   final bool? isCurrent;
   final double? distance;
 
+  // Newly added fields
+  final String? otp;
+  final bool? isRated;
+  final String? googleId;
+
   RatingProfileUserModel({
     this.id,
     this.fullName,
@@ -46,6 +50,9 @@ class RatingProfileUserModel {
     this.country,
     this.isCurrent,
     this.distance,
+    this.otp,
+    this.isRated,
+    this.googleId,
   });
 
   RatingProfileUserModel copyWith({
@@ -70,6 +77,9 @@ class RatingProfileUserModel {
     String? country,
     bool? isCurrent,
     double? distance,
+    String? otp,
+    bool? isRated,
+    String? googleId,
   }) =>
       RatingProfileUserModel(
         id: id ?? this.id,
@@ -93,6 +103,9 @@ class RatingProfileUserModel {
         country: country ?? this.country,
         isCurrent: isCurrent ?? this.isCurrent,
         distance: distance ?? this.distance,
+        otp: otp ?? this.otp,
+        isRated: isRated ?? this.isRated,
+        googleId: googleId ?? this.googleId,
       );
 
   factory RatingProfileUserModel.fromJson(Map<String, dynamic> json) {
@@ -101,20 +114,18 @@ class RatingProfileUserModel {
       fullName: json['full_name'] as String?,
       email: json['email'] as String?,
       phoneNumber: json['phone_number'] as String?,
-      profile: json['profile'] != null ? Profile.fromJson(json['profile']) : null,
+      profile:
+      json['profile'] != null ? Profile.fromJson(json['profile']) : null,
       isVerified: json['is_verified'] as bool?,
       status: json['status'] as int?,
-      // Safer DateTime parsing with null check
-      createdAt: json['createdAt'] != null
-          ? _parseDateTime(json['createdAt'])
-          : null,
-      updatedAt: json['updatedAt'] != null
-          ? _parseDateTime(json['updatedAt'])
-          : null,
+      createdAt:
+      json['createdAt'] != null ? _parseDateTime(json['createdAt']) : null,
+      updatedAt:
+      json['updatedAt'] != null ? _parseDateTime(json['updatedAt']) : null,
       v: json['__v'] as int?,
       isOtpType: json['is_otp_type'] as String?,
       isOnline: json['isOnline'] as bool?,
-      deviceToken: json['device_token'], // Can be null or any type
+      deviceToken: json['device_token'],
       latitude: (json['latitude'] as num?)?.toDouble(),
       longitude: (json['longitude'] as num?)?.toDouble(),
       address: json['address'] as String?,
@@ -122,12 +133,15 @@ class RatingProfileUserModel {
       state: json['state'] as String?,
       country: json['country'] as String?,
       isCurrent: json['is_current'] as bool?,
-      distance: json['distance'] != null ? (json['distance'] as num).toDouble() : null,
+      distance: json['distance'] != null
+          ? (json['distance'] as num).toDouble()
+          : null,
+      otp: json['otp'] as String?,
+      isRated: json['isRated'] as bool?,
+      googleId: json['googleId'] as String?,
     );
   }
 
-
-  // Helper method for safe DateTime parsing (same as PostModel)
   static DateTime? _parseDateTime(dynamic value) {
     try {
       if (value is String && value.isNotEmpty) {
@@ -162,10 +176,13 @@ class RatingProfileUserModel {
       'country': country,
       'is_current': isCurrent,
       'distance': distance,
+      'otp': otp,
+      'isRated': isRated,
+      'googleId': googleId,
     };
   }
 
-  // Helper getters for common use cases
+  // Helper getters
   String get displayName => fullName ?? email ?? phoneNumber ?? 'Unknown User';
 
   String get userLocation {
@@ -187,8 +204,6 @@ class RatingProfileUserModel {
   String get username => profile?.username ?? '';
 
   double get ratingsAverage => profile?.ratingsAvg ?? 0.0;
-
-  // int get followersCount => profile?.followersCount ?? 0;
 
   int get followingCount => profile?.followingCount ?? 0;
 

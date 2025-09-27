@@ -11,17 +11,14 @@ extension RatingExtension on double {
       // Integer format: 1.0 = 1 star, 2.0 = 2 stars, etc.
       return this.clamp(0.0, 5.0);
     } else {
-      // Decimal format: 0.02 = 1 star, 0.04 = 2 stars, etc.
-      if (this >= 0.10) return 5.0;
-      if (this >= 0.08) return 4.0;
-      if (this >= 0.06) return 3.0;
-      if (this >= 0.04) return 2.0;
-      if (this >= 0.02) return 1.0;
-      return 0.0;
+      // Decimal format: handle cumulative ratings too
+      // For cumulative ratings like 0.16 (3+5 stars), we need to show total stars
+      double totalStars = (this / 0.02).clamp(0.0, 5.0);
+      return totalStars > 5.0 ? 5.0 : totalStars; // Cap at 5 stars for display
     }
   }
 
-  /// Convert star rating to raw decimal format for display
+  /// Convert star rating to raw decimal format for API
   double toRawRating() {
     // Convert star rating (1-5) to decimal format (0.02-0.10)
     switch (this.round()) {
@@ -34,6 +31,25 @@ extension RatingExtension on double {
     }
   }
 
+  /// Add new rating to existing cumulative rating
+  double addRating(double newStarRating) {
+    double currentRating = this; // This is the existing cumulative rating
+    double newRawRating = newStarRating.toRawRating(); // Convert new star rating to raw
+    return currentRating + newRawRating;
+  }
+
+  /// Get display rating (for showing like "0.16/10" or average)
+  String getDisplayRating() {
+    return "${this.toStringAsFixed(2)}/10";
+  }
+
+  /// Get average star rating from cumulative rating
+  double getAverageStars(int totalRatings) {
+    if (totalRatings == 0) return 0.0;
+    double totalStarValue = this / 0.02; // Convert cumulative to total star count
+    return (totalStarValue / totalRatings).clamp(0.0, 5.0);
+  }
+
   /// Convert star rating to integer format for API
   int toIntegerRating() {
     return this.round().clamp(0, 5);
@@ -44,6 +60,47 @@ extension RatingExtension on double {
     return toStarRating().round();
   }
 }
+// extension RatingExtension on double {
+//   /// Convert any rating format to star count for display
+//   double toStarRating() {
+//     // Handle both integer format (1.0, 2.0, 3.0) and decimal format (0.02, 0.04, 0.06)
+//     if (this >= 1.0) {
+//       // Integer format: 1.0 = 1 star, 2.0 = 2 stars, etc.
+//       return this.clamp(0.0, 5.0);
+//     } else {
+//       // Decimal format: 0.02 = 1 star, 0.04 = 2 stars, etc.
+//       if (this >= 0.10) return 5.0;
+//       if (this >= 0.08) return 4.0;
+//       if (this >= 0.06) return 3.0;
+//       if (this >= 0.04) return 2.0;
+//       if (this >= 0.02) return 1.0;
+//       return 0.0;
+//     }
+//   }
+//
+//   /// Convert star rating to raw decimal format for display
+//   double toRawRating() {
+//     // Convert star rating (1-5) to decimal format (0.02-0.10)
+//     switch (this.round()) {
+//       case 5: return 0.10;
+//       case 4: return 0.08;
+//       case 3: return 0.06;
+//       case 2: return 0.04;
+//       case 1: return 0.02;
+//       default: return 0.0;
+//     }
+//   }
+//
+//   /// Convert star rating to integer format for API
+//   int toIntegerRating() {
+//     return this.round().clamp(0, 5);
+//   }
+//
+//   /// Get integer star count directly
+//   int toStarCount() {
+//     return toStarRating().round();
+//   }
+// }
 // extension RatingExtension on double {
 //   double toStarRating() {
 //     // Convert raw rating (0.0–0.1) to star rating (0–5)
