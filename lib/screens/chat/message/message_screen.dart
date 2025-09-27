@@ -1,4 +1,6 @@
-import 'package:aura_real/aura_real.dart';
+import 'dart:async';
+
+import '../../../aura_real.dart';
 
 class MessageScreen extends StatefulWidget {
   final ChatUser chatUser;
@@ -18,22 +20,12 @@ class _MessageScreenState extends State<MessageScreen> {
   final FocusNode _focusNode = FocusNode();
   MessageProvider? _messageProvider;
   bool _isUserAtBottom = true;
+  bool _hasScrolledToBottomOnInit = false; // Track if we've scrolled on init
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        _initializeChat(); // 👈 use widget’s own context
-      }
-    });
-    // _scrollController.addListener(() {
-    //   final offset = _scrollController.offset;
-    //   final maxExtent = _scrollController.position.maxScrollExtent;
-    //   setState(() {
-    //     _isUserAtBottom = (maxExtent - offset) <= 100;
-    //   });
-    // });
+    _initializeChat();
 
     _focusNode.addListener(() {
       if (_focusNode.hasFocus && _isEmojiVisible) {
@@ -67,26 +59,55 @@ class _MessageScreenState extends State<MessageScreen> {
 
     _messageProvider?.markAllAsRead();
 
-    // ✅ Scroll to bottom after messages are loaded
+    // Multiple attempts to ensure scrolling works
+    _scrollToBottomWithDelay();
+  }
+
+  void _scrollToBottomWithDelay() {
+    // Try immediately
+    _scrollToBottom();
+
+    // Try after a short delay
+    Timer(const Duration(milliseconds: 100), _scrollToBottom);
+
+    // Try after messages should be rendered
+    Timer(const Duration(milliseconds: 500), _scrollToBottom);
+
+    // Final attempt
+    Timer(const Duration(seconds: 1), _scrollToBottom);
+  }
+
+  void _scrollToBottom() {
+    if (!mounted || !_scrollController.hasClients) return;
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients &&
-          _messageProvider!.messages.isNotEmpty) {
+          _scrollController.position.maxScrollExtent > 0) {
         _scrollController.animateTo(
           _scrollController.position.maxScrollExtent,
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeOut,
         );
-        debugPrint("📜 Scrolled to bottom on screen entry");
+        debugPrint(
+          "📜 Scrolled to bottom: ${_scrollController.position.maxScrollExtent}",
+        );
       }
     });
   }
 
-  @override
-  void dispose() {
-    _messageController.dispose();
-    _scrollController.dispose();
-    _focusNode.dispose();
-    super.dispose();
+  // Alternative method using jumpTo for immediate scrolling
+  void _jumpToBottom() {
+    if (!mounted || !_scrollController.hasClients) return;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients &&
+          _scrollController.position.maxScrollExtent > 0) {
+        _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+        debugPrint(
+          "📜 Jumped to bottom: ${_scrollController.position.maxScrollExtent}",
+        );
+      }
+    });
   }
 
   @override
@@ -95,7 +116,6 @@ class _MessageScreenState extends State<MessageScreen> {
 
     return GestureDetector(
       onTap: () {
-        // ✅ Hide keyboard + emoji picker on outside tap
         FocusScope.of(context).unfocus();
         if (_isEmojiVisible) {
           setState(() {
@@ -115,17 +135,18 @@ class _MessageScreenState extends State<MessageScreen> {
                     return const Center(child: CircularProgressIndicator());
                   }
 
-                  // ✅ Mark messages as read when new messages arrive and user is viewing
+                  // Mark messages as read and scroll to bottom when messages load
                   if (messageProvider.messages.isNotEmpty) {
                     WidgetsBinding.instance.addPostFrameCallback((_) {
-                      // Mark as read when user is viewing the chat
                       messageProvider.markAllAsRead();
 
-                      // if (_scrollController.hasClients && _isUserAtBottom) {
-                      //   _scrollController.jumpTo(
-                      //     _scrollController.position.maxScrollExtent,
-                      //   );
-                      // }
+                      // Scroll to bottom on first load or when new messages arrive
+                      if (!_hasScrolledToBottomOnInit) {
+                        _hasScrolledToBottomOnInit = true;
+                        _jumpToBottom(); // Use jumpTo for immediate scroll on first load
+                      } else if (_isUserAtBottom) {
+                        _scrollToBottom(); // Smooth scroll for new messages
+                      }
                     });
                   }
 
@@ -133,11 +154,10 @@ class _MessageScreenState extends State<MessageScreen> {
                 },
               ),
             ),
-            // 🔹 Show typing indicator when receiver is typing
             Consumer<MessageProvider>(
               builder: (context, provider, _) {
                 return provider.isTyping
-                    ? _buildTypingIndicator() // ✅ use your function
+                    ? _buildTypingIndicator()
                     : const SizedBox.shrink();
               },
             ),
@@ -239,6 +259,7 @@ class _MessageScreenState extends State<MessageScreen> {
     debugPrint(
       "🔄 Rebuilding messages list with ${messageProvider.messages.length} messages",
     );
+
     if (messageProvider.messages.isEmpty) {
       return const Center(
         child: Text(
@@ -253,7 +274,7 @@ class _MessageScreenState extends State<MessageScreen> {
       itemCount: messageProvider.messages.length,
       separatorBuilder:
           (ctx, ind) => Container(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           ),
       itemBuilder: (context, index) {
         final message = messageProvider.messages[index];
@@ -263,15 +284,11 @@ class _MessageScreenState extends State<MessageScreen> {
             prevMessage == null ||
             message.timestamp.difference(prevMessage.timestamp).inMinutes > 5;
 
-        // Scroll to bottom for new messages if user is at bottom
+        // For the last message, ensure we scroll to bottom after it renders
         if (index == messageProvider.messages.length - 1) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (_scrollController.hasClients && _isUserAtBottom) {
-              _scrollController.animateTo(
-                _scrollController.position.maxScrollExtent,
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeOut,
-              );
+            if (_isUserAtBottom && _hasScrolledToBottomOnInit) {
+              _scrollToBottom();
             }
           });
         }
@@ -283,40 +300,7 @@ class _MessageScreenState extends State<MessageScreen> {
           ],
         );
       },
-    ) /*ListView.builder(
-      controller: _scrollController,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      itemCount: messageProvider.messages.length,
-      itemBuilder: (context, index) {
-        final message = messageProvider.messages[index];
-        final prevMessage =
-            index > 0 ? messageProvider.messages[index - 1] : null;
-        final showTimestamp =
-            prevMessage == null ||
-            message.timestamp.difference(prevMessage.timestamp).inMinutes > 5;
-
-        // Scroll to bottom for new messages if user is at bottom
-        if (index == messageProvider.messages.length - 1) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (_scrollController.hasClients && _isUserAtBottom) {
-              _scrollController.animateTo(
-                _scrollController.position.maxScrollExtent,
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeOut,
-              );
-              debugPrint("📜 Scrolled to bottom for new message");
-            }
-          });
-        }
-
-        return Column(
-          children: [
-            if (showTimestamp) _buildTimestamp(message.timestamp),
-            _buildMessageBubble(message, messageProvider),
-          ],
-        );
-      },
-    )*/;
+    );
   }
 
   Widget _buildTimestamp(DateTime timestamp) {
@@ -330,19 +314,37 @@ class _MessageScreenState extends State<MessageScreen> {
   }
 
   String _formatTimestamp(DateTime timestamp) {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final messageDate = DateTime(
-      timestamp.year,
-      timestamp.month,
-      timestamp.day,
+    // Convert timestamp to IST (UTC+5:30)
+    final istTimestamp = timestamp.toUtc().add(
+      const Duration(hours: 5, minutes: 30),
     );
 
-    if (messageDate == today) return 'Today';
-    if (messageDate == today.subtract(const Duration(days: 1))) {
-      return 'Yesterday';
+    final now = DateTime.now().toUtc().add(
+      const Duration(hours: 5, minutes: 30),
+    );
+    final today = DateTime(now.year, now.month, now.day);
+    final messageDate = DateTime(
+      istTimestamp.year,
+      istTimestamp.month,
+      istTimestamp.day,
+    );
+
+    String dayString;
+    if (messageDate == today) {
+      dayString = "Today";
+    } else if (messageDate == today.subtract(const Duration(days: 1))) {
+      dayString = "Yesterday";
+    } else {
+      dayString =
+          "${istTimestamp.day}/${istTimestamp.month}/${istTimestamp.year}";
     }
-    return '${timestamp.day}/${timestamp.month}/${timestamp.year}';
+
+    // Format hours and minutes in 24h or 12h format
+    final hour = istTimestamp.hour % 12 == 0 ? 12 : istTimestamp.hour % 12;
+    final minute = istTimestamp.minute.toString().padLeft(2, '0');
+    final period = istTimestamp.hour >= 12 ? "PM" : "AM";
+
+    return "$dayString, $hour:$minute $period";
   }
 
   Widget _buildMessageBubble(Message message, MessageProvider messageProvider) {
@@ -623,22 +625,24 @@ class _MessageScreenState extends State<MessageScreen> {
                   ),
                 ),
                 const SizedBox(width: 14),
-                Consumer<MessageProvider>(
-                  builder: (context, messageProvider, child) {
+                ValueListenableBuilder<TextEditingValue>(
+                  valueListenable: _messageController,
+                  builder: (context, textValue, child) {
+                    final hasText = textValue.text.trim().isNotEmpty;
+
                     return GestureDetector(
                       onTap:
-                          messageProvider.canSendMessage
-                              ? () => _sendMessage(messageProvider)
+                          hasText
+                              ? () =>
+                                  _sendMessage(context.read<MessageProvider>())
                               : null,
-                      child: Container(
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
                         width: 53,
                         height: 53,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(28),
-                          color:
-                              messageProvider.canSendMessage
-                                  ? ColorRes.primaryColor
-                                  : Colors.grey,
+                          color: hasText ? ColorRes.primaryColor : Colors.grey,
                         ),
                         child: const Center(
                           child: Icon(Icons.send, color: ColorRes.white),
@@ -651,6 +655,7 @@ class _MessageScreenState extends State<MessageScreen> {
             ),
           ),
         ),
+
         if (_isEmojiVisible)
           Flexible(
             child: SizedBox(
@@ -681,34 +686,13 @@ class _MessageScreenState extends State<MessageScreen> {
     setState(() {
       _isUserAtBottom = true;
     });
+
+    // Scroll to bottom after sending message
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_scrollController.hasClients) {
-        _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        );
-        debugPrint("📜 Scrolled to bottom after sending message");
-      }
-      FocusScope.of(
-        navigatorKey.currentContext!,
-      ).requestFocus(_focusNode); // Re-focus TextField
+      _scrollToBottom();
+      FocusScope.of(navigatorKey.currentContext!).requestFocus(_focusNode);
     });
   }
 
-  // void _sendMessage(MessageProvider messageProvider) {
-  //   if (!mounted) return;
-  //   debugPrint("Sending message to receiverId: ${widget.chatUser.id}");
-  //   messageProvider.sendMessage(receiverId: widget.chatUser.id ?? "");
-  //   _messageController.clear();
-  //   setState(() {
-  //     _isUserAtBottom = true;
-  //   });
-  //   WidgetsBinding.instance.addPostFrameCallback((_) {
-  //     _scrollToBottom();
-  //     FocusScope.of(
-  //       navigatorKey.currentContext!,
-  //     ).requestFocus(_focusNode); // Re-focus TextField
-  //   });
-  // }
+  // ... rest of your existing methods remain the same
 }

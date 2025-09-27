@@ -6,39 +6,41 @@ import 'package:path/path.dart' as path;
 extension RatingExtension on double {
   /// Convert any rating format to star count for display
   double toStarRating() {
-    // Handle both integer format (1.0, 2.0, 3.0) and decimal format (0.02, 0.04, 0.06)
+    // If rating is already in full stars (1-5)
     if (this >= 1.0) {
-      // Integer format: 1.0 = 1 star, 2.0 = 2 stars, etc.
       return this.clamp(0.0, 5.0);
     } else {
-      // Decimal format: handle cumulative ratings too
-      // For cumulative ratings like 0.16 (3+5 stars), we need to show total stars
-      double totalStars = (this / 0.02).clamp(0.0, 5.0);
-      return totalStars > 5.0 ? 5.0 : totalStars; // Cap at 5 stars for display
+      // If rating is in decimal format (0.2, 0.4, etc.), convert to stars
+      double totalStars = (this / 0.2);
+      return totalStars > 5.0 ? 5.0 : totalStars;
     }
   }
 
-  /// Convert star rating to raw decimal format for API
+  /// Convert star rating (1-5) to raw decimal format for API
   double toRawRating() {
-    // Convert star rating (1-5) to decimal format (0.02-0.10)
     switch (this.round()) {
-      case 5: return 0.10;
-      case 4: return 0.08;
-      case 3: return 0.06;
-      case 2: return 0.04;
-      case 1: return 0.02;
-      default: return 0.0;
+      case 5:
+        return 1.0;
+      case 4:
+        return 0.8;
+      case 3:
+        return 0.6;
+      case 2:
+        return 0.4;
+      case 1:
+        return 0.2;
+      default:
+        return 0.0;
     }
   }
 
   /// Add new rating to existing cumulative rating
   double addRating(double newStarRating) {
-    double currentRating = this; // This is the existing cumulative rating
-    double newRawRating = newStarRating.toRawRating(); // Convert new star rating to raw
-    return currentRating + newRawRating;
+    double newRaw = newStarRating.toRawRating();
+    return this + newRaw;
   }
 
-  /// Get display rating (for showing like "0.16/10" or average)
+  /// Get display rating (like "1.60/10")
   String getDisplayRating() {
     return "${this.toStringAsFixed(2)}/10";
   }
@@ -46,8 +48,8 @@ extension RatingExtension on double {
   /// Get average star rating from cumulative rating
   double getAverageStars(int totalRatings) {
     if (totalRatings == 0) return 0.0;
-    double totalStarValue = this / 0.02; // Convert cumulative to total star count
-    return (totalStarValue / totalRatings).clamp(0.0, 5.0);
+    double totalStars = this / 0.2; // Convert cumulative rating to total stars
+    return (totalStars / totalRatings).clamp(0.0, 5.0);
   }
 
   /// Convert star rating to integer format for API
@@ -60,6 +62,7 @@ extension RatingExtension on double {
     return toStarRating().round();
   }
 }
+
 // extension RatingExtension on double {
 //   /// Convert any rating format to star count for display
 //   double toStarRating() {

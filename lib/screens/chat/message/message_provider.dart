@@ -1,5 +1,7 @@
 import 'dart:async';
+
 import 'package:aura_real/aura_real.dart';
+import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart'; // Add dependency: flutter pub add uuid
 
 class Message {
@@ -122,6 +124,13 @@ class MessageProvider extends ChangeNotifier {
 
     // Fetch messages
     await getAllMessageList(roomId);
+
+    // Auto-mark unseen messages as seen
+    for (var msg in _messages) {
+      if (!msg.isFromMe && msg.status != MessageStatus.read) {
+        markMessageAsSeen(msg.id);
+      }
+    }
   }
 
   Future<void> getCurrentUserProfileAPI() async {
@@ -224,11 +233,6 @@ class MessageProvider extends ChangeNotifier {
     }
 
     _isLoading = false;
-    notifyListeners();
-  }
-
-  void updateMessageText(String text) {
-    _messageText = text;
     notifyListeners();
   }
 
@@ -486,6 +490,28 @@ class MessageProvider extends ChangeNotifier {
     }
   }
 
+  /// Mark a single message as seen
+  void markMessageAsSeen(String messageId) {
+    if (_chatRoomId == null || userData?.id == null) return;
+
+    final index = _messages.indexWhere((m) => m.id == messageId);
+
+    if (index != -1 &&
+        !_messages[index].isFromMe &&
+        _messages[index].status != MessageStatus.read) {
+      _messages[index] = _messages[index].copyWith(status: MessageStatus.read);
+
+      // Emit socket event for single message seen
+      socketIoHelper.markMessageSeen(
+        messageId: messageId,
+        readerId: userData!.id!,
+      );
+
+      debugPrint("👁️ Message $messageId marked as seen");
+      notifyListeners();
+    }
+  }
+
   // New method to handle when messages are delivered
   void handleMessageDelivered(dynamic data) {
     debugPrint("📨 Handling message delivered: $data");
@@ -529,11 +555,11 @@ class MessageProvider extends ChangeNotifier {
     }
   }
 
-  bool get canSendMessage {
-    final result = messageText.trim().isNotEmpty;
-    // debugPrint("canSendMessage: $result, messageText: '$messageText'");
-    return result;
+  void updateMessageText(String text) {
+    _messageText = text;
   }
+
+  bool get canSendMessage => messageText.trim().isNotEmpty;
 
   void clearMessages() {
     _messages.clear();

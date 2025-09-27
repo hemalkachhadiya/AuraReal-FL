@@ -11,10 +11,10 @@ class SocketIoHelper {
 
   /// ✅ Connect and authenticate socket
   void connectSocket(
-      String userId, {
-        required String roomId,
-        MessageProvider? provider,
-      }) {
+    String userId, {
+    required String roomId,
+    MessageProvider? provider,
+  }) {
     try {
       if (socketApp?.connected == true) {
         debugPrint("🔌 Socket already connected");
@@ -36,10 +36,7 @@ class SocketIoHelper {
       // Connection events
       socketApp!.onConnect((_) {
         debugPrint("✅ Socket connected successfully");
-        socketApp!.emit("joinRoom", {
-          "userId": userId,
-          "roomId": roomId,
-        });
+        socketApp!.emit("joinRoom", {"userId": userId, "roomId": roomId});
       });
 
       socketApp!.onDisconnect((_) {
@@ -86,7 +83,8 @@ class SocketIoHelper {
       socketApp!.on("userTyping", (data) {
         debugPrint("⌨️ User typing: $data");
         final senderId = data["senderId"];
-        if (senderId != userId) { // Don't show typing indicator for self
+        if (senderId != userId) {
+          // Don't show typing indicator for self
           provider?.setTypingStatus(true);
 
           // Auto-hide typing after 3 seconds
@@ -121,7 +119,6 @@ class SocketIoHelper {
       socketApp!.on("error", (error) {
         debugPrint("❌ Socket error: $error");
       });
-
     } catch (e) {
       debugPrint("❌ Socket connection failed: $e");
     }
@@ -148,7 +145,7 @@ class SocketIoHelper {
       "messageType": messageType,
       "receiverId": receiverId,
       "senderId": senderId,
-      if (messageId != null) "messageId": messageId, // Include messageId if provided
+      if (messageId != null) "messageId": messageId,
       "timestamp": DateTime.now().toIso8601String(),
     };
 
@@ -180,11 +177,22 @@ class SocketIoHelper {
       "roomId": roomId,
       "readerId": readerId,
       if (messageIds != null && messageIds.isNotEmpty) "messageIds": messageIds,
-      "timestamp": DateTime.now().toIso8601String(),
     };
 
-    socketApp!.emit("markAsRead", data);
-    debugPrint("📖 Emitted markAsRead: $data");
+    socketApp!.emit("markMessagesAsRead", data);
+    debugPrint("📖 Emitted markMessagesAsRead: $data");
+  }
+
+  /// ✅ Single message seen
+  void markMessageSeen({required String messageId, required String readerId}) {
+    if (socketApp == null || !socketApp!.connected) {
+      debugPrint("❌ Cannot mark message as seen: Socket not connected");
+      return;
+    }
+
+    final data = {"messageId": messageId, "readerId": readerId};
+    socketApp!.emit("messageSeen", data);
+    debugPrint("👁️ Emitted messageSeen: $data");
   }
 
   /// ✅ Listen for all events
@@ -197,7 +205,8 @@ class SocketIoHelper {
         final msg = Message(
           id: decodedData["_id"] ?? DateTime.now().toString(),
           text: decodedData["message"] ?? "",
-          timestamp: DateTime.tryParse(decodedData["createdAt"] ?? "") ??
+          timestamp:
+              DateTime.tryParse(decodedData["createdAt"] ?? "") ??
               DateTime.now(),
           isFromMe: decodedData["senderId"] == userData?.id,
           status: MessageStatus.sent,
@@ -210,7 +219,10 @@ class SocketIoHelper {
           // Fallback to getting provider from context
           final context = navigatorKey.currentContext;
           if (context != null) {
-            final provider = Provider.of<MessageProvider>(context, listen: false);
+            final provider = Provider.of<MessageProvider>(
+              context,
+              listen: false,
+            );
             provider.handleNewMessage(decodedData);
           }
         }
@@ -287,6 +299,7 @@ class SocketIoHelper {
       }
     });
 
+    print("un read commet  call");
     // Unread count updates
     socketApp!.on("unreadCount", (data) {
       debugPrint("📊 Unread count: $data");
@@ -307,3 +320,255 @@ class SocketIoHelper {
     debugPrint("🔌 Socket disconnected");
   }
 }
+
+///BackEndCode
+//import { db } from "../models/index.js";
+// import mongoose from "mongoose";
+//
+// function chatSocket(io) {
+//   // ← Declare onlineUsers here so all sockets can access
+//   const onlineUsers = new Map(); // userId → Set of socketIds
+//
+//   io.on("connection", (socket) => {
+//     console.log("🔵 User connected:", socket.id);
+//
+//     // ---------------- Register user for online/offline ----------------
+//     socket.on("registerUser", async (userId) => {
+//       if (!onlineUsers.has(userId)) {
+//         onlineUsers.set(userId, new Set());
+//       }
+//       onlineUsers.get(userId).add(socket.id);
+//
+//       // Update DB status (optional)
+//       await db.User.findByIdAndUpdate(userId, { isOnline: true, lastSeen: new Date() });
+//
+//       // Notify all clients
+//       io.emit("userOnline", { userId });
+//     });
+//
+//     // ---------------- Check online status ----------------
+//     socket.on("checkOnline", (userId, callback) => {
+//       const isOnline = onlineUsers.has(userId);
+//       callback({ userId, isOnline });
+//     });
+//
+//     // ---------------- Join a room ----------------
+//     socket.on("joinRoom", async ({ userId, roomId }) => {
+//       try {
+//         socket.join(roomId);
+//
+//         // Add user to participants if not already there
+//         await db.chatRoom.findByIdAndUpdate(roomId, {
+//           $addToSet: { participants: userId },
+//         });
+//
+//         io.to(roomId).emit("userJoined", { userId, roomId });
+//         console.log(✅ User ${userId} joined room ${roomId});
+//       } catch (err) {
+//         console.error("❌ Error joining room:", err);
+//       }
+//     });
+//
+//     // ---------------- Send message ----------------
+//     socket.on("sendMessage", async ({ roomId, senderId, receiverId, message, messageType, mediaUrl }) => {
+//       try {
+//         // Fetch the chat room first
+//         const room = await db.chatRoom.findById(roomId);
+//         if (!room) {
+//           return io.to(senderId).emit("errorMessage", { error: "Chat room not found" });
+//         }
+//
+//         // Save the chat message
+//         const chatMessage = await db.ChatMessage.create({
+//           chatRoomId: roomId,
+//           senderId,
+//           receiverId,
+//           message,
+//           messageType: messageType || "text",
+//           mediaUrl: mediaUrl || "",
+//           readBy: [senderId], // mark sender as read
+//         });
+//
+//         // Update lastMessage
+//         await db.chatRoom.findByIdAndUpdate(roomId, {
+//           lastMessage: message,
+//           updatedAt: new Date(),
+//         });
+//
+//         // Update unreadCount for other participants
+//         const participants = room.participants?.filter(Boolean) || [];
+//         const unreadCountArray = room.unreadCount || [];
+//
+//         const updatedUnreadCount = participants
+//           .filter(u => u.toString() !== senderId)
+//           .map(u => {
+//             const existing = unreadCountArray.find(x => x.userId?.toString() === u.toString());
+//             return {
+//               userId: new mongoose.Types.ObjectId(u),
+//               count: existing ? existing.count + 1 : 1
+//             };
+//           });
+//
+//
+//         await db.chatRoom.findByIdAndUpdate(roomId, { unreadCount: updatedUnreadCount });
+//
+//         // Emit to socket room
+//         io.to(roomId).emit("newMessage", chatMessage);
+//
+//         // Send notifications to all participants except sender
+//         const receivers = participants.filter(u => u.toString() !== senderId);
+//         for (let rId of receivers) {
+//           const receiver = await db.User.findById(rId);
+//           if (receiver?.device_token) {
+//             await sendPushNotification(
+//               receiver.device_token,
+//               "AuraReal",
+//               "New Message 💬",
+//               message || "You received a new message",
+//               { roomId, senderId, messageType: messageType || "text" },
+//               1
+//             );
+//           }
+//         }
+//
+//         console.log(💬 Message sent by ${senderId} in room ${roomId});
+//       } catch (err) {
+//         console.error("❌ Error sending message:", err);
+//         io.to(senderId).emit("errorMessage", { error: "Message not sent" });
+//       }
+//     });
+//
+//
+//
+//
+//     // ---------------- Mark single message as read ----------------
+//     socket.on("messageSeen", async ({ messageId, readerId }) => {
+//       try {
+//         const message = await db.ChatMessage.findByIdAndUpdate(
+//           messageId,
+//           { $addToSet: { readBy: readerId } },
+//           { new: true }
+//         );
+//
+//         const unreadCount = await db.ChatMessage.countDocuments({
+//           chatRoomId: message.chatRoomId,
+//           readBy: { $ne: readerId },
+//         });
+//
+//         socket.emit("unreadCount", {
+//           roomId: message.chatRoomId,
+//           count: unreadCount,
+//         });
+//       } catch (err) {
+//         console.error("❌ Error marking message as read:", err);
+//       }
+//     });
+//
+//     // ---------------- Mark all messages in room as read ----------------
+//     socket.on("markMessagesAsRead", async ({ roomId, readerId }, callback) => {
+//       try {
+//         const result = await db.ChatMessage.updateMany(
+//           { chatRoomId: roomId, readBy: { $ne: readerId } },
+//           { $addToSet: { readBy: readerId } }
+//         );
+//
+//         const unreadCount = await db.ChatMessage.countDocuments({
+//           chatRoomId: roomId,
+//           readBy: { $ne: readerId },
+//         });
+//
+//         // Emit updated unread count only to this user
+//         socket.emit("unreadCount", { roomId, count: unreadCount });
+//
+//         // ✅ Only call callback if it's provided
+//         if (typeof callback === "function") {
+//           callback({ success: true, updatedCount: result.modifiedCount });
+//         }
+//       } catch (err) {
+//         console.error("❌ Error marking messages as read:", err);
+//         if (typeof callback === "function") {
+//           callback({ success: false, error: err.message });
+//         }
+//       }
+//     });
+//
+//
+//     // ---------------- Typing indicator ----------------
+//     socket.on("typing", ({ senderId, roomId }) => {
+//       socket.to(roomId).emit("typing", { senderId });
+//     });
+//
+//     // ---------------- Disconnect ----------------
+//     socket.on("disconnect", async () => {
+//       console.log("🔴 User disconnected:", socket.id);
+//       console.log("🟡 Total connected clients:", io.engine.clientsCount);
+//
+//       // Remove socket from onlineUsers
+//       for (let [userId, sockets] of onlineUsers.entries()) {
+//         if (sockets.has(socket.id)) {
+//           sockets.delete(socket.id);
+//
+//           if (sockets.size === 0) {
+//             onlineUsers.delete(userId);
+//
+//             // Update DB
+//             await db.User.findByIdAndUpdate(userId, { isOnline: false, lastSeen: new Date() });
+//
+//             // Notify all clients
+//             io.emit("userOffline", { userId });
+//           }
+//           break;
+//         }
+//       }
+//     });
+//   });
+// }
+//
+// export default chatSocket;
+//socket.on("markMessagesAsRead", async ({ roomId, readerId }, callback) => {
+//       try {
+//         const result = await db.ChatMessage.updateMany(
+//           { chatRoomId: roomId, readBy: { $ne: readerId } },
+//           { $addToSet: { readBy: readerId } }
+//         );
+//
+//         const unreadCount = await db.ChatMessage.countDocuments({
+//           chatRoomId: roomId,
+//           readBy: { $ne: readerId },
+//         });
+//
+//         // Emit updated unread count only to this user
+//         socket.emit("unreadCount", { roomId, count: unreadCount });
+//
+//         // ✅ Only call callback if it's provided
+//         if (typeof callback === "function") {
+//           callback({ success: true, updatedCount: result.modifiedCount });
+//         }
+//       } catch (err) {
+//         console.error("❌ Error marking messages as read:", err);
+//         if (typeof callback === "function") {
+//           callback({ success: false, error: err.message });
+//         }
+//       }
+//     });
+// socket.on("messageSeen", async ({ messageId, readerId }) => {
+//       try {
+//         const message = await db.ChatMessage.findByIdAndUpdate(
+//           messageId,
+//           { $addToSet: { readBy: readerId } },
+//           { new: true }
+//         );
+//
+//         const unreadCount = await db.ChatMessage.countDocuments({
+//           chatRoomId: message.chatRoomId,
+//           readBy: { $ne: readerId },
+//         });
+//
+//         socket.emit("unreadCount", {
+//           roomId: message.chatRoomId,
+//           count: unreadCount,
+//         });
+//       } catch (err) {
+//         console.error("❌ Error marking message as read:", err);
+//       }
+//     });

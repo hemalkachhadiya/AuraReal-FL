@@ -666,6 +666,7 @@ class _RatingScreenContentState extends State<_RatingScreenContent> {
                     child: Column(
                       children: [
                         FloatingActionButton(
+                          heroTag: "1",
                           mini: true,
                           backgroundColor: Colors.white,
                           onPressed: () async {
@@ -684,6 +685,8 @@ class _RatingScreenContentState extends State<_RatingScreenContent> {
                         ),
                         const SizedBox(height: 8),
                         FloatingActionButton(
+                          heroTag: "2",
+
                           mini: true,
                           backgroundColor: Colors.white,
                           onPressed: () {
@@ -698,6 +701,8 @@ class _RatingScreenContentState extends State<_RatingScreenContent> {
                         ),
                         const SizedBox(height: 8),
                         FloatingActionButton(
+                          heroTag: "3",
+
                           mini: true,
                           backgroundColor: Colors.white,
                           onPressed: () {

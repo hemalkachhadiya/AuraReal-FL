@@ -8,6 +8,7 @@ class PostsProvider extends ChangeNotifier {
 
   Future<void> init() async {
     await postLocationAPI();
+    if (loader) return;
     await getAllPostListAPI(showLoader: true, resetData: true);
   }
 
@@ -133,18 +134,6 @@ class PostsProvider extends ChangeNotifier {
       isApiCalling = false;
       _safeNotifyListeners();
     }
-  }
-
-  /// Load posts (wrapper for getAllPostListAPI)
-  Future<void> loadPosts({bool resetData = false}) async {
-    _isLoading = true;
-    _error = null;
-    _safeNotifyListeners();
-
-    await getAllPostListAPI(showLoader: true, resetData: resetData);
-
-    _isLoading = false;
-    _safeNotifyListeners();
   }
 
   /// Get post by ID
