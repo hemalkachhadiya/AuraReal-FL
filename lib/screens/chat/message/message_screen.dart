@@ -71,7 +71,11 @@ class _MessageScreenState extends State<MessageScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients &&
           _messageProvider!.messages.isNotEmpty) {
-        _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
         debugPrint("📜 Scrolled to bottom on screen entry");
       }
     });
@@ -83,17 +87,6 @@ class _MessageScreenState extends State<MessageScreen> {
     _scrollController.dispose();
     _focusNode.dispose();
     super.dispose();
-  }
-
-  void _scrollToBottom() {
-    if (_scrollController.hasClients && _isUserAtBottom) {
-      _scrollController.animateTo(
-        _scrollController.position.maxScrollExtent,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOut,
-      );
-      debugPrint("📜 Scrolled to bottom");
-    }
   }
 
   @override
@@ -140,7 +133,14 @@ class _MessageScreenState extends State<MessageScreen> {
                 },
               ),
             ),
-            _buildTypingIndicator(),
+            // 🔹 Show typing indicator when receiver is typing
+            Consumer<MessageProvider>(
+              builder: (context, provider, _) {
+                return provider.isTyping
+                    ? _buildTypingIndicator() // ✅ use your function
+                    : const SizedBox.shrink();
+              },
+            ),
             _buildMessageInput(context, keyboardHeight),
           ],
         ),
@@ -421,6 +421,24 @@ class _MessageScreenState extends State<MessageScreen> {
     return Consumer<MessageProvider>(
       builder: (context, messageProvider, child) {
         if (!messageProvider.isTyping) return const SizedBox.shrink();
+        if (messageProvider.isTyping) {
+          return Padding(
+            padding: const EdgeInsets.only(left: 16, bottom: 8),
+            child: Row(
+              children: [
+                const CircleAvatar(
+                  radius: 12,
+                  child: Icon(Icons.more_horiz, size: 16),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  "${messageProvider.currentUser?.name ?? "User"} is typing...",
+                  style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                ),
+              ],
+            ),
+          );
+        }
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           color: Colors.grey[50],

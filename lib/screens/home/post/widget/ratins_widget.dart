@@ -8,7 +8,7 @@ Future<double?> showRatingDialog(
   bool? isProfile = false,
 }) async {
   double selectedRating =
-      postRating.toStarRating() ?? 0.0; // Initialize with star rating (0–5)
+      postRating.toStarRating() ; // Initialize with star rating (0–5)
 
   final result = await showDialog<double?>(
     context: context,

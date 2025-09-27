@@ -484,8 +484,8 @@ class RatingProvider extends ChangeNotifier {
 
     print("Login User Lat $latitude Long $longitude");
     final response = await RatingProfileAPIS.getAllRatingProfileUSerListAPI(
-      latitude: latitude.toString() ?? "0",
-      longitude: longitude.toString() ?? "0",
+      latitude: latitude.toString(),
+      longitude: longitude.toString(),
     );
 
     if (response != null && response.isSuccess) {
